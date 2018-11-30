@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreakerBuilder;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -73,19 +73,19 @@ public class R4JCircuitBreakerIntegrationTest {
 		@Service
 		public static class DemoControllerService {
 			private TestRestTemplate rest;
-			private CircuitBreakerBuilder cbBuilder;
+			private CircuitBreakerFactory cbFactory;
 
-			public DemoControllerService(TestRestTemplate rest, CircuitBreakerBuilder cbBuilder) {
+			public DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
 				this.rest = rest;
-				this.cbBuilder = cbBuilder;
+				this.cbFactory = cbFactory;
 			}
 
 			public String slow() {
-				return cbBuilder.id("slow").build().run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
+				return cbFactory.create("slow").run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbBuilder.id("normal").build().run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
+				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 		}
 	}

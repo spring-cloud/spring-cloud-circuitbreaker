@@ -22,7 +22,8 @@ import java.util.concurrent.Executors;
 import org.junit.Test;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * @author Ryan Baxter
@@ -31,13 +32,15 @@ public class R4JCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new R4JCircuitBreakerBuilder(new R4JConfigFactory.DefaultR4JConfigFactory(), CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).id("foo").build();
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
 		assertEquals("foobar", cb.run(() -> "foobar"));
 	}
 
 	@Test
 	public void runWithFallback() {
-		CircuitBreaker cb = new R4JCircuitBreakerBuilder(new R4JConfigFactory.DefaultR4JConfigFactory(), CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).id("foo").build();
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
 		assertEquals("fallback", cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback"));

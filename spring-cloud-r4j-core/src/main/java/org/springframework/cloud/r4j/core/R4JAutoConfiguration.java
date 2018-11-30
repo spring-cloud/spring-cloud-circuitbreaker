@@ -5,7 +5,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreakerBuilder;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,10 +33,10 @@ public class R4JAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(CircuitBreakerBuilder.class)
-	public CircuitBreakerBuilder r4jCircuitBreakerBuilder(R4JConfigFactory r4JConfigFactory,
+	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
+	public CircuitBreakerFactory r4jCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
 														  CircuitBreakerRegistry circuitBreakerRegistry,
 														  ExecutorService executorService) {
-		return new R4JCircuitBreakerBuilder(r4JConfigFactory, circuitBreakerRegistry, executorService);
+		return new R4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry, executorService);
 	}
 }

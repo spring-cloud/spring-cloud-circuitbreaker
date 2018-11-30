@@ -20,19 +20,19 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.util.concurrent.ExecutorService;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreakerBuilder;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 
 /**
  * @author Ryan Baxter
  */
-public class R4JCircuitBreakerBuilder implements CircuitBreakerBuilder {
+public class R4JCircuitBreakerFactory implements CircuitBreakerFactory {
 
 	private String id;
 	private R4JConfigFactory r4JConfigFactory;
 	private CircuitBreakerRegistry circuitBreakerRegistry;
 	private ExecutorService executorService;
 
-	public R4JCircuitBreakerBuilder(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry,
+	public R4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry,
 									ExecutorService executorService) {
 		this.r4JConfigFactory = r4JConfigFactory;
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
@@ -40,13 +40,7 @@ public class R4JCircuitBreakerBuilder implements CircuitBreakerBuilder {
 	}
 
 	@Override
-	public CircuitBreakerBuilder id(String id) {
-		this.id = id;
-		return this;
-	}
-
-	@Override
-	public R4JCircuitBreaker build() {
+	public CircuitBreaker create(String id) {
 		return new R4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id), r4JConfigFactory.getTimeLimiterConfig(id),
 				circuitBreakerRegistry, executorService);
 	}
