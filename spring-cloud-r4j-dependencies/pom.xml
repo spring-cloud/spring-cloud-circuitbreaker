@@ -34,6 +34,11 @@
                 <version>${r4j.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-reactor</artifactId>
+                <version>${r4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-r4j-core</artifactId>
                 <version>${project.version}</version>
