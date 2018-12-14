@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>spring-cloud-circuitbreaker</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <version>0.0.1.BUILD-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-circuitbreaker</artifactId>
+    <version>0.0.1.BUILD-SNAPSHOT</version>
+    <modules>
+        <module>spring-cloud-starter-circuitbreaker-r4j</module>
+        <module>spring-cloud-starter-circuitbreaker-hystrix</module>
+    </modules>
+    <packaging>pom</packaging>
+
+
+</project>

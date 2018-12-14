@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-r4j</artifactId>
+    <artifactId>spring-cloud-circuitbreaker</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1.BUILD-SNAPSHOT</version>
 
@@ -16,9 +16,9 @@
         <relativePath />
     </parent>
     <scm>
-        <url>https://github.com/spring-cloud-incubator/spring-cloud-r4j</url>
-        <connection>scm:git:git://github.com/spring-cloud-incubator/spring-cloud-r4j.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/spring-cloud-incubator/spring-cloud-4jd.git</developerConnection>
+        <url>https://github.com/spring-cloud-incubator/spring-cloud-circuitbreaker</url>
+        <connection>scm:git:git://github.com/spring-cloud-incubator/spring-cloud-circuitbreaker.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/spring-cloud-incubator/spring-cloud-circuitbreaker.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <properties>
@@ -32,6 +32,7 @@
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.language>java</sonar.language>
         <spring-cloud-commons.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
+        <spring-cloud-netflix.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -44,7 +45,14 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-r4j-dependencies</artifactId>
+                <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+                <version>${spring-cloud-netflix.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-circuitbreaker-dependencies</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -58,9 +66,11 @@
         </dependencies>
     </dependencyManagement>
     <modules>
-        <module>spring-cloud-r4j-dependencies</module>
-        <module>spring-cloud-r4j-core</module>
-        <module>spring-cloud-starter-r4j</module>
+        <module>spring-cloud-circuitbreaker-dependencies</module>
+        <module>spring-cloud-circuitbreaker-r4j</module>
+        <module>spring-cloud-circuitbreaker-commons</module>
+        <module>spring-cloud-starter-circuitbreaker</module>
+        <module>spring-cloud-circuitbreaker-hystrix</module>
     </modules>
     <build>
         <plugins>
