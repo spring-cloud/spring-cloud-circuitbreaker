@@ -16,14 +16,16 @@
 
 package org.springframework.cloud.circuitbreaker.r4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 /**
  * @author Ryan Baxter
@@ -32,17 +34,49 @@ public class R4JCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
-				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(
+				new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), R4JCircuitBreakerCustomizer.NO_OP,
+				Executors.newSingleThreadExecutor()).create("foo");
 		assertEquals("foobar", cb.run(() -> "foobar"));
 	}
 
 	@Test
 	public void runWithFallback() {
-		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
-				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(
+				new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), R4JCircuitBreakerCustomizer.NO_OP,
+				Executors.newSingleThreadExecutor()).create("foo");
 		assertEquals("fallback", cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback"));
+	}
+
+	@Test
+	public void customizeEventPublisher() {
+		AtomicBoolean isCalled = new AtomicBoolean(false);
+		R4JCircuitBreakerCustomizer customizer = circuitBreaker -> circuitBreaker
+				.getEventPublisher().onSuccess(event -> isCalled.set(true));
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(
+				new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), customizer,
+				Executors.newSingleThreadExecutor()).create("foo");
+		assertEquals("foobar", cb.run(() -> "foobar"));
+		assertTrue(isCalled.get());
+	}
+
+	@Test
+	public void customizeEventPublisherWithFallback() {
+		AtomicBoolean isCalled = new AtomicBoolean(false);
+		R4JCircuitBreakerCustomizer customizer = circuitBreaker -> circuitBreaker
+				.getEventPublisher().onError(event -> isCalled.set(true));
+		CircuitBreaker cb = new R4JCircuitBreakerFactory(
+				new R4JConfigFactory.DefaultR4JConfigFactory(),
+				CircuitBreakerRegistry.ofDefaults(), customizer,
+				Executors.newSingleThreadExecutor()).create("foo");
+		assertEquals("fallback", cb.run(() -> {
+			throw new RuntimeException("boom");
+		}, t -> "fallback"));
+		assertTrue(isCalled.get());
 	}
 }

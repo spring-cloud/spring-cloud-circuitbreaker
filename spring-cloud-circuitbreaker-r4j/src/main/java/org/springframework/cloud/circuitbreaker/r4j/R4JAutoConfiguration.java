@@ -17,8 +17,11 @@ package org.springframework.cloud.circuitbreaker.r4j;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
@@ -53,16 +56,18 @@ public class R4JAutoConfiguration {
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
 	public CircuitBreakerFactory r4jCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
 														  CircuitBreakerRegistry circuitBreakerRegistry,
-														  ExecutorService executorService) {
-		return new R4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry, executorService);
+														  ExecutorService executorService,
+														  Optional<R4JCircuitBreakerCustomizer> customizer) {
+		return new R4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry, customizer.orElse(R4JCircuitBreakerCustomizer.NO_OP), executorService);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
 	public ReactiveCircuitBreakerFactory reactiveR4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
-																		  CircuitBreakerRegistry circuitBreakerRegistry) {
-		return new ReactiveR4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry);
+																		  CircuitBreakerRegistry circuitBreakerRegistry,
+																		  Optional<R4JCircuitBreakerCustomizer> customizer) {
+		return new ReactiveR4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry, customizer.orElse(R4JCircuitBreakerCustomizer.NO_OP));
 	}
 
 }

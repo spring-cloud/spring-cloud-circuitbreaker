@@ -16,11 +16,12 @@
 
 package org.springframework.cloud.circuitbreaker.r4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-
 import java.util.concurrent.ExecutorService;
+
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 /**
  * @author Ryan Baxter
@@ -30,18 +31,23 @@ public class R4JCircuitBreakerFactory implements CircuitBreakerFactory {
 	private String id;
 	private R4JConfigFactory r4JConfigFactory;
 	private CircuitBreakerRegistry circuitBreakerRegistry;
+	private R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer;
 	private ExecutorService executorService;
 
-	public R4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry,
-									ExecutorService executorService) {
+	public R4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
+			CircuitBreakerRegistry circuitBreakerRegistry,
+			R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer,
+			ExecutorService executorService) {
 		this.r4JConfigFactory = r4JConfigFactory;
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.r4JCircuitBreakerCustomizer = r4JCircuitBreakerCustomizer;
 		this.executorService = executorService;
 	}
 
 	@Override
 	public CircuitBreaker create(String id) {
-		return new R4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id), r4JConfigFactory.getTimeLimiterConfig(id),
-				circuitBreakerRegistry, executorService);
+		return new R4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id),
+				r4JConfigFactory.getTimeLimiterConfig(id), circuitBreakerRegistry,
+				r4JCircuitBreakerCustomizer, executorService);
 	}
 }

@@ -15,14 +15,16 @@
  */
 package org.springframework.cloud.circuitbreaker.r4j;
 
+import java.util.function.Function;
+
+import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.function.Function;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 
 
 /**
@@ -34,18 +36,23 @@ public class ReactiveR4JCircuitBreaker implements ReactiveCircuitBreaker {
 	private io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 	private CircuitBreakerRegistry registry;
 	private TimeLimiterConfig timeLimiterConfig;
+	private R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer;
 
-	public ReactiveR4JCircuitBreaker(String id, io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-									 TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry) {
+	public ReactiveR4JCircuitBreaker(String id, CircuitBreakerConfig circuitBreakerConfig,
+			TimeLimiterConfig timeLimiterConfig,
+			CircuitBreakerRegistry circuitBreakerRegistry,
+			R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
 		this.timeLimiterConfig = timeLimiterConfig;
+		this.r4JCircuitBreakerCustomizer = r4JCircuitBreakerCustomizer;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, circuitBreakerConfig);
+		r4JCircuitBreakerCustomizer.customize(defaultCircuitBreaker);
 		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(timeLimiterConfig.getTimeoutDuration());
 		if(fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -59,6 +66,7 @@ public class ReactiveR4JCircuitBreaker implements ReactiveCircuitBreaker {
 
 	public<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, circuitBreakerConfig);
+		r4JCircuitBreakerCustomizer.customize(defaultCircuitBreaker);
 		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(timeLimiterConfig.getTimeoutDuration());
 		if(fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);

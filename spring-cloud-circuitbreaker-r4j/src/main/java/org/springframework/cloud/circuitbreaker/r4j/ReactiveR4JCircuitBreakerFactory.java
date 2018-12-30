@@ -15,10 +15,10 @@
  */
 package org.springframework.cloud.circuitbreaker.r4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 /**
  * @author Ryan Baxter
@@ -27,15 +27,19 @@ public class ReactiveR4JCircuitBreakerFactory implements ReactiveCircuitBreakerF
 
 	private R4JConfigFactory r4JConfigFactory;
 	private CircuitBreakerRegistry circuitBreakerRegistry;
+	private R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer;
 
-	public ReactiveR4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry) {
+	public ReactiveR4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
+			CircuitBreakerRegistry circuitBreakerRegistry,
+			R4JCircuitBreakerCustomizer r4JCircuitBreakerCustomizer) {
 		this.r4JConfigFactory = r4JConfigFactory;
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.r4JCircuitBreakerCustomizer = r4JCircuitBreakerCustomizer;
 	}
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		return new ReactiveR4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id), r4JConfigFactory.getTimeLimiterConfig(id),
-				circuitBreakerRegistry);
+				circuitBreakerRegistry, r4JCircuitBreakerCustomizer);
 	}
 }
