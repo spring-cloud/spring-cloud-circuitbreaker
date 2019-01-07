@@ -24,27 +24,18 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
  */
 public interface R4JConfigFactory {
 
-	public CircuitBreakerConfig getCircuitBreakerConfig(String id);
+	default CircuitBreakerConfig getCircuitBreakerConfig(String id) {
+		return CircuitBreakerConfig.ofDefaults();
+	}
 
-	public TimeLimiterConfig getTimeLimiterConfig(String id);
+	default TimeLimiterConfig getTimeLimiterConfig(String id) {
+		return TimeLimiterConfig.ofDefaults();
+	}
 
-	public CircuitBreakerConfig getDefaultCircuitBreakerConfig();
+	default CircuitBreakerConfig getDefaultCircuitBreakerConfig() {
+		return CircuitBreakerConfig.ofDefaults();
+	}
 
-	public static class DefaultR4JConfigFactory implements R4JConfigFactory {
-
-		@Override
-		public CircuitBreakerConfig getCircuitBreakerConfig(String id) {
-			return CircuitBreakerConfig.ofDefaults();
-		}
-
-		@Override
-		public TimeLimiterConfig getTimeLimiterConfig(String id) {
-			return TimeLimiterConfig.ofDefaults();
-		}
-
-		@Override
-		public CircuitBreakerConfig getDefaultCircuitBreakerConfig() {
-			return CircuitBreakerConfig.ofDefaults();
-		}
+	class DefaultR4JConfigFactory implements R4JConfigFactory {
 	}
 }

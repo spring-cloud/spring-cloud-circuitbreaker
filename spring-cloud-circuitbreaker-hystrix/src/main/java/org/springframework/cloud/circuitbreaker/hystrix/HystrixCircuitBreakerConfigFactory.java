@@ -25,13 +25,11 @@ import com.netflix.hystrix.HystrixCommandProperties;
  */
 public interface HystrixCircuitBreakerConfigFactory {
 
-	public HystrixCommandProperties.Setter get(String id);
+	default HystrixCommandProperties.Setter get(String id) {
+		return HystrixCommandProperties.defaultSetter();
+	}
 
-	public class DefaultHystrixCircuitBreakerConfigFactory implements HystrixCircuitBreakerConfigFactory {
-
-		@Override
-		public HystrixCommandProperties.Setter get(String id) {
-			return HystrixCommandProperties.defaultSetter();
-		}
+	class DefaultHystrixCircuitBreakerConfigFactory
+			implements HystrixCircuitBreakerConfigFactory {
 	}
 }
