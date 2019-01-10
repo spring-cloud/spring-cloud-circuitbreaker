@@ -17,9 +17,14 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,20 +39,44 @@ public class HystrixCircuitBreakerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory hystrixCircuitBreakerFactory(HystrixCircuitBreakerConfigFactory configFactory) {
-		return new HystrixCircuitBreakerFactory(configFactory);
+	public CircuitBreakerFactory hystrixCircuitBreakerFactory() {
+		return new HystrixCircuitBreakerFactory();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
-	public ReactiveHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory(HystrixCircuitBreakerConfigFactory configFactory) {
-		return new ReactiveHystrixCircuitBreakerFactory(configFactory);
+	public ReactiveHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory() {
+		return new ReactiveHystrixCircuitBreakerFactory();
 	}
 
-	@Bean
-	@ConditionalOnMissingBean(HystrixCircuitBreakerConfigFactory.class)
-	public HystrixCircuitBreakerConfigFactory hystrixCircuitBreakerConfigFactory() {
-		return new HystrixCircuitBreakerConfigFactory.DefaultHystrixCircuitBreakerConfigFactory();
+	@Configuration
+	protected static class HystrixCircuitBreakerCustomizerConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired
+		private CircuitBreakerFactory factory;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+		}
+	}
+
+	@Configuration
+	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired
+		private ReactiveCircuitBreakerFactory factory;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+		}
 	}
 }

@@ -20,7 +20,7 @@ package org.springframework.cloud.circuitbreaker.commons;
  *
  * @author Ryan Baxter
  */
-public interface CircuitBreakerFactory {
+public abstract class CircuitBreakerFactory<CONF, CONFB extends ConfigBuilder<CONF>> extends AbstractCircuitBreakerFactory<CONF, CONFB> {
 
-	public CircuitBreaker create(String id);
+	public abstract CircuitBreaker create(String id);
 }

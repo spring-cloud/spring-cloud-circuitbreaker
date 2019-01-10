@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +37,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
+import com.netflix.hystrix.HystrixObservableCommand;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -56,12 +59,11 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
-//	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
 		@RequestMapping("/slow")
 		public Mono<String> slow() {
-			return Mono.just("slow").delayElement(Duration.ofSeconds(10));
+			return Mono.just("slow").delayElement(Duration.ofSeconds(3));
 		}
 
 		@GetMapping("/normal")
@@ -70,8 +72,22 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public HystrixCircuitBreakerConfigFactory configFactory() {
-			return id -> HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(1000);
+		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
+				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> customizer() {
+			return factory -> factory.configure("slow",
+					builder -> builder.commandProperties(
+							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)));
+		}
+
+		@Bean
+		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
+				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> defaultConfig() {
+			return factory -> factory.configureDefault(id -> {
+				return HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("id"))
+						.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+								.withExecutionTimeoutInMilliseconds(4000));
+
+			});
 		}
 
 		@Service

@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.r4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-
-import java.util.concurrent.Executors;
 import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 
@@ -32,15 +29,13 @@ public class R4JCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
-				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
+		CircuitBreaker cb = new R4JCircuitBreakerFactory().create("foo");
 		assertEquals("foobar", cb.run(() -> "foobar"));
 	}
 
 	@Test
 	public void runWithFallback() {
-		CircuitBreaker cb = new R4JCircuitBreakerFactory(new R4JConfigFactory.DefaultR4JConfigFactory(),
-				CircuitBreakerRegistry.ofDefaults(), Executors.newSingleThreadExecutor()).create("foo");
+		CircuitBreaker cb = new R4JCircuitBreakerFactory().create("foo");
 		assertEquals("fallback", cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback"));

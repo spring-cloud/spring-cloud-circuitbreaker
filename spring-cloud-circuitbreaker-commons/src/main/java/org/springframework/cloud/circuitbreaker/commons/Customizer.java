@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.springframework.cloud.circuitbreaker.hystrix;
-
-import com.netflix.hystrix.HystrixCommandProperties;
+package org.springframework.cloud.circuitbreaker.commons;
 
 /**
- * Provides configuration for circuit breakers.
+ * Customizes the {@link CircuitBreakerFactory}
  *
  * @author Ryan Baxter
  */
-public interface HystrixCircuitBreakerConfigFactory {
-
-	default HystrixCommandProperties.Setter get(String id) {
-		return HystrixCommandProperties.defaultSetter();
-	}
-
-	class DefaultHystrixCircuitBreakerConfigFactory
-			implements HystrixCircuitBreakerConfigFactory {
-	}
+public interface Customizer<CBF extends AbstractCircuitBreakerFactory> {
+	void customize(CBF factory);
 }

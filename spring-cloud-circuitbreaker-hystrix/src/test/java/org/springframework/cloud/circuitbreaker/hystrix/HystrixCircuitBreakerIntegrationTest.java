@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 
 import static org.junit.Assert.assertEquals;
@@ -47,7 +50,6 @@ public class HystrixCircuitBreakerIntegrationTest {
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
-//	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 		@RequestMapping("/slow")
 		public String slow() throws InterruptedException {
@@ -60,9 +62,19 @@ public class HystrixCircuitBreakerIntegrationTest {
 			return "normal";
 		}
 
+
 		@Bean
-		public HystrixCircuitBreakerConfigFactory configFactory() {
-			return id -> HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(1000);
+		public Customizer<HystrixCircuitBreakerFactory> customizer() {
+			return factory -> factory.configure("slow",
+					builder -> builder.commandProperties(
+							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)));
+		}
+
+		@Bean
+		public Customizer<HystrixCircuitBreakerFactory> defaultConfig() {
+			return factory -> factory.configureDefault(id -> HystrixCommand.Setter
+					.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
+					.andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(4000)));
 		}
 
 		@Service

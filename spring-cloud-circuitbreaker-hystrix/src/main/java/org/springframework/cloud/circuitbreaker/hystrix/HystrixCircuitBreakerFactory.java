@@ -16,26 +16,48 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.util.Assert;
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
 
 /**
  * Builds Hystrix circuit breakers.
  *
  * @author Ryan Baxter
  */
-public class HystrixCircuitBreakerFactory implements CircuitBreakerFactory {
+public class HystrixCircuitBreakerFactory extends CircuitBreakerFactory<HystrixCommand.Setter, HystrixCircuitBreakerFactory.HystrixConfigBuilder> {
 
-	private HystrixCircuitBreakerConfigFactory configFactory;
+	private Function<String, HystrixCommand.Setter> defaultConfiguration = id ->
+			HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id));
 
-	public HystrixCircuitBreakerFactory(HystrixCircuitBreakerConfigFactory hystrixCircuitBreakerConfigFactory) {
-		this.configFactory = hystrixCircuitBreakerConfigFactory;
+
+	public void configureDefault(Function<String, HystrixCommand.Setter> defaultConfiguration) {
+		this.defaultConfiguration = defaultConfiguration;
 	}
 
-	@Override
+	public HystrixConfigBuilder configBuilder(String id) {
+		return new HystrixConfigBuilder(id);
+	}
+
 	public HystrixCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		return new HystrixCircuitBreaker(id, configFactory.get(id));
+		HystrixCommand.Setter setter = getConfigurations().computeIfAbsent(id, defaultConfiguration);
+		return new HystrixCircuitBreaker(setter);
+	}
+
+	public static class HystrixConfigBuilder extends AbstractHystrixConfigBuilder<HystrixCommand.Setter> {
+
+		public HystrixConfigBuilder(String id) {
+			super(id);
+		}
+
+		@Override
+		public HystrixCommand.Setter build() {
+			return HystrixCommand.Setter.withGroupKey(getGroupKey()).andCommandKey(getCommandKey())
+					.andCommandPropertiesDefaults(getCommandPropertiesSetter());
+		}
 	}
 
 }

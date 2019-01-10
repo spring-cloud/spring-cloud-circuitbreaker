@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.r4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -61,13 +63,17 @@ public class R4JCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public R4JConfigFactory configFactory() {
-			return new R4JConfigFactory.DefaultR4JConfigFactory(){
-				@Override
-				public TimeLimiterConfig getTimeLimiterConfig(String id) {
-					return TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build();
-				}
-			};
+		public Customizer<CircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> slowCustomizer() {
+			return factory -> factory.configure("slow", builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()));
+		}
+
+		@Bean
+		public Customizer<CircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> defaultCustomizer() {
+			return factory -> factory.configureDefault(id -> new R4JConfigBuilder(id)
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.build());
 		}
 
 		@Service

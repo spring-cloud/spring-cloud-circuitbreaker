@@ -16,22 +16,49 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.util.Assert;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixObservableCommand;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveHystrixCircuitBreakerFactory implements ReactiveCircuitBreakerFactory {
+public class ReactiveHystrixCircuitBreakerFactory extends ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
+		ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder> {
 
-	private HystrixCircuitBreakerConfigFactory configFactory;
+	private Function<String, HystrixObservableCommand.Setter> defaultConfiguration = id ->
+			HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id));
 
-	public ReactiveHystrixCircuitBreakerFactory(HystrixCircuitBreakerConfigFactory configFactory) {
-		this.configFactory = configFactory;
+	@Override
+	protected ReactiveHystrixConfigBuilder configBuilder(String id) {
+		return new ReactiveHystrixConfigBuilder(id);
+	}
+
+	@Override
+	public void configureDefault(Function<String, HystrixObservableCommand.Setter> defaultConfiguration) {
+		this.defaultConfiguration = defaultConfiguration;
 	}
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
-		return new ReactiveHystrixCircuitBreaker(id, configFactory.get(id));
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		HystrixObservableCommand.Setter setter = getConfigurations().computeIfAbsent(id, defaultConfiguration);
+		return new ReactiveHystrixCircuitBreaker(setter);
+	}
+
+	public static class ReactiveHystrixConfigBuilder extends AbstractHystrixConfigBuilder<HystrixObservableCommand.Setter> {
+
+		public ReactiveHystrixConfigBuilder(String id) {
+			super(id);
+		}
+
+		@Override
+		public HystrixObservableCommand.Setter build() {
+			return HystrixObservableCommand.Setter.withGroupKey(getGroupKey()).andCommandKey(getCommandKey())
+					.andCommandPropertiesDefaults(getCommandPropertiesSetter());
+		}
 	}
 }

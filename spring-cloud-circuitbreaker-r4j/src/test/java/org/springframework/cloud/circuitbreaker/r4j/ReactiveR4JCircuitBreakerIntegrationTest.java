@@ -15,15 +15,19 @@
  */
 package org.springframework.cloud.circuitbreaker.r4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +46,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = R4JCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveR4JCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveR4JCircuitBreakerIntegrationTest {
+	@LocalServerPort
+	int port = 0;
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -60,13 +67,17 @@ public class ReactiveR4JCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public R4JConfigFactory configFactory() {
-			return new R4JConfigFactory.DefaultR4JConfigFactory(){
-				@Override
-				public TimeLimiterConfig getTimeLimiterConfig(String id) {
-					return TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build();
-				}
-			};
+		public Customizer<ReactiveCircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> slowCusomtizer() {
+			return factory -> factory.configure("slow", builder -> builder
+			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
+			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()));
+		}
+
+		@Bean
+		public Customizer<ReactiveCircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> defaultCustomizer() {
+			return factory -> factory.configureDefault(id -> new R4JConfigBuilder(id)
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
 		}
 
 		@Service
@@ -102,15 +113,20 @@ public class ReactiveR4JCircuitBreakerIntegrationTest {
 	}
 
 	@Autowired
-	R4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+	ReactiveR4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+
+	@Before
+	public void setup() {
+		service.setPort(port);
+	}
 
 	@Test
 	public void testSlow() {
-		assertEquals("fallback", service.slow());
+		assertEquals("fallback", service.slow().block());
 	}
 
 	@Test
 	public void testNormal() {
-		assertEquals("normal", service.normal());
+		assertEquals("normal", service.normal().block());
 	}
 }

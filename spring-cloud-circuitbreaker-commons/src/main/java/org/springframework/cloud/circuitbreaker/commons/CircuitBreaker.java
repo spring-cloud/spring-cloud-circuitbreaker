@@ -19,13 +19,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- *
+ * Spring Cloud circuit breaker.
  * @author Ryan Baxter
  */
 public interface CircuitBreaker {
 
-	public <T> T run(Supplier<T> toRun);
+	default <T> T run(Supplier<T> toRun) {
+		return run(toRun, throwable -> {
+			throw new UnsupportedOperationException("No fallback available.");
+		});
+	};
 
-	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback);
+	<T> T run(Supplier<T> toRun, Function<Throwable, T> fallback);
 
 }

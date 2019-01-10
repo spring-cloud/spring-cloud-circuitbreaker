@@ -15,27 +15,47 @@
  */
 package org.springframework.cloud.circuitbreaker.r4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
+import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveR4JCircuitBreakerFactory implements ReactiveCircuitBreakerFactory {
+public class ReactiveR4JCircuitBreakerFactory extends ReactiveCircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder> {
 
-	private R4JConfigFactory r4JConfigFactory;
-	private CircuitBreakerRegistry circuitBreakerRegistry;
+	private Function<String, R4JConfigBuilder.R4JCircuitBreakerConfiguration> defaultConfiguration = id ->
+			new R4JConfigBuilder(id)
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.ofDefaults())
+					.build();
 
-	public ReactiveR4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry) {
-		this.r4JConfigFactory = r4JConfigFactory;
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
-	}
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
-		return new ReactiveR4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id), r4JConfigFactory.getTimeLimiterConfig(id),
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		R4JConfigBuilder.R4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
+		return new ReactiveR4JCircuitBreaker(id, config,
 				circuitBreakerRegistry);
+	}
+
+	@Override
+	protected R4JConfigBuilder configBuilder(String id) {
+		return new R4JConfigBuilder(id);
+	}
+
+	@Override
+	public void configureDefault(Function<String, R4JConfigBuilder.R4JCircuitBreakerConfiguration> defaultConfiguration) {
+		this.defaultConfiguration = defaultConfiguration;
+	}
+
+	public void configureCircuitBreakerRegistry(CircuitBreakerRegistry registry) {
+		this.circuitBreakerRegistry = registry;
 	}
 }

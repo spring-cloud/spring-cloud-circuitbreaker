@@ -13,29 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.springframework.cloud.circuitbreaker.r4j;
-
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+package org.springframework.cloud.circuitbreaker.commons;
 
 /**
+ * A builder for circuit breaker configurations
+ *
  * @author Ryan Baxter
  */
-public interface R4JConfigFactory {
-
-	default CircuitBreakerConfig getCircuitBreakerConfig(String id) {
-		return CircuitBreakerConfig.ofDefaults();
-	}
-
-	default TimeLimiterConfig getTimeLimiterConfig(String id) {
-		return TimeLimiterConfig.ofDefaults();
-	}
-
-	default CircuitBreakerConfig getDefaultCircuitBreakerConfig() {
-		return CircuitBreakerConfig.ofDefaults();
-	}
-
-	class DefaultR4JConfigFactory implements R4JConfigFactory {
-	}
+public interface ConfigBuilder<CONF> {
+	CONF build();
 }
+

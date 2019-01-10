@@ -16,9 +16,11 @@
 package org.springframework.cloud.circuitbreaker.commons;
 
 /**
+ * Creates reactive circuit breakers
+ *
  * @author Ryan Baxter
  */
-public interface ReactiveCircuitBreakerFactory {
+public abstract class ReactiveCircuitBreakerFactory<CONF, CONFB extends ConfigBuilder<CONF>> extends AbstractCircuitBreakerFactory<CONF, CONFB> {
 
-	public ReactiveCircuitBreaker create(String id);
+	public abstract ReactiveCircuitBreaker create(String id);
 }
