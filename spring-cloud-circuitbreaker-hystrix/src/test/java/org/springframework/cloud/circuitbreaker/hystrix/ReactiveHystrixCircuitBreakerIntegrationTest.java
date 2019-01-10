@@ -83,7 +83,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
 				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> defaultConfig() {
 			return factory -> factory.configureDefault(id -> {
-				return HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("id"))
+				return HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
 						.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
 								.withExecutionTimeoutInMilliseconds(4000));
 
