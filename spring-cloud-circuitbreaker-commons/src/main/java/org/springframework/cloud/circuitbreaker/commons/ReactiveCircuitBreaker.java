@@ -21,20 +21,26 @@ import reactor.core.publisher.Mono;
 import java.util.function.Function;
 
 /**
+ * Spring Cloud reactive circuit breaker API
+ *
  * @author Ryan Baxter
  */
 public interface ReactiveCircuitBreaker {
 
-	default public <T> Mono<T> run(Mono<T> toRun) {
-		return run(toRun, null);
+	default <T> Mono<T> run(Mono<T> toRun) {
+		return run(toRun, throwable -> {
+			throw new UnsupportedOperationException("No fallback available.");
+		});
 	}
 
-	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback);
+	<T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback);
 
-	default public <T> Flux<T> run(Flux<T> toRun) {
-		return run(toRun, null);
+	default <T> Flux<T> run(Flux<T> toRun) {
+		return run(toRun, throwable -> {
+			throw new UnsupportedOperationException("No fallback available.");
+		});
 	}
 
-	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback);
+	<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback);
 
 }

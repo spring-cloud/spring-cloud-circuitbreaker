@@ -21,8 +21,6 @@ import java.util.function.Supplier;
 
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandProperties;
 
 /**
  * Hystrix implementation of {@link CircuitBreaker}
@@ -31,30 +29,14 @@ import com.netflix.hystrix.HystrixCommandProperties;
  */
 public class HystrixCircuitBreaker implements CircuitBreaker {
 
-	private String id;
-	private HystrixCommandProperties.Setter commandPropertiesSetter;
+	private HystrixCommand.Setter setter;
 
-	public HystrixCircuitBreaker(String id, HystrixCommandProperties.Setter commandPropertiesSetter) {
-		this.id = id;
-		this.commandPropertiesSetter = commandPropertiesSetter;
+	public HystrixCircuitBreaker(HystrixCommand.Setter setter) {
+		this.setter = setter;
 	}
 
-	public <T> T run(Supplier<T> toRun) {
-		HystrixCommand.Setter setter = HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-				.andCommandPropertiesDefaults(commandPropertiesSetter);
-
-		HystrixCommand<T> command = new HystrixCommand<T>(setter) {
-			@Override
-			protected T run() throws Exception {
-				return toRun.get();
-			}
-		};
-		return command.execute();
-	}
-
+	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-		HystrixCommand.Setter setter = HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-				.andCommandPropertiesDefaults(commandPropertiesSetter);
 
 		HystrixCommand<T> command = new HystrixCommand<T>(setter) {
 			@Override

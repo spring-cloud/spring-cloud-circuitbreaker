@@ -15,13 +15,14 @@
  */
 package org.springframework.cloud.circuitbreaker.r4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,38 +32,46 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class R4JAutoConfiguration {
-	@Bean
-	@ConditionalOnMissingBean(CircuitBreakerRegistry.class)
-	public CircuitBreakerRegistry circuitBreakerRegistry(R4JConfigFactory configFactory) {
-		return CircuitBreakerRegistry.of(configFactory.getDefaultCircuitBreakerConfig());
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(R4JConfigFactory.class)
-	public R4JConfigFactory r4jCircuitBreakerConfigFactory() {
-			return new R4JConfigFactory.DefaultR4JConfigFactory();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(ExecutorService.class)
-	public ExecutorService r4jExecutorService() {
-		return Executors.newSingleThreadExecutor();
-	}
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory r4jCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
-														  CircuitBreakerRegistry circuitBreakerRegistry,
-														  ExecutorService executorService) {
-		return new R4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry, executorService);
+	public CircuitBreakerFactory r4jCircuitBreakerFactory() {
+		return new R4JCircuitBreakerFactory();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
-	public ReactiveCircuitBreakerFactory reactiveR4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory,
-																		  CircuitBreakerRegistry circuitBreakerRegistry) {
-		return new ReactiveR4JCircuitBreakerFactory(r4JConfigFactory, circuitBreakerRegistry);
+	public ReactiveCircuitBreakerFactory reactiveR4JCircuitBreakerFactory() {
+		return new ReactiveR4JCircuitBreakerFactory();
+	}
+
+	@Configuration
+	public static class R4JCustomizerConfiguration {
+		@Autowired(required = false)
+		public List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired
+		public CircuitBreakerFactory factory;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+		}
+	}
+
+	@Configuration
+	public static class ReactiveR4JCustomizerConfiguration {
+		@Autowired(required = false)
+		public List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired
+		public ReactiveCircuitBreakerFactory factory;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+		}
 	}
 
 }

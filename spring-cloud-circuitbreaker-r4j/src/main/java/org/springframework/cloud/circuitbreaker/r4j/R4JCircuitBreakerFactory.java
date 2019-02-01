@@ -16,32 +16,54 @@
 
 package org.springframework.cloud.circuitbreaker.r4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 import java.util.concurrent.ExecutorService;
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
  */
-public class R4JCircuitBreakerFactory implements CircuitBreakerFactory {
+public class R4JCircuitBreakerFactory extends CircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder> {
 
-	private String id;
-	private R4JConfigFactory r4JConfigFactory;
-	private CircuitBreakerRegistry circuitBreakerRegistry;
-	private ExecutorService executorService;
+	private Function<String, R4JConfigBuilder.R4JCircuitBreakerConfiguration> defaultConfiguration = id ->
+			new R4JConfigBuilder(id)
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.ofDefaults())
+					.build();
 
-	public R4JCircuitBreakerFactory(R4JConfigFactory r4JConfigFactory, CircuitBreakerRegistry circuitBreakerRegistry,
-									ExecutorService executorService) {
-		this.r4JConfigFactory = r4JConfigFactory;
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
+	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+	@Override
+	protected R4JConfigBuilder configBuilder(String id) {
+		return new R4JConfigBuilder(id);
+	}
+
+	@Override
+	public void configureDefault(Function<String, R4JConfigBuilder.R4JCircuitBreakerConfiguration> defaultConfiguration) {
+		this.defaultConfiguration = defaultConfiguration;
+	}
+
+	public void configureCircuitBreakerRegistry(CircuitBreakerRegistry registry) {
+		this.circuitBreakerRegistry = registry;
+	}
+
+	public void configureExecutorService(ExecutorService executorService) {
 		this.executorService = executorService;
 	}
 
 	@Override
-	public CircuitBreaker create(String id) {
-		return new R4JCircuitBreaker(id, r4JConfigFactory.getCircuitBreakerConfig(id), r4JConfigFactory.getTimeLimiterConfig(id),
+	public R4JCircuitBreaker create(String id) {
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		R4JConfigBuilder.R4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
+		return new R4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
 				circuitBreakerRegistry, executorService);
 	}
+
 }

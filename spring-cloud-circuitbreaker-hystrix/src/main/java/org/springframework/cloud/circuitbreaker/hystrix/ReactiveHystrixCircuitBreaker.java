@@ -25,8 +25,6 @@ import rx.Subscription;
 import java.util.function.Function;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.hystrix.HystrixObservableCommand;
 
 /**
@@ -34,14 +32,11 @@ import com.netflix.hystrix.HystrixObservableCommand;
  */
 public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 
-	private String id;
-	private HystrixCommandProperties.Setter commandPropertiesSetter;
+	private HystrixObservableCommand.Setter setter;
 
-	public ReactiveHystrixCircuitBreaker(String id, HystrixCommandProperties.Setter commandPropertiesSetter) {
-		this.id = id;
-		this.commandPropertiesSetter = commandPropertiesSetter;
+	public ReactiveHystrixCircuitBreaker(HystrixObservableCommand.Setter setter) {
+		this.setter = setter;
 	}
-
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
@@ -64,8 +59,6 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 	}
 
 	private <T> HystrixObservableCommand<T> createCommand(Publisher<T> toRun, Function fallback) {
-		HystrixObservableCommand.Setter setter = HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-				.andCommandPropertiesDefaults(commandPropertiesSetter);
 		HystrixObservableCommand<T> command = new HystrixObservableCommand<T>(setter) {
 			@Override
 			protected Observable<T> construct() {

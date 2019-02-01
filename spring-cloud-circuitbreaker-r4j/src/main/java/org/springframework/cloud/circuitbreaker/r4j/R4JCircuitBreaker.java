@@ -51,19 +51,6 @@ public class R4JCircuitBreaker implements CircuitBreaker {
 	}
 
 	@Override
-	public <T> T run(Supplier<T> toRun) {
-		TimeLimiter timeLimiter = TimeLimiter.of(timeLimiterConfig);
-		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
-		Callable restrictedCall = TimeLimiter
-				.decorateFutureSupplier(timeLimiter, futureSupplier);
-
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, circuitBreakerConfig);
-		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
-				.decorateCallable(defaultCircuitBreaker, restrictedCall);
-		return Try.of(callable::call).get();
-	}
-
-	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
 		TimeLimiter timeLimiter = TimeLimiter.of(timeLimiterConfig);
 		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
