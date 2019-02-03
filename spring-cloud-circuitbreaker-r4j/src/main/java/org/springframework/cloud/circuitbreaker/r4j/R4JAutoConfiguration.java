@@ -17,7 +17,9 @@ package org.springframework.cloud.circuitbreaker.r4j;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,24 +37,24 @@ public class R4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory r4jCircuitBreakerFactory() {
+	public R4JCircuitBreakerFactory r4jCircuitBreakerFactory() {
 		return new R4JCircuitBreakerFactory();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
-	public ReactiveCircuitBreakerFactory reactiveR4JCircuitBreakerFactory() {
+	public ReactiveR4JCircuitBreakerFactory reactiveR4JCircuitBreakerFactory() {
 		return new ReactiveR4JCircuitBreakerFactory();
 	}
 
 	@Configuration
 	public static class R4JCustomizerConfiguration {
 		@Autowired(required = false)
-		public List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+		public List<Customizer<R4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired
-		public CircuitBreakerFactory factory;
+		public R4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
@@ -63,10 +65,10 @@ public class R4JAutoConfiguration {
 	@Configuration
 	public static class ReactiveR4JCustomizerConfiguration {
 		@Autowired(required = false)
-		public List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+		public List<Customizer<ReactiveR4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired
-		public ReactiveCircuitBreakerFactory factory;
+		public ReactiveR4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

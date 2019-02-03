@@ -63,25 +63,23 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 
 		@RequestMapping("/slow")
 		public Mono<String> slow() {
-			return Mono.just("slow").delayElement(Duration.ofSeconds(3));
+			return Mono.just("slow").delayElement(Duration.ofSeconds(2));
 		}
 
 		@GetMapping("/normal")
 		public Mono<String> normal() {
-			return Mono.just("normal");
+			return Mono.just("normal").delayElement(Duration.ofSeconds(1));
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
-				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> customizer() {
+		public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory.configure("slow",
 					builder -> builder.commandProperties(
 							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)));
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
-				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> defaultConfig() {
+		public Customizer<ReactiveHystrixCircuitBreakerFactory> defaultConfig() {
 			return factory -> factory.configureDefault(id -> {
 				return HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
 						.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()

@@ -39,7 +39,7 @@ public class HystrixCircuitBreakerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory hystrixCircuitBreakerFactory() {
+	public HystrixCircuitBreakerFactory hystrixCircuitBreakerFactory() {
 		return new HystrixCircuitBreakerFactory();
 	}
 
@@ -54,10 +54,10 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	protected static class HystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<HystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired
-		private CircuitBreakerFactory factory;
+		private HystrixCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
@@ -69,10 +69,10 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<ReactiveHystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired
-		private ReactiveCircuitBreakerFactory factory;
+		private ReactiveHystrixCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

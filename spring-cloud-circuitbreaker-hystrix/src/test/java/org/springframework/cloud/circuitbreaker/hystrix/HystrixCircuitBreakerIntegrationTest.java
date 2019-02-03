@@ -53,12 +53,13 @@ public class HystrixCircuitBreakerIntegrationTest {
 	protected static class Application {
 		@RequestMapping("/slow")
 		public String slow() throws InterruptedException {
-			Thread.sleep(3000);
+			Thread.sleep(2000);
 			return "slow";
 		}
 
 		@GetMapping("/normal")
-		public String normal() {
+		public String normal() throws InterruptedException  {
+			Thread.sleep(1000);
 			return "normal";
 		}
 
