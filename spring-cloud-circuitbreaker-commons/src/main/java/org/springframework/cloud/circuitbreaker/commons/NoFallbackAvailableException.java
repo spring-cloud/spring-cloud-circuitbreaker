@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,14 @@
  */
 package org.springframework.cloud.circuitbreaker.commons;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 /**
- * Spring Cloud circuit breaker.
- * @author Ryan Baxter
+ * A runtime exception that tells no fallback is available for the circuit breaker.
+ *
+ * @author Toshiaki Maki
  */
-public interface CircuitBreaker {
+public class NoFallbackAvailableException extends RuntimeException {
 
-	default <T> T run(Supplier<T> toRun) {
-		return run(toRun, throwable -> {
-			throw new NoFallbackAvailableException("No fallback available.", throwable);
-		});
-	};
-
-	<T> T run(Supplier<T> toRun, Function<Throwable, T> fallback);
-
+	public NoFallbackAvailableException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

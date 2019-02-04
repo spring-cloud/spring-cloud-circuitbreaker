@@ -29,7 +29,7 @@ public interface ReactiveCircuitBreaker {
 
 	default <T> Mono<T> run(Mono<T> toRun) {
 		return run(toRun, throwable -> {
-			throw new UnsupportedOperationException("No fallback available.");
+			throw new NoFallbackAvailableException("No fallback available.", throwable);
 		});
 	}
 
@@ -37,7 +37,7 @@ public interface ReactiveCircuitBreaker {
 
 	default <T> Flux<T> run(Flux<T> toRun) {
 		return run(toRun, throwable -> {
-			throw new UnsupportedOperationException("No fallback available.");
+			throw new NoFallbackAvailableException("No fallback available.", throwable);
 		});
 	}
 
