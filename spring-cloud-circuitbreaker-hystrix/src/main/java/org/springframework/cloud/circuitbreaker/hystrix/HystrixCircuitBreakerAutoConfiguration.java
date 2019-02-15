@@ -54,10 +54,10 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	protected static class HystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<HystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
 
-		@Autowired
-		private CircuitBreakerFactory factory;
+		@Autowired(required = false)
+		private HystrixCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
@@ -66,13 +66,14 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	}
 
 	@Configuration
+	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
 	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<ReactiveHystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
 
-		@Autowired
-		private ReactiveCircuitBreakerFactory factory;
+		@Autowired(required = false)
+		private ReactiveHystrixCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

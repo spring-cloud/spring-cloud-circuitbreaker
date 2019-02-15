@@ -67,14 +67,14 @@ public class ReactiveR4JCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> slowCusomtizer() {
+		public Customizer<ReactiveR4JCircuitBreakerFactory> slowCusomtizer() {
 			return factory -> factory.configure("slow", builder -> builder
 			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
 			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()));
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<R4JConfigBuilder.R4JCircuitBreakerConfiguration, R4JConfigBuilder>> defaultCustomizer() {
+		public Customizer<ReactiveR4JCircuitBreakerFactory> defaultCustomizer() {
 			return factory -> factory.configureDefault(id -> new R4JConfigBuilder(id)
 					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());

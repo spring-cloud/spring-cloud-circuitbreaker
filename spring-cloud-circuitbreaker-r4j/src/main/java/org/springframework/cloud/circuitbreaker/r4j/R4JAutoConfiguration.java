@@ -49,10 +49,10 @@ public class R4JAutoConfiguration {
 	@Configuration
 	public static class R4JCustomizerConfiguration {
 		@Autowired(required = false)
-		public List<Customizer<CircuitBreakerFactory>> customizers = new ArrayList<>();
+		public List<Customizer<R4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
-		@Autowired
-		public CircuitBreakerFactory factory;
+		@Autowired(required = false)
+		public R4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
@@ -61,12 +61,13 @@ public class R4JAutoConfiguration {
 	}
 
 	@Configuration
+	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
 	public static class ReactiveR4JCustomizerConfiguration {
 		@Autowired(required = false)
-		public List<Customizer<ReactiveCircuitBreakerFactory>> customizers = new ArrayList<>();
+		public List<Customizer<ReactiveR4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
-		@Autowired
-		public ReactiveCircuitBreakerFactory factory;
+		@Autowired(required = false)
+		public ReactiveR4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
