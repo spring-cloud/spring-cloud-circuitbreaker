@@ -13,7 +13,6 @@
     <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
     <version>0.0.1.BUILD-SNAPSHOT</version>
 
-    <packaging>pom</packaging>
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
