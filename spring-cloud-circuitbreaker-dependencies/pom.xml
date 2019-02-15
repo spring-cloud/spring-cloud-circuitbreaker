@@ -18,7 +18,7 @@
     <description>Spring Cloud Circuit Breaker Dependencies</description>
 
     <properties>
-        <r4j.version>0.13.1</r4j.version>
+        <resilience4j.version>0.13.1</resilience4j.version>
     </properties>
 
     <dependencyManagement>
@@ -26,21 +26,21 @@
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-circuitbreaker</artifactId>
-                <version>${r4j.version}</version>
+                <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-timelimiter</artifactId>
-                <version>${r4j.version}</version>
+                <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-reactor</artifactId>
-                <version>${r4j.version}</version>
+                <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-circuitbreaker-r4j</artifactId>
+                <artifactId>spring-cloud-circuitbreaker-resilience4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
