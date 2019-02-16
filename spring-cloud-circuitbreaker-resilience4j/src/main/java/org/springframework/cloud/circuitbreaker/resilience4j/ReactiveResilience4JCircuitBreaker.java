@@ -20,6 +20,7 @@ import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOper
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 
@@ -32,16 +33,21 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	private String id;
 	private Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config;
 	private CircuitBreakerRegistry registry;
+	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
 
-	public ReactiveResilience4JCircuitBreaker(String id, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config, CircuitBreakerRegistry circuitBreakerRegistry) {
+	public ReactiveResilience4JCircuitBreaker(String id, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+											  CircuitBreakerRegistry circuitBreakerRegistry,
+											  List<CircuitBreakerCustomizer> circuitBreakerCustomizers) {
 		this.id = id;
 		this.config = config;
 		this.registry = circuitBreakerRegistry;
+		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
+		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
 		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(config.getTimeLimiterConfig().getTimeoutDuration());
 		if(fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -51,6 +57,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	public<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
+		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
 		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(config.getTimeLimiterConfig().getTimeoutDuration());
 		if(fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);

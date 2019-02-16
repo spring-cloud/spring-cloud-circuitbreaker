@@ -19,6 +19,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
+import java.util.List;
 import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
@@ -36,13 +37,18 @@ public class ReactiveResilience4JCircuitBreakerFactory extends ReactiveCircuitBr
 					.build();
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
+	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
+
+	public ReactiveResilience4JCircuitBreakerFactory(List<CircuitBreakerCustomizer> circuitBreakerCustomizers) {
+		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
+	}
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
 		return new ReactiveResilience4JCircuitBreaker(id, config,
-				circuitBreakerRegistry);
+				circuitBreakerRegistry, circuitBreakerCustomizers);
 	}
 
 	@Override

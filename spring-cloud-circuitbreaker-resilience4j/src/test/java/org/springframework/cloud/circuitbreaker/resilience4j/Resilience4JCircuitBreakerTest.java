@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Collections;
 import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 
@@ -29,13 +30,13 @@ public class Resilience4JCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals("foobar", cb.run(() -> "foobar"));
 	}
 
 	@Test
 	public void runWithFallback() {
-		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals("fallback", cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback"));

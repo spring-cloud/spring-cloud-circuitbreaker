@@ -20,6 +20,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -39,6 +40,11 @@ public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Res
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
+
+	public Resilience4JCircuitBreakerFactory(List<CircuitBreakerCustomizer> circuitBreakerCustomizes) {
+		this.circuitBreakerCustomizers = circuitBreakerCustomizes;
+	}
 
 	@Override
 	protected Resilience4JConfigBuilder configBuilder(String id) {
@@ -63,7 +69,7 @@ public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Res
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
 		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
-				circuitBreakerRegistry, executorService);
+				circuitBreakerRegistry, executorService, circuitBreakerCustomizers);
 	}
 
 }

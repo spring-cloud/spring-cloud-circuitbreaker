@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 
@@ -32,25 +33,25 @@ public class ReactiveResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runMono() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals("foobar", cb.run(Mono.just("foobar")).block());
 	}
 
 	@Test
 	public void runMonoWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals("fallback", cb.run(Mono.error(new RuntimeException("boom")), t -> Mono.just("fallback")).block());
 	}
 
 	@Test
 	public void runFlux() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals(Arrays.asList("foobar", "hello world"), cb.run(Flux.just("foobar", "hello world")).collectList().block());
 	}
 
 	@Test
 	public void runFluxWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(Collections.emptyList()).create("foo");
 		assertEquals(Arrays.asList("fallback"), cb.run(Flux.error(new RuntimeException("boom")), t -> Flux.just("fallback")).collectList().block());
 	}
 
