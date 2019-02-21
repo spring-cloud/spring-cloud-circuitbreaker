@@ -16,10 +16,10 @@
 package org.springframework.cloud.circuitbreaker.commons;
 
 /**
- * Customizes the {@link CircuitBreakerFactory}
+ * Customizes the parameterized class
  *
  * @author Ryan Baxter
  */
-public interface Customizer<CBF extends AbstractCircuitBreakerFactory> {
-	void customize(CBF factory);
+public interface Customizer<TOCUSTOMIZE> {
+	void customize(TOCUSTOMIZE tocustomize);
 }

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
@@ -25,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.util.Assert;
 
 /**
@@ -40,9 +42,9 @@ public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Res
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 	private ExecutorService executorService = Executors.newSingleThreadExecutor();
-	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
+	private List<Customizer<CircuitBreaker>> circuitBreakerCustomizers;
 
-	public Resilience4JCircuitBreakerFactory(List<CircuitBreakerCustomizer> circuitBreakerCustomizes) {
+	public Resilience4JCircuitBreakerFactory(List<Customizer<CircuitBreaker>> circuitBreakerCustomizes) {
 		this.circuitBreakerCustomizers = circuitBreakerCustomizes;
 	}
 

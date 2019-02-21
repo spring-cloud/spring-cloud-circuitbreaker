@@ -15,12 +15,15 @@
  */
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 import java.util.List;
 import java.util.function.Function;
+
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.util.Assert;
@@ -37,9 +40,9 @@ public class ReactiveResilience4JCircuitBreakerFactory extends ReactiveCircuitBr
 					.build();
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
-	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
+	private List<Customizer<CircuitBreaker>> circuitBreakerCustomizers;
 
-	public ReactiveResilience4JCircuitBreakerFactory(List<CircuitBreakerCustomizer> circuitBreakerCustomizers) {
+	public ReactiveResilience4JCircuitBreakerFactory(List<Customizer<CircuitBreaker>> circuitBreakerCustomizers) {
 		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
 	}
 

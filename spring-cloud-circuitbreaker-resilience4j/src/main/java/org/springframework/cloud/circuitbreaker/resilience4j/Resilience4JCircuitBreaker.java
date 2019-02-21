@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 
 
 /**
@@ -40,11 +41,11 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	private CircuitBreakerRegistry registry;
 	private TimeLimiterConfig timeLimiterConfig;
 	private ExecutorService executorService;
-	private List<CircuitBreakerCustomizer> circuitBreakerCustomizers;
+	private List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers;
 
 	public Resilience4JCircuitBreaker(String id, io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 									  TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-									  ExecutorService executorService, List<CircuitBreakerCustomizer> circuitBreakerCustomizers) {
+									  ExecutorService executorService, List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
