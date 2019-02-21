@@ -35,12 +35,12 @@ public abstract class AbstractCircuitBreakerFactory<CONF, CONFB extends ConfigBu
 	 *                 allows consumers to customize the builder before the configuration is built
 	 */
 	public void configure(Consumer<CONFB> consumer, String ... ids) {
-		Stream.of(ids).forEach(id -> {
+		for(String id : ids) {
 			CONFB builder = configBuilder(id);
 			consumer.accept(builder);
 			CONF conf = builder.build();
 			getConfigurations().put(id, conf);
-		});
+		}
 	}
 
 	/**
