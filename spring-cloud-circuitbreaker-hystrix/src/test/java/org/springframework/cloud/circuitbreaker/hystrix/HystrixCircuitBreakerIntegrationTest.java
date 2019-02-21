@@ -66,8 +66,7 @@ public class HystrixCircuitBreakerIntegrationTest {
 		@Bean
 		public Customizer<HystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory.configure(builder -> builder.commandProperties(
-							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)),
-					"slow");
+							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "slow");
 		}
 
 		@Bean

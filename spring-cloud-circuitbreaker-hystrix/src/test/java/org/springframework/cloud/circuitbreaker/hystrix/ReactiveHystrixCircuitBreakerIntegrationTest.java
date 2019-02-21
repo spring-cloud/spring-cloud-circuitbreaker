@@ -75,8 +75,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
 				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> customizer() {
 			return factory -> factory.configure(builder -> builder.commandProperties(
-							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)),
-					"slow");
+							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "slow");
 		}
 
 		@Bean
