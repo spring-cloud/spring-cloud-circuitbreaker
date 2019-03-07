@@ -21,12 +21,14 @@ import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.vavr.control.Try;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 
 
 /**
@@ -39,15 +41,17 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	private CircuitBreakerRegistry registry;
 	private TimeLimiterConfig timeLimiterConfig;
 	private ExecutorService executorService;
+	private List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers;
 
 	public Resilience4JCircuitBreaker(String id, io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 									  TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-									  ExecutorService executorService) {
+									  ExecutorService executorService, List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;
+		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
 	}
 
 	@Override
@@ -58,6 +62,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 				.decorateFutureSupplier(timeLimiter, futureSupplier);
 
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, circuitBreakerConfig);
+		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
 		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
 				.decorateCallable(defaultCircuitBreaker, restrictedCall);
 		return Try.of(callable::call).recover(fallback).get();

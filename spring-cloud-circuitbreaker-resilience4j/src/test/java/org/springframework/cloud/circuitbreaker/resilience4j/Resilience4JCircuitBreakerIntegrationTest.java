@@ -64,8 +64,8 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
-			return factory -> factory.configure("slow", builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()));
+			return factory -> factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()), "slow");
 		}
 
 		@Bean
