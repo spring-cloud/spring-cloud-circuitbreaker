@@ -159,9 +159,6 @@ public Customizer<HystrixCircuitBreakerFactory> customizer() {
 ====
 [source,java]
 ----
-====
-[source,java]
-----
 @Bean
 public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
 	return factory -> factory.configure(builder -> builder.commandProperties(
@@ -240,9 +237,6 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 
 ===== Reactive Example
 
-====
-[source,java]
-----
 ====
 [source,java]
 ----

@@ -70,9 +70,6 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 ====
 [source,java]
 ----
-====
-[source,java]
-----
 @Bean
 public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 	return factory -> {

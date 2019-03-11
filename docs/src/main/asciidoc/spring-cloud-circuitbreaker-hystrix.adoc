@@ -56,9 +56,6 @@ public Customizer<HystrixCircuitBreakerFactory> customizer() {
 ====
 [source,java]
 ----
-====
-[source,java]
-----
 @Bean
 public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
 	return factory -> factory.configure(builder -> builder.commandProperties(
