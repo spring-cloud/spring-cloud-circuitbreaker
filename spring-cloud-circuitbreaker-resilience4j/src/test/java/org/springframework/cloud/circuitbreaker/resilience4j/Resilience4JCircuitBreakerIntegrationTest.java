@@ -17,11 +17,16 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
+import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
+import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +42,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
@@ -46,6 +54,16 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4JCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class Resilience4JCircuitBreakerIntegrationTest {
+
+
+	@Mock
+	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
+	@Mock
+	static EventConsumer<CircuitBreakerOnSuccessEvent> slowSuccessConsumer;
+	@Mock
+	static EventConsumer<CircuitBreakerOnErrorEvent> normalErrorConsumer;
+	@Mock
+	static EventConsumer<CircuitBreakerOnSuccessEvent> normalSuccessConsumer;
 
 	@Configuration
 	@EnableAutoConfiguration
@@ -71,6 +89,12 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
 						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 						.build());
+				factory.addCircuitBreakerCustomizer(circuitBreaker ->
+								circuitBreaker.getEventPublisher().onError(slowErrorConsumer).onSuccess(slowSuccessConsumer),
+						"slow" );
+				factory.addCircuitBreakerCustomizer(
+						circuitBreaker -> circuitBreaker.getEventPublisher().onError(normalErrorConsumer).onSuccess(normalSuccessConsumer),
+						"normal");
 			};
 		}
 
@@ -100,10 +124,14 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	@Test
 	public void testSlow() {
 		assertEquals("fallback", service.slow());
+		verify(slowErrorConsumer, times(1)).consumeEvent(any());
+		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 	}
 
 	@Test
 	public void testNormal() {
 		assertEquals("normal", service.normal());
+		verify(normalErrorConsumer, times(0)).consumeEvent(any());
+		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
 	}
 }
