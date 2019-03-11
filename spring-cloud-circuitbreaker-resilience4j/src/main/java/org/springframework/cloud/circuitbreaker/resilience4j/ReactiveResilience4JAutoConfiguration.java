@@ -37,15 +37,11 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
 public class ReactiveResilience4JAutoConfiguration {
 
-	@Autowired(required = false)
-	public List<Customizer<CircuitBreaker>> circuitBreakerCustomizers = new ArrayList<>();
-
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	public ReactiveCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
-		return new ReactiveResilience4JCircuitBreakerFactory(circuitBreakerCustomizers);
+		return new ReactiveResilience4JCircuitBreakerFactory();
 	}
-
 
 	@Configuration
 	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})

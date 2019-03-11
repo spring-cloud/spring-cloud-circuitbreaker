@@ -72,21 +72,17 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
-				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> customizer() {
+		public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory.configure(builder -> builder.commandProperties(
 							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "slow");
 		}
 
 		@Bean
-		public Customizer<ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
-				ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder>> defaultConfig() {
-			return factory -> factory.configureDefault(id -> {
-				return HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-						.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-								.withExecutionTimeoutInMilliseconds(4000));
-
-			});
+		public Customizer<ReactiveHystrixCircuitBreakerFactory> defaultConfig() {
+			return factory -> factory.configureDefault(id -> HystrixObservableCommand.Setter
+					.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
+					.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+							.withExecutionTimeoutInMilliseconds(4000)));
 		}
 
 		@Service

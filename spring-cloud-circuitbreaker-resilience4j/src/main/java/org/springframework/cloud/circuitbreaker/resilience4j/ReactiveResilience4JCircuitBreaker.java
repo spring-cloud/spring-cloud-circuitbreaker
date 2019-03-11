@@ -22,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
@@ -37,21 +38,21 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	private String id;
 	private Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config;
 	private CircuitBreakerRegistry registry;
-	private List<Customizer<CircuitBreaker>> circuitBreakerCustomizers;
+	private Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer;
 
 	public ReactiveResilience4JCircuitBreaker(String id, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 											  CircuitBreakerRegistry circuitBreakerRegistry,
-											  List<Customizer<CircuitBreaker>> circuitBreakerCustomizers) {
+											  Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
 		this.config = config;
 		this.registry = circuitBreakerRegistry;
-		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
+		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
-		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Mono timeout we need to tell the circuit breaker about the error
@@ -64,7 +65,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	public<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
-		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Flux timeout we need to tell the circuit breaker about the error

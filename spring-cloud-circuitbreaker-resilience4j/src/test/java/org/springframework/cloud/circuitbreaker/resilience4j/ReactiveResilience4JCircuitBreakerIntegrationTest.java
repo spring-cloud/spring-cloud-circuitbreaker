@@ -106,53 +106,22 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
 		@Bean
 		public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
-			return factory -> factory.configure(builder -> builder
-			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
-			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
-		}
-
-		@Bean
-		public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
-			return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
-		}
-
-		@Bean
-		public Customizer<CircuitBreaker> slowCircuitBreakerCustomizer() {
-			return circuitBreaker -> {
-				if("slow".equals(circuitBreaker.getName())) {
-					circuitBreaker.getEventPublisher().onError(slowErrorConsumer).onSuccess(slowSuccessConsumer);
-
-				}
-			};
-		}
-
-		@Bean
-		public Customizer<CircuitBreaker> normalCircuitBreakerCustomizer() {
-			return circuitBreaker -> {
-				if("normal".equals(circuitBreaker.getName())) {
-					circuitBreaker.getEventPublisher().onError(normalErrorConsumer).onSuccess(normalSuccessConsumer);
-				}
-			};
-		}
-
-		@Bean
-		public Customizer<CircuitBreaker> slowFluxCircuitBreakerCustomizer() {
-			return circuitBreaker -> {
-				if("slowflux".equals(circuitBreaker.getName())) {
-					circuitBreaker.getEventPublisher().onError(slowFluxErrorConsumer).onSuccess(slowFluxSuccessConsumer);
-
-				}
-			};
-		}
-
-		@Bean
-		public Customizer<CircuitBreaker> normalFluxCircuitBreakerCustomizer() {
-			return circuitBreaker -> {
-				if("normalflux".equals(circuitBreaker.getName())) {
-					circuitBreaker.getEventPublisher().onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer);
-				}
+			return factory -> {
+				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
+				factory.configure(builder -> builder
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
+						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
+				factory.addCircuitBreakerCustomizer(circuitBreaker ->
+						circuitBreaker.getEventPublisher().onError(slowErrorConsumer).onSuccess(slowSuccessConsumer),
+						"slow" );
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(normalErrorConsumer).onSuccess(normalSuccessConsumer),
+						"normal");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(slowFluxErrorConsumer).onSuccess(slowFluxSuccessConsumer),
+						"slowflux");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer),
+						"normalflux");
 			};
 		}
 

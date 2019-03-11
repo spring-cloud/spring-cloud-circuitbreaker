@@ -36,13 +36,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Resilience4JAutoConfiguration {
 
-	@Autowired(required = false)
-	public List<Customizer<CircuitBreaker>> circuitBreakerCustomizers = new ArrayList<>();
-
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
 	public CircuitBreakerFactory resilience4jCircuitBreakerFactory() {
-		return new Resilience4JCircuitBreakerFactory(circuitBreakerCustomizers);
+		return new Resilience4JCircuitBreakerFactory();
 	}
 
 	@Configuration

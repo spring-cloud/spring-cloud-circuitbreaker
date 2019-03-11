@@ -22,6 +22,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.vavr.control.Try;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -41,17 +42,17 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	private CircuitBreakerRegistry registry;
 	private TimeLimiterConfig timeLimiterConfig;
 	private ExecutorService executorService;
-	private List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers;
+	private Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer;
 
 	public Resilience4JCircuitBreaker(String id, io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 									  TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-									  ExecutorService executorService, List<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizers) {
+									  ExecutorService executorService, Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;
-		this.circuitBreakerCustomizers = circuitBreakerCustomizers;
+		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 				.decorateFutureSupplier(timeLimiter, futureSupplier);
 
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, circuitBreakerConfig);
-		circuitBreakerCustomizers.forEach(circuitBreakerCustomizer -> circuitBreakerCustomizer.customize(defaultCircuitBreaker));
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
 				.decorateCallable(defaultCircuitBreaker, restrictedCall);
 		return Try.of(callable::call).recover(fallback).get();
