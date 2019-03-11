@@ -1,0 +1,87 @@
+=== Configuring Resilience4J Circuit Breakers
+
+==== Default Configuration
+
+To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
+`Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
+The `configureDefault` method can be used to provide a default configuration.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
+			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+			.build());
+}
+----
+====
+
+===== Reactive Example
+
+====
+[source,java]
+----
+@Bean
+public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
+}
+----
+====
+
+
+==== Specific Circuit Breaker Configuration
+
+Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
+`Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
+	return factory -> factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()), "slow");
+}
+----
+====
+
+In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
+has been created but before it is returned to the caller.  To do this you can use the `addCircuitBreakerCustomizer`
+method.  This can be useful for adding event handlers to Resilience4J circuit breakers.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
+	return factory -> factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+	.onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
+}
+----
+====
+
+===== Reactive Example
+
+====
+[source,java]
+----
+====
+[source,java]
+----
+@Bean
+public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
+	return factory -> {
+		factory.configure(builder -> builder
+		.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
+		.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
+		factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+        	.onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
+     };
+}
+----
+====
