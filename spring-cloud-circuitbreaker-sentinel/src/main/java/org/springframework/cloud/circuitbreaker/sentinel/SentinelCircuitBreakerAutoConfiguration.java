@@ -34,26 +34,26 @@ import org.springframework.context.annotation.Configuration;
  * @author Eric Zhao
  */
 @Configuration
-@ConditionalOnClass({ SphU.class })
+@ConditionalOnClass({SphU.class})
 public class SentinelCircuitBreakerAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean(CircuitBreakerFactory.class)
-    public CircuitBreakerFactory sentinelCircuitBreakerFactory() {
-        return new SentinelCircuitBreakerFactory();
-    }
+	@Bean
+	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
+	public CircuitBreakerFactory sentinelCircuitBreakerFactory() {
+		return new SentinelCircuitBreakerFactory();
+	}
 
-    @Configuration
-    public static class SentinelCustomizerConfiguration {
-        @Autowired(required = false)
-        public List<Customizer<SentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
+	@Configuration
+	public static class SentinelCustomizerConfiguration {
+		@Autowired(required = false)
+		public List<Customizer<SentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
 
-        @Autowired(required = false)
-        public SentinelCircuitBreakerFactory factory;
+		@Autowired(required = false)
+		public SentinelCircuitBreakerFactory factory;
 
-        @PostConstruct
-        public void init() {
-            customizers.forEach(customizer -> customizer.customize(factory));
-        }
-    }
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+		}
+	}
 }

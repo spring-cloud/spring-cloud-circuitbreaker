@@ -41,50 +41,53 @@ import org.springframework.util.Assert;
  */
 public class SentinelCircuitBreaker implements CircuitBreaker {
 
-    private final String resourceName;
-    private final EntryType entryType;
+	private final String resourceName;
+	private final EntryType entryType;
 
-    private final List<DegradeRule> rules;
+	private final List<DegradeRule> rules;
 
-    public SentinelCircuitBreaker(String resourceName, EntryType entryType, List<DegradeRule> rules) {
-        Assert.hasText(resourceName, "resourceName cannot be blank");
-        Assert.notNull(rules, "rules should not be null");
-        this.resourceName = resourceName;
-        this.entryType = entryType;
-        this.rules = Collections.unmodifiableList(rules);
+	public SentinelCircuitBreaker(String resourceName, EntryType entryType, List<DegradeRule> rules) {
+		Assert.hasText(resourceName, "resourceName cannot be blank");
+		Assert.notNull(rules, "rules should not be null");
+		this.resourceName = resourceName;
+		this.entryType = entryType;
+		this.rules = Collections.unmodifiableList(rules);
 
-        applyToSentinelRuleManager();
-    }
+		applyToSentinelRuleManager();
+	}
 
-    public SentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
-        this(resourceName, EntryType.OUT, rules);
-    }
+	public SentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
+		this(resourceName, EntryType.OUT, rules);
+	}
 
-    public SentinelCircuitBreaker(String resourceName) {
-        this(resourceName, EntryType.OUT, Collections.emptyList());
-    }
+	public SentinelCircuitBreaker(String resourceName) {
+		this(resourceName, EntryType.OUT, Collections.emptyList());
+	}
 
-    private void applyToSentinelRuleManager() {
-        Set<DegradeRule> ruleSet = new HashSet<>(DegradeRuleManager.getRules());
-        ruleSet.addAll(this.rules);
-        DegradeRuleManager.loadRules(new ArrayList<>(ruleSet));
-    }
+	private void applyToSentinelRuleManager() {
+		Set<DegradeRule> ruleSet = new HashSet<>(DegradeRuleManager.getRules());
+		ruleSet.addAll(this.rules);
+		DegradeRuleManager.loadRules(new ArrayList<>(ruleSet));
+	}
 
-    @Override
-    public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-        Entry entry = null;
-        try {
-            entry = SphU.entry(resourceName, entryType);
-            return toRun.get();
-        } catch (BlockException ex) {
-            return fallback.apply(ex);
-        } catch (Exception ex) {
-            Tracer.trace(ex);
-            return fallback.apply(ex);
-        } finally {
-            if (entry != null) {
-                entry.exit();
-            }
-        }
-    }
+	@Override
+	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
+		Entry entry = null;
+		try {
+			entry = SphU.entry(resourceName, entryType);
+			return toRun.get();
+		}
+		catch (BlockException ex) {
+			return fallback.apply(ex);
+		}
+		catch (Exception ex) {
+			Tracer.trace(ex);
+			return fallback.apply(ex);
+		}
+		finally {
+			if (entry != null) {
+				entry.exit();
+			}
+		}
+	}
 }

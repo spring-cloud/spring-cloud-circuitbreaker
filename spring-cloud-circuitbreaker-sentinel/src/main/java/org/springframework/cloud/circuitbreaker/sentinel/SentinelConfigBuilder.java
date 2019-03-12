@@ -30,74 +30,75 @@ import org.springframework.util.Assert;
  */
 public class SentinelConfigBuilder implements ConfigBuilder<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> {
 
-    private String resourceName;
-    private EntryType entryType;
-    private List<DegradeRule> rules;
+	private String resourceName;
+	private EntryType entryType;
+	private List<DegradeRule> rules;
 
-    public SentinelConfigBuilder() {}
+	public SentinelConfigBuilder() {
+	}
 
-    public SentinelConfigBuilder(String resourceName) {
-        this.resourceName = resourceName;
-    }
+	public SentinelConfigBuilder(String resourceName) {
+		this.resourceName = resourceName;
+	}
 
-    public SentinelConfigBuilder resourceName(String resourceName) {
-        this.resourceName = resourceName;
-        return this;
-    }
+	public SentinelConfigBuilder resourceName(String resourceName) {
+		this.resourceName = resourceName;
+		return this;
+	}
 
-    public SentinelConfigBuilder entryType(EntryType entryType) {
-        this.entryType = entryType;
-        return this;
-    }
+	public SentinelConfigBuilder entryType(EntryType entryType) {
+		this.entryType = entryType;
+		return this;
+	}
 
-    public SentinelConfigBuilder rules(List<DegradeRule> rules) {
-        this.rules = rules;
-        return this;
-    }
+	public SentinelConfigBuilder rules(List<DegradeRule> rules) {
+		this.rules = rules;
+		return this;
+	}
 
-    @Override
-    public SentinelCircuitBreakerConfiguration build() {
-        Assert.hasText(resourceName, "resourceName cannot be empty");
-        List<DegradeRule> rules = Optional.ofNullable(this.rules).orElse(new ArrayList<>());
+	@Override
+	public SentinelCircuitBreakerConfiguration build() {
+		Assert.hasText(resourceName, "resourceName cannot be empty");
+		List<DegradeRule> rules = Optional.ofNullable(this.rules).orElse(new ArrayList<>());
 
-        EntryType entryType = Optional.ofNullable(this.entryType).orElse(EntryType.OUT);
-        return new SentinelCircuitBreakerConfiguration()
-            .setResourceName(this.resourceName)
-            .setEntryType(entryType)
-            .setRules(rules);
-    }
+		EntryType entryType = Optional.ofNullable(this.entryType).orElse(EntryType.OUT);
+		return new SentinelCircuitBreakerConfiguration()
+				.setResourceName(this.resourceName)
+				.setEntryType(entryType)
+				.setRules(rules);
+	}
 
-    public static class SentinelCircuitBreakerConfiguration {
-        private String resourceName;
-        private EntryType entryType;
+	public static class SentinelCircuitBreakerConfiguration {
+		private String resourceName;
+		private EntryType entryType;
 
-        private List<DegradeRule> rules;
+		private List<DegradeRule> rules;
 
-        public String getResourceName() {
-            return resourceName;
-        }
+		public String getResourceName() {
+			return resourceName;
+		}
 
-        public SentinelCircuitBreakerConfiguration setResourceName(String resourceName) {
-            this.resourceName = resourceName;
-            return this;
-        }
+		public SentinelCircuitBreakerConfiguration setResourceName(String resourceName) {
+			this.resourceName = resourceName;
+			return this;
+		}
 
-        public EntryType getEntryType() {
-            return entryType;
-        }
+		public EntryType getEntryType() {
+			return entryType;
+		}
 
-        public SentinelCircuitBreakerConfiguration setEntryType(EntryType entryType) {
-            this.entryType = entryType;
-            return this;
-        }
+		public SentinelCircuitBreakerConfiguration setEntryType(EntryType entryType) {
+			this.entryType = entryType;
+			return this;
+		}
 
-        public List<DegradeRule> getRules() {
-            return rules;
-        }
+		public List<DegradeRule> getRules() {
+			return rules;
+		}
 
-        public SentinelCircuitBreakerConfiguration setRules(List<DegradeRule> rules) {
-            this.rules = rules;
-            return this;
-        }
-    }
+		public SentinelCircuitBreakerConfiguration setRules(List<DegradeRule> rules) {
+			this.rules = rules;
+			return this;
+		}
+	}
 }
