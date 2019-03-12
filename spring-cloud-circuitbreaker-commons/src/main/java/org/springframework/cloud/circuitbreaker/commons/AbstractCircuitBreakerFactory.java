@@ -19,6 +19,7 @@ package org.springframework.cloud.circuitbreaker.commons;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Base class for factories which produce circuit breakers.
@@ -29,15 +30,17 @@ public abstract class AbstractCircuitBreakerFactory<CONF, CONFB extends ConfigBu
 
 	/**
 	 * Adds configurations for circuit breakers
-	 * @param id The id of the circuit breaker
+	 * @param ids The id of the circuit breaker
 	 * @param consumer A configuration builder consumer,
 	 *                 allows consumers to customize the builder before the configuration is built
 	 */
-	public void configure(String id, Consumer<CONFB> consumer) {
-		CONFB builder = configBuilder(id);
-		consumer.accept(builder);
-		CONF conf = builder.build();
-		getConfigurations().put(id, conf);
+	public void configure(Consumer<CONFB> consumer, String ... ids) {
+		for(String id : ids) {
+			CONFB builder = configBuilder(id);
+			consumer.accept(builder);
+			CONF conf = builder.build();
+			getConfigurations().put(id, conf);
+		}
 	}
 
 	/**

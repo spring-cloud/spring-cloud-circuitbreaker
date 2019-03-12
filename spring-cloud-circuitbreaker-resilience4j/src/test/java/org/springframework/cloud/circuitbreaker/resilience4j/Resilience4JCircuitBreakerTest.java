@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Collections;
 import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 

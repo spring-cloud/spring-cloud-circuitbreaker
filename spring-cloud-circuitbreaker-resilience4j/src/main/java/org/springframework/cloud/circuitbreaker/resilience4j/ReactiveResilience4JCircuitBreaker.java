@@ -15,12 +15,18 @@
  */
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 
 
@@ -32,28 +38,40 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	private String id;
 	private Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config;
 	private CircuitBreakerRegistry registry;
+	private Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer;
 
-	public ReactiveResilience4JCircuitBreaker(String id, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config, CircuitBreakerRegistry circuitBreakerRegistry) {
+	public ReactiveResilience4JCircuitBreaker(String id, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+											  CircuitBreakerRegistry circuitBreakerRegistry,
+											  Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
 		this.config = config;
 		this.registry = circuitBreakerRegistry;
+		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
-		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(config.getTimeLimiterConfig().getTimeoutDuration());
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
+		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
+				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
+				// Since we are using the Mono timeout we need to tell the circuit breaker about the error
+				.doOnError(TimeoutException.class, t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig().getTimeoutDuration().toMillis(), t));
 		if(fallback != null) {
-			toReturn = toReturn.onErrorResume(fallback);
+			toReturn = toReturn.onErrorResume(t -> fallback.apply(t));
 		}
 		return toReturn;
 	}
 
 	public<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id, config.getCircuitBreakerConfig());
-		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker)).timeout(config.getTimeLimiterConfig().getTimeoutDuration());
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
+		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
+				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
+				// Since we are using the Flux timeout we need to tell the circuit breaker about the error
+				.doOnError(TimeoutException.class, t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig().getTimeoutDuration().toMillis(), t));
 		if(fallback != null) {
-			toReturn = toReturn.onErrorResume(fallback);
+			toReturn = toReturn.onErrorResume(t -> fallback.apply(t));
 		}
 		return toReturn;
 	}
