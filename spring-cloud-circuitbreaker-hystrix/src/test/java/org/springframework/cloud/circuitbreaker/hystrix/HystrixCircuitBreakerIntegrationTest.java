@@ -16,8 +16,12 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandProperties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,11 +36,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandProperties;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
@@ -47,10 +48,24 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext
 public class HystrixCircuitBreakerIntegrationTest {
 
+	@Autowired
+	Application.DemoControllerService service;
+
+	@Test
+	public void testSlow() {
+		assertThat(service.slow()).isEqualTo("fallback");
+	}
+
+	@Test
+	public void testNormal() {
+		assertThat(service.normal()).isEqualTo("normal");
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application {
+
 		@RequestMapping("/slow")
 		public String slow() throws InterruptedException {
 			Thread.sleep(3000);
@@ -62,50 +77,49 @@ public class HystrixCircuitBreakerIntegrationTest {
 			return "normal";
 		}
 
-
 		@Bean
 		public Customizer<HystrixCircuitBreakerFactory> customizer() {
-			return factory -> factory.configure(builder -> builder.commandProperties(
-							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "slow");
+			return factory -> factory
+					.configure(
+							builder -> builder.commandProperties(HystrixCommandProperties
+									.Setter().withExecutionTimeoutInMilliseconds(2000)),
+							"slow");
 		}
 
 		@Bean
 		public Customizer<HystrixCircuitBreakerFactory> defaultConfig() {
 			return factory -> factory.configureDefault(id -> HystrixCommand.Setter
 					.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-					.andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(4000)));
+					.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+							.withExecutionTimeoutInMilliseconds(4000)));
 		}
 
 		@Service
 		public static class DemoControllerService {
+
 			private TestRestTemplate rest;
+
 			private CircuitBreakerFactory cbFactory;
 
-			public DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbBuilder) {
+			DemoControllerService(TestRestTemplate rest,
+					CircuitBreakerFactory cbBuilder) {
 				this.rest = rest;
 				this.cbFactory = cbBuilder;
 			}
 
 			public String slow() {
-				return cbFactory.create("slow").run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
+				return cbFactory.create("slow").run(
+						() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
+				return cbFactory.create("normal").run(
+						() -> rest.getForObject("/normal", String.class),
+						t -> "fallback");
 			}
+
 		}
+
 	}
 
-	@Autowired
-	Application.DemoControllerService service;
-
-	@Test
-	public void testSlow() {
-		assertEquals("fallback", service.slow());
-	}
-
-	@Test
-	public void testNormal() {
-		assertEquals("normal", service.normal());
-	}
 }

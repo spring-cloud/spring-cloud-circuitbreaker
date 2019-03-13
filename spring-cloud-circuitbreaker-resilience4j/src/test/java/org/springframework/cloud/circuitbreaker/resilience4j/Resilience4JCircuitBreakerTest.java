@@ -16,12 +16,11 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import java.util.Collections;
 import org.junit.Test;
+
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 
-import static org.junit.Assert.assertEquals;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
@@ -31,14 +30,15 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void run() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
-		assertEquals("foobar", cb.run(() -> "foobar"));
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
-		assertEquals("fallback", cb.run(() -> {
+		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
-		}, t -> "fallback"));
+		}, t -> "fallback")).isEqualTo("fallback");
 	}
+
 }

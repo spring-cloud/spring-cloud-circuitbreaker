@@ -19,11 +19,12 @@ package org.springframework.cloud.circuitbreaker.hystrix;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import com.netflix.hystrix.HystrixCommand;
 
+import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+
 /**
- * Hystrix implementation of {@link CircuitBreaker}
+ * Hystrix implementation of {@link CircuitBreaker}.
  *
  * @author Ryan Baxter
  */
@@ -51,4 +52,5 @@ public class HystrixCircuitBreaker implements CircuitBreaker {
 		};
 		return command.execute();
 	}
+
 }

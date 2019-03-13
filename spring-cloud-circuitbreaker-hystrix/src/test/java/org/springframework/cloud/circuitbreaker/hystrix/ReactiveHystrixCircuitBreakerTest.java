@@ -16,14 +16,14 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import org.assertj.core.util.Arrays;
+import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.assertj.core.util.Arrays;
-import org.junit.Test;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
@@ -32,27 +32,39 @@ public class ReactiveHystrixCircuitBreakerTest {
 
 	@Test
 	public void monoRun() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
+				.create("foo");
 		Mono<String> s = cb.run(Mono.just("foobar"), t -> Mono.just("fallback"));
-		assertEquals("foobar", s.block());
+		assertThat(s.block()).isEqualTo("foobar");
 	}
 
 	@Test
 	public void monoFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory().create("foo");
-		assertEquals("fallback", cb.run(Mono.error(new RuntimeException("boom")), t -> Mono.just("fallback")).block());
+		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
+				.create("foo");
+		assertThat(cb
+				.run(Mono.error(new RuntimeException("boom")), t -> Mono.just("fallback"))
+				.block()).isEqualTo("fallback");
 	}
 
 	@Test
 	public void fluxRun() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory().create("foo");
-		Flux<String> s = cb.run(Flux.just("foobar","hello world"), t -> Flux.just("fallback"));
-		assertEquals(Arrays.asList(new String[]{"foobar", "hello world"}), s.collectList().block());
+		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
+				.create("foo");
+		Flux<String> s = cb.run(Flux.just("foobar", "hello world"),
+				t -> Flux.just("fallback"));
+		assertThat(s.collectList().block())
+				.isEqualTo(Arrays.asList(new String[] { "foobar", "hello world" }));
 	}
 
 	@Test
 	public void fluxFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory().create("foo");
-		assertEquals(Arrays.asList(new String[]{"fallback"}), cb.run(Flux.error(new RuntimeException("boom")), t -> Flux.just("fallback")).collectList().block());
+		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
+				.create("foo");
+		assertThat(cb
+				.run(Flux.error(new RuntimeException("boom")), t -> Flux.just("fallback"))
+				.collectList().block())
+						.isEqualTo(Arrays.asList(new String[] { "fallback" }));
 	}
+
 }

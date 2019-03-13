@@ -16,16 +16,17 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
+import java.util.function.Function;
+
+import com.netflix.hystrix.HystrixObservableCommand;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import rx.Observable;
 import rx.RxReactiveStreams;
 import rx.Subscription;
 
-import java.util.function.Function;
-import org.reactivestreams.Publisher;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import com.netflix.hystrix.HystrixObservableCommand;
 
 /**
  * @author Ryan Baxter
@@ -43,7 +44,8 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 		HystrixObservableCommand<T> command = createCommand(toRun, fallback);
 
 		return Mono.create(s -> {
-			Subscription sub = command.toObservable().subscribe(s::success, s::error, s::success);
+			Subscription sub = command.toObservable().subscribe(s::success, s::error,
+					s::success);
 			s.onCancel(sub::unsubscribe);
 		});
 	}
@@ -53,12 +55,14 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 		HystrixObservableCommand<T> command = createCommand(toRun, fallback);
 
 		return Flux.create(s -> {
-			Subscription sub = command.toObservable().subscribe(s::next, s::error, s::complete);
+			Subscription sub = command.toObservable().subscribe(s::next, s::error,
+					s::complete);
 			s.onCancel(sub::unsubscribe);
 		});
 	}
 
-	private <T> HystrixObservableCommand<T> createCommand(Publisher<T> toRun, Function fallback) {
+	private <T> HystrixObservableCommand<T> createCommand(Publisher<T> toRun,
+			Function fallback) {
 		HystrixObservableCommand<T> command = new HystrixObservableCommand<T>(setter) {
 			@Override
 			protected Observable<T> construct() {
@@ -67,12 +71,14 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 
 			@Override
 			protected Observable<T> resumeWithFallback() {
-				if(fallback == null) {
+				if (fallback == null) {
 					super.resumeWithFallback();
 				}
-				return RxReactiveStreams.toObservable((Publisher)fallback.apply(this.getExecutionException()));
+				return RxReactiveStreams.toObservable(
+						(Publisher) fallback.apply(this.getExecutionException()));
 			}
 		};
 		return command;
 	}
+
 }

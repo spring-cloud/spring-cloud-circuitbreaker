@@ -17,10 +17,10 @@
 package org.springframework.cloud.circuitbreaker.hystrix;
 
 import org.junit.Test;
+
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 
-import static org.junit.Assert.assertEquals;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
@@ -31,14 +31,15 @@ public class HystrixCircuitBreakerTest {
 	public void run() {
 		CircuitBreaker cb = new HystrixCircuitBreakerFactory().create("foo");
 		String s = cb.run(() -> "foobar", t -> "fallback");
-		assertEquals("foobar", cb.run(() -> "foobar", t -> "fallback"));
+		assertThat(cb.run(() -> "foobar", t -> "fallback")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void fallback() {
 		CircuitBreaker cb = new HystrixCircuitBreakerFactory().create("foo");
-		assertEquals("fallback", cb.run(() -> {
+		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("Boom");
-		}, t -> "fallback"));
+		}, t -> "fallback")).isEqualTo("fallback");
 	}
+
 }

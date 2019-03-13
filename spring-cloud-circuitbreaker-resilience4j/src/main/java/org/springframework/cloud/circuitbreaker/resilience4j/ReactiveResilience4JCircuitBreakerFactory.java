@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.resilience4j;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
@@ -34,23 +34,25 @@ import org.springframework.util.Assert;
 /**
  * @author Ryan Baxter
  */
-public class ReactiveResilience4JCircuitBreakerFactory extends ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
+public class ReactiveResilience4JCircuitBreakerFactory extends
+		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
-	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id ->
-			new Resilience4JConfigBuilder(id)
-					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.ofDefaults())
-					.build();
+	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
+			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
 
-	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry
+			.ofDefaults();
+
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveResilience4JCircuitBreaker(id, config,
-				circuitBreakerRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
+				.computeIfAbsent(id, defaultConfiguration);
+		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry,
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
 	@Override
@@ -59,7 +61,8 @@ public class ReactiveResilience4JCircuitBreakerFactory extends ReactiveCircuitBr
 	}
 
 	@Override
-	public void configureDefault(Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration) {
+	public void configureDefault(
+			Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
@@ -67,9 +70,11 @@ public class ReactiveResilience4JCircuitBreakerFactory extends ReactiveCircuitBr
 		this.circuitBreakerRegistry = registry;
 	}
 
-	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
-		for(String id : ids) {
+	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer,
+			String... ids) {
+		for (String id : ids) {
 			circuitBreakerCustomizers.put(id, customizer);
 		}
 	}
+
 }

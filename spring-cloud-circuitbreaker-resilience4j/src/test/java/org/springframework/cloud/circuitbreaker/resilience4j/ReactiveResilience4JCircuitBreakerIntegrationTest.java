@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.time.Duration;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
 import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-import org.mockito.Mock;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -60,30 +60,65 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveResilience4JCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveResilience4JCircuitBreakerIntegrationTest {
+
 	@LocalServerPort
 	int port = 0;
 
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> slowSuccessConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> normalErrorConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalSuccessConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowFluxErrorConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> slowFluxSuccessConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> normalFluxErrorConsumer;
+
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalFluxSuccessConsumer;
+
+	@Autowired
+	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+
+	@Before
+	public void setup() {
+		service.setPort(port);
+	}
+
+	@Test
+	public void test() {
+		assertThat(service.normal().block()).isEqualTo("normal");
+		verify(normalErrorConsumer, times(0)).consumeEvent(any());
+		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
+		assertThat(service.slow().block()).isEqualTo("fallback");
+		verify(slowErrorConsumer, times(1)).consumeEvent(any());
+		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+		StepVerifier.create(service.normalFlux()).expectNext("normalflux")
+				.verifyComplete();
+		verify(normalFluxErrorConsumer, times(0)).consumeEvent(any());
+		verify(normalFluxSuccessConsumer, times(1)).consumeEvent(any());
+		StepVerifier.create(service.slowFlux()).expectNext("fluxfallback")
+				.verifyComplete();
+		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
+		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+	}
 
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application {
+
 		@GetMapping("/slow")
 		public Mono<String> slow() {
 			return Mono.just("slow").delayElement(Duration.ofSeconds(3));
@@ -107,94 +142,91 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		@Bean
 		public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 			return factory -> {
-				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
-				factory.configure(builder -> builder
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
-						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
-				factory.addCircuitBreakerCustomizer(circuitBreaker ->
-						circuitBreaker.getEventPublisher().onError(slowErrorConsumer).onSuccess(slowSuccessConsumer),
-						"slow" );
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(normalErrorConsumer).onSuccess(normalSuccessConsumer),
-						"normal");
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(slowFluxErrorConsumer).onSuccess(slowFluxSuccessConsumer),
-						"slowflux");
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher().onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer),
-						"normalflux");
+				factory.configureDefault(
+						id -> new Resilience4JConfigBuilder(id)
+								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+								.timeLimiterConfig(TimeLimiterConfig.custom()
+										.timeoutDuration(Duration.ofSeconds(4)).build())
+								.build());
+				factory.configure(
+						builder -> builder
+								.timeLimiterConfig(TimeLimiterConfig.custom()
+										.timeoutDuration(Duration.ofSeconds(2)).build())
+								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()),
+						"slow", "slowflux");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(slowErrorConsumer)
+						.onSuccess(slowSuccessConsumer), "slow");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(normalErrorConsumer)
+						.onSuccess(normalSuccessConsumer), "normal");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(slowFluxErrorConsumer)
+						.onSuccess(slowFluxSuccessConsumer), "slowflux");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(normalFluxErrorConsumer)
+						.onSuccess(normalFluxSuccessConsumer), "normalflux");
 			};
 		}
 
 		@Service
 		public static class DemoControllerService {
+
 			private int port = 0;
+
 			private ReactiveCircuitBreakerFactory cbFactory;
 
-
-			public DemoControllerService(ReactiveCircuitBreakerFactory cbFactory) {
+			DemoControllerService(ReactiveCircuitBreakerFactory cbFactory) {
 				this.cbFactory = cbFactory;
 			}
 
 			public Mono<String> slow() {
-				return cbFactory.create("slow").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/slow").retrieve().bodyToMono(String.class), t -> {
-					t.printStackTrace();
-					return Mono.just("fallback");
-				});
+				return cbFactory.create("slow").run(
+						WebClient.builder().baseUrl("http://localhost:" + port).build()
+								.get().uri("/slow").retrieve().bodyToMono(String.class),
+						t -> {
+							t.printStackTrace();
+							return Mono.just("fallback");
+						});
 			}
 
 			public Mono<String> normal() {
-				return cbFactory.create("normal").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/normal").retrieve().bodyToMono(String.class), t -> {
-					t.printStackTrace();
-					return Mono.just("fallback");
-				});
+				return cbFactory.create("normal").run(
+						WebClient.builder().baseUrl("http://localhost:" + port).build()
+								.get().uri("/normal").retrieve().bodyToMono(String.class),
+						t -> {
+							t.printStackTrace();
+							return Mono.just("fallback");
+						});
 			}
 
 			public Flux<String> slowFlux() {
-				return cbFactory.create("slowflux").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/slowflux").retrieve().bodyToFlux(new ParameterizedTypeReference<String>() { }), t -> {
-					t.printStackTrace();
-					return Flux.just("fluxfallback");
-				});
+				return cbFactory.create("slowflux")
+						.run(WebClient.builder().baseUrl("http://localhost:" + port)
+								.build().get().uri("/slowflux").retrieve()
+								.bodyToFlux(new ParameterizedTypeReference<String>() {
+								}), t -> {
+									t.printStackTrace();
+									return Flux.just("fluxfallback");
+								});
 			}
 
 			public Flux<String> normalFlux() {
-				return cbFactory.create("normalflux").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/normalflux").retrieve().bodyToFlux(String.class), t -> {
-					t.printStackTrace();
-					return Flux.just("fluxfallback");
-				});
+				return cbFactory.create("normalflux")
+						.run(WebClient.builder().baseUrl("http://localhost:" + port)
+								.build().get().uri("/normalflux").retrieve()
+								.bodyToFlux(String.class), t -> {
+									t.printStackTrace();
+									return Flux.just("fluxfallback");
+								});
 			}
 
 			public void setPort(int port) {
 				this.port = port;
 			}
+
 		}
-	}
 
-	@Autowired
-	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
-
-	@Before
-	public void setup() {
-		service.setPort(port);
-	}
-
-	@Test
-	public void test() {
-		assertEquals("normal", service.normal().block());
-		verify(normalErrorConsumer, times(0)).consumeEvent(any());
-		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
-		assertEquals("fallback", service.slow().block());
-		verify(slowErrorConsumer, times(1)).consumeEvent(any());
-		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
-		StepVerifier.create(service.normalFlux()).expectNext("normalflux").verifyComplete();
-		verify(normalFluxErrorConsumer, times(0)).consumeEvent(any());
-		verify(normalFluxSuccessConsumer, times(1)).consumeEvent(any());
-		StepVerifier.create(service.slowFlux()).expectNext("fluxfallback").verifyComplete();
-		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
-		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 	}
 
 }

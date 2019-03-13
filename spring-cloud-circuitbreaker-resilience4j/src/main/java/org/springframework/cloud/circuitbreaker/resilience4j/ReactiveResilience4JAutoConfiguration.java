@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -34,7 +33,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Ryan Baxter
  */
 @Configuration
-@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
+@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
+		"reactor.core.publisher.Flux" })
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
@@ -44,17 +44,21 @@ public class ReactiveResilience4JAutoConfiguration {
 	}
 
 	@Configuration
-	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
+			"reactor.core.publisher.Flux" })
 	public static class ReactiveResilience4JCustomizerConfiguration {
-		@Autowired(required = false)
-		public List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		public ReactiveResilience4JCircuitBreakerFactory factory;
+		private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired(required = false)
+		private ReactiveResilience4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
 		}
+
 	}
+
 }
