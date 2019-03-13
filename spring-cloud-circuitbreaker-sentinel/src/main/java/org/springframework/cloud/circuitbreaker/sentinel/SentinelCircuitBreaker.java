@@ -65,6 +65,9 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 	}
 
 	private void applyToSentinelRuleManager() {
+		if (this.rules == null || this.rules.isEmpty()) {
+			return;
+		}
 		Set<DegradeRule> ruleSet = new HashSet<>(DegradeRuleManager.getRules());
 		ruleSet.addAll(this.rules);
 		DegradeRuleManager.loadRules(new ArrayList<>(ruleSet));
@@ -75,16 +78,22 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 		Entry entry = null;
 		try {
 			entry = SphU.entry(resourceName, entryType);
+			// If the SphU.entry() does not throw `BlockException`, it means that the request can pass.
 			return toRun.get();
 		}
 		catch (BlockException ex) {
+			// SphU.entry() may throw BlockException which indicates that
+			// the request was rejected (flow control or circuit breaking triggered).
+			// So it should not be counted as the business exception.
 			return fallback.apply(ex);
 		}
 		catch (Exception ex) {
+			// For other kinds of exceptions, we'll trace the exception count via Tracer.trace(ex).
 			Tracer.trace(ex);
 			return fallback.apply(ex);
 		}
 		finally {
+			// Guarantee the invocation has been completed.
 			if (entry != null) {
 				entry.exit();
 			}
