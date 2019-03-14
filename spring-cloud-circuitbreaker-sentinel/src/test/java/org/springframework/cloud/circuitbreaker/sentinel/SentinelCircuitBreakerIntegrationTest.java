@@ -74,7 +74,7 @@ public class SentinelCircuitBreakerIntegrationTest {
                     .setCount(100)
                     .setTimeWindow(10)
             );
-            return factory -> factory.configure(slowId, builder -> builder.rules(rules));
+            return factory -> factory.configure(builder -> builder.rules(rules), slowId);
         }
 
         @Service
