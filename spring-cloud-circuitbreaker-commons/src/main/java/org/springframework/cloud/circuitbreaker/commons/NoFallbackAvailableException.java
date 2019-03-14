@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.commons;
 
 /**
@@ -25,4 +26,5 @@ public class NoFallbackAvailableException extends RuntimeException {
 	public NoFallbackAvailableException(String message, Throwable cause) {
 		super(message, cause);
 	}
+
 }

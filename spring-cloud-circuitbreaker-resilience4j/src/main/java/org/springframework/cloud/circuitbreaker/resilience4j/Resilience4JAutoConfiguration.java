@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.PostConstruct;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -44,18 +42,18 @@ public class Resilience4JAutoConfiguration {
 
 	@Configuration
 	public static class Resilience4JCustomizerConfiguration {
-		@Autowired(required = false)
-		public List<Customizer<Resilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		public Resilience4JCircuitBreakerFactory factory;
+		private List<Customizer<Resilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired(required = false)
+		private Resilience4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
 		}
+
 	}
-
-
 
 }

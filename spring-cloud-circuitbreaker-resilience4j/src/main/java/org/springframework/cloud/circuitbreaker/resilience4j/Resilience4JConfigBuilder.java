@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -23,10 +24,13 @@ import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
 /**
  * @author Ryan Baxter
  */
-public class Resilience4JConfigBuilder implements ConfigBuilder<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> {
+public class Resilience4JConfigBuilder implements
+		ConfigBuilder<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> {
 
 	private String id;
+
 	private TimeLimiterConfig timeLimiterConfig;
+
 	private CircuitBreakerConfig circuitBreakerConfig;
 
 	public Resilience4JConfigBuilder(String id) {
@@ -38,7 +42,8 @@ public class Resilience4JConfigBuilder implements ConfigBuilder<Resilience4JConf
 		return this;
 	}
 
-	public Resilience4JConfigBuilder circuitBreakerConfig(CircuitBreakerConfig circuitBreakerConfig) {
+	public Resilience4JConfigBuilder circuitBreakerConfig(
+			CircuitBreakerConfig circuitBreakerConfig) {
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		return this;
 	}
@@ -47,15 +52,18 @@ public class Resilience4JConfigBuilder implements ConfigBuilder<Resilience4JConf
 	public Resilience4JCircuitBreakerConfiguration build() {
 		Resilience4JCircuitBreakerConfiguration config = new Resilience4JCircuitBreakerConfiguration();
 		config.setId(id);
-		//TODO null checks?
+		// TODO null checks?
 		config.setCircuitBreakerConfig(circuitBreakerConfig);
 		config.setTimeLimiterConfig(timeLimiterConfig);
 		return config;
 	}
 
 	public static class Resilience4JCircuitBreakerConfiguration {
+
 		private String id;
+
 		private TimeLimiterConfig timeLimiterConfig;
+
 		private CircuitBreakerConfig circuitBreakerConfig;
 
 		public String getId() {
@@ -81,5 +89,7 @@ public class Resilience4JConfigBuilder implements ConfigBuilder<Resilience4JConf
 		public void setCircuitBreakerConfig(CircuitBreakerConfig circuitBreakerConfig) {
 			this.circuitBreakerConfig = circuitBreakerConfig;
 		}
+
 	}
+
 }

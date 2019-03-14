@@ -16,18 +16,18 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.util.Assert;
@@ -35,16 +35,18 @@ import org.springframework.util.Assert;
 /**
  * @author Ryan Baxter
  */
-public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
+public class Resilience4JCircuitBreakerFactory extends
+		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
-	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id ->
-			new Resilience4JConfigBuilder(id)
-					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.ofDefaults())
-					.build();
+	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
+			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
 
-	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry
+			.ofDefaults();
+
 	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
 	@Override
@@ -53,7 +55,8 @@ public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Res
 	}
 
 	@Override
-	public void configureDefault(Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration) {
+	public void configureDefault(
+			Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
@@ -68,13 +71,16 @@ public class Resilience4JCircuitBreakerFactory extends CircuitBreakerFactory<Res
 	@Override
 	public Resilience4JCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations().computeIfAbsent(id, defaultConfiguration);
-		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
-				circuitBreakerRegistry, executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
+				.computeIfAbsent(id, defaultConfiguration);
+		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(),
+				config.getTimeLimiterConfig(), circuitBreakerRegistry, executorService,
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
-	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
-		for(String id: ids) {
+	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer,
+			String... ids) {
+		for (String id : ids) {
 			circuitBreakerCustomizers.put(id, customizer);
 		}
 	}

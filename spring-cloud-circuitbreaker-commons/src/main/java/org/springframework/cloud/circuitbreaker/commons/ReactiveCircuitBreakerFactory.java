@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.commons;
 
 /**
- * Creates reactive circuit breakers
+ * Creates reactive circuit breakers.
  *
  * @author Ryan Baxter
  */
-public abstract class ReactiveCircuitBreakerFactory<CONF, CONFB extends ConfigBuilder<CONF>> extends AbstractCircuitBreakerFactory<CONF, CONFB> {
+public abstract class ReactiveCircuitBreakerFactory<CONF, CONFB extends ConfigBuilder<CONF>>
+		extends AbstractCircuitBreakerFactory<CONF, CONFB> {
 
 	public abstract ReactiveCircuitBreaker create(String id);
+
 }

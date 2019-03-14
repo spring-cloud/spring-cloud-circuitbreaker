@@ -16,12 +16,16 @@
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
-import reactor.core.publisher.Mono;
-
 import java.time.Duration;
+
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandProperties;
+import com.netflix.hystrix.HystrixObservableCommand;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import reactor.core.publisher.Mono;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,11 +41,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandProperties;
-import com.netflix.hystrix.HystrixObservableCommand;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
@@ -55,6 +56,23 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 	@LocalServerPort
 	int port = 0;
 
+	@Autowired
+	ReactiveHystrixCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+
+	@Before
+	public void setup() {
+		service.setPort(port);
+	}
+
+	@Test
+	public void testSlow() {
+		assertThat(service.slow().block()).isEqualTo("fallback");
+	}
+
+	@Test
+	public void testNormal() {
+		assertThat(service.normal().block()).isEqualTo("normal");
+	}
 
 	@Configuration
 	@EnableAutoConfiguration
@@ -73,65 +91,59 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 
 		@Bean
 		public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
-			return factory -> factory.configure(builder -> builder.commandProperties(
-							HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "slow");
+			return factory -> factory
+					.configure(
+							builder -> builder.commandProperties(HystrixCommandProperties
+									.Setter().withExecutionTimeoutInMilliseconds(2000)),
+							"slow");
 		}
 
 		@Bean
 		public Customizer<ReactiveHystrixCircuitBreakerFactory> defaultConfig() {
-			return factory -> factory.configureDefault(id -> HystrixObservableCommand.Setter
-					.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-					.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-							.withExecutionTimeoutInMilliseconds(4000)));
+			return factory -> factory
+					.configureDefault(id -> HystrixObservableCommand.Setter
+							.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
+							.andCommandPropertiesDefaults(HystrixCommandProperties
+									.Setter().withExecutionTimeoutInMilliseconds(4000)));
 		}
 
 		@Service
 		public static class DemoControllerService {
+
 			private int port = 0;
+
 			private ReactiveCircuitBreakerFactory cbFactory;
 
-
-			public DemoControllerService(ReactiveCircuitBreakerFactory cbBuilder) {
+			DemoControllerService(ReactiveCircuitBreakerFactory cbBuilder) {
 				this.cbFactory = cbBuilder;
 			}
 
 			public Mono<String> slow() {
-				return cbFactory.create("slow").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/slow").retrieve().bodyToMono(String.class), t -> {
-					t.printStackTrace();
-					return Mono.just("fallback");
-				});
+				return cbFactory.create("slow").run(
+						WebClient.builder().baseUrl("http://localhost:" + port).build()
+								.get().uri("/slow").retrieve().bodyToMono(String.class),
+						t -> {
+							t.printStackTrace();
+							return Mono.just("fallback");
+						});
 			}
 
 			public Mono<String> normal() {
-				return cbFactory.create("normal").run(WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/normal").retrieve().bodyToMono(String.class), t -> {
-					t.printStackTrace();
-					return Mono.just("fallback");
-				});
+				return cbFactory.create("normal").run(
+						WebClient.builder().baseUrl("http://localhost:" + port).build()
+								.get().uri("/normal").retrieve().bodyToMono(String.class),
+						t -> {
+							t.printStackTrace();
+							return Mono.just("fallback");
+						});
 			}
 
 			public void setPort(int port) {
 				this.port = port;
 			}
+
 		}
+
 	}
 
-	@Autowired
-	ReactiveHystrixCircuitBreakerIntegrationTest.Application.DemoControllerService service;
-
-	@Before
-	public void setup() {
-		service.setPort(port);
-	}
-
-	@Test
-	public void testSlow() {
-		assertEquals("fallback", service.slow().block());
-	}
-
-	@Test
-	public void testNormal() {
-		assertEquals("normal", service.normal().block());
-	}
 }

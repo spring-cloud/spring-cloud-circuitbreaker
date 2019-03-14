@@ -17,20 +17,22 @@
 package org.springframework.cloud.circuitbreaker.hystrix;
 
 import java.util.function.Function;
+
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixObservableCommand;
+
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.util.Assert;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixObservableCommand;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveHystrixCircuitBreakerFactory extends ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter,
-		ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder> {
+public class ReactiveHystrixCircuitBreakerFactory extends
+		ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter, ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder> {
 
-	private Function<String, HystrixObservableCommand.Setter> defaultConfiguration = id ->
-			HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id));
+	private Function<String, HystrixObservableCommand.Setter> defaultConfiguration = id -> HystrixObservableCommand.Setter
+			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id));
 
 	@Override
 	protected ReactiveHystrixConfigBuilder configBuilder(String id) {
@@ -38,18 +40,21 @@ public class ReactiveHystrixCircuitBreakerFactory extends ReactiveCircuitBreaker
 	}
 
 	@Override
-	public void configureDefault(Function<String, HystrixObservableCommand.Setter> defaultConfiguration) {
+	public void configureDefault(
+			Function<String, HystrixObservableCommand.Setter> defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		HystrixObservableCommand.Setter setter = getConfigurations().computeIfAbsent(id, defaultConfiguration);
+		HystrixObservableCommand.Setter setter = getConfigurations().computeIfAbsent(id,
+				defaultConfiguration);
 		return new ReactiveHystrixCircuitBreaker(setter);
 	}
 
-	public static class ReactiveHystrixConfigBuilder extends AbstractHystrixConfigBuilder<HystrixObservableCommand.Setter> {
+	public static class ReactiveHystrixConfigBuilder
+			extends AbstractHystrixConfigBuilder<HystrixObservableCommand.Setter> {
 
 		public ReactiveHystrixConfigBuilder(String id) {
 			super(id);
@@ -57,8 +62,11 @@ public class ReactiveHystrixCircuitBreakerFactory extends ReactiveCircuitBreaker
 
 		@Override
 		public HystrixObservableCommand.Setter build() {
-			return HystrixObservableCommand.Setter.withGroupKey(getGroupKey()).andCommandKey(getCommandKey())
+			return HystrixObservableCommand.Setter.withGroupKey(getGroupKey())
+					.andCommandKey(getCommandKey())
 					.andCommandPropertiesDefaults(getCommandPropertiesSetter());
 		}
+
 	}
+
 }

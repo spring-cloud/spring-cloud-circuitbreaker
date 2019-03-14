@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.circuitbreaker.hystrix;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.PostConstruct;
+
+import com.netflix.hystrix.Hystrix;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,7 +31,6 @@ import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.netflix.hystrix.Hystrix;
 
 /**
  * @author Ryan Baxter
@@ -45,7 +47,8 @@ public class HystrixCircuitBreakerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
-	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
+			"reactor.core.publisher.Flux" })
 	public ReactiveHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory() {
 		return new ReactiveHystrixCircuitBreakerFactory();
 	}
@@ -63,10 +66,12 @@ public class HystrixCircuitBreakerAutoConfiguration {
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
 		}
+
 	}
 
 	@Configuration
-	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux"})
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
+			"reactor.core.publisher.Flux" })
 	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
@@ -79,5 +84,7 @@ public class HystrixCircuitBreakerAutoConfiguration {
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
 		}
+
 	}
+
 }

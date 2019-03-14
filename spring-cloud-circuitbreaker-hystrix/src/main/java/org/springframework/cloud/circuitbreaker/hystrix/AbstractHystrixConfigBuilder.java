@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.hystrix;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
-import org.springframework.util.StringUtils;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 
+import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.util.StringUtils;
+
 /**
  * @author Ryan Baxter
  */
-public abstract class AbstractHystrixConfigBuilder<CONFB> implements ConfigBuilder<CONFB> {
+public abstract class AbstractHystrixConfigBuilder<CONFB>
+		implements ConfigBuilder<CONFB> {
 
 	private final String commandName;
+
 	protected String groupName;
+
 	protected HystrixCommandProperties.Setter commandProperties;
 
 	public AbstractHystrixConfigBuilder(String id) {
 		this.commandName = id;
 	}
-
 
 	public AbstractHystrixConfigBuilder groupName(String groupName) {
 		this.groupName = groupName;
@@ -50,7 +54,8 @@ public abstract class AbstractHystrixConfigBuilder<CONFB> implements ConfigBuild
 		String groupNameToUse;
 		if (StringUtils.hasText(this.groupName)) {
 			groupNameToUse = this.groupName;
-		} else {
+		}
+		else {
 			groupNameToUse = commandName + "group";
 		}
 		return HystrixCommandGroupKey.Factory.asKey(groupNameToUse);
@@ -61,8 +66,7 @@ public abstract class AbstractHystrixConfigBuilder<CONFB> implements ConfigBuild
 	}
 
 	protected HystrixCommandProperties.Setter getCommandPropertiesSetter() {
-		return this.commandProperties != null
-				? this.commandProperties
+		return this.commandProperties != null ? this.commandProperties
 				: HystrixCommandProperties.Setter();
 	}
 
