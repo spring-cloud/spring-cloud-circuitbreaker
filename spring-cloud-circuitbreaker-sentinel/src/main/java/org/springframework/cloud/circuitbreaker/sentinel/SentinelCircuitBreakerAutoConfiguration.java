@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.ArrayList;
@@ -31,10 +32,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Auto configuration for {@link SentinelCircuitBreaker}.
+ *
  * @author Eric Zhao
  */
 @Configuration
-@ConditionalOnClass({SphU.class})
+@ConditionalOnClass({ SphU.class })
 public class SentinelCircuitBreakerAutoConfiguration {
 
 	@Bean
@@ -45,15 +48,18 @@ public class SentinelCircuitBreakerAutoConfiguration {
 
 	@Configuration
 	public static class SentinelCustomizerConfiguration {
-		@Autowired(required = false)
-		public List<Customizer<SentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		public SentinelCircuitBreakerFactory factory;
+		private List<Customizer<SentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired(required = false)
+		private SentinelCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
 		}
+
 	}
+
 }

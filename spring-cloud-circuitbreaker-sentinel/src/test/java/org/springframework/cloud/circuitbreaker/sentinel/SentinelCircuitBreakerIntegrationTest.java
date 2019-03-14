@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.ArrayList;
@@ -22,10 +23,10 @@ import java.util.List;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
@@ -51,88 +52,102 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext
 public class SentinelCircuitBreakerIntegrationTest {
 
-    @Configuration
-    @EnableAutoConfiguration
-    @RestController
-    protected static class Application {
-        @GetMapping("/slow")
-        public String slow() throws InterruptedException {
-            Thread.sleep(500);
-            return "slow";
-        }
+	@Autowired
+	private Application.DemoControllerService service;
 
-        @GetMapping("/normal")
-        public String normal() {
-            return "normal";
-        }
+	@Test
+	public void testSlow() throws Exception {
+		// The first 5 requests should pass.
+		assertThat(service.slow()).isEqualTo("slow");
+		assertThat(service.slow()).isEqualTo("slow");
+		assertThat(service.slow()).isEqualTo("slow");
+		assertThat(service.slow()).isEqualTo("slow");
+		assertThat(service.slow()).isEqualTo("slow");
 
-        @Bean
-        public Customizer<SentinelCircuitBreakerFactory> slowCustomizer() {
-            String slowId = "slow";
-            List<DegradeRule> rules = Collections.singletonList(
-                new DegradeRule(slowId).setGrade(RuleConstant.DEGRADE_GRADE_RT)
-                    .setCount(100)
-                    .setTimeWindow(10)
-            );
-            return factory -> factory.configure(builder -> builder.rules(rules), slowId);
-        }
+		// Then in the next 10s, the fallback method should be called.
+		for (int i = 0; i < 10; i++) {
+			assertThat(service.slow()).isEqualTo("fallback");
+			Thread.sleep(1000);
+		}
 
-        @Service
-        public static class DemoControllerService {
-            private TestRestTemplate rest;
-            private CircuitBreakerFactory cbFactory;
+		// Recovered.
+		assertThat(service.slow()).isEqualTo("slow");
+	}
 
-            public DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
-                this.rest = rest;
-                this.cbFactory = cbFactory;
-            }
+	@Test
+	public void testNormal() {
+		assertThat(service.normal()).isEqualTo("normal");
+	}
 
-            public String slow() {
-                return cbFactory.create("slow").run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
-            }
+	@Before
+	public void setUp() {
+		DegradeRuleManager.loadRules(new ArrayList<>());
+	}
 
-            public String normal() {
-                return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
-                    t -> "fallback");
-            }
-        }
-    }
+	@Before
+	public void tearDown() {
+		DegradeRuleManager.loadRules(new ArrayList<>());
+	}
 
-    @Autowired
-    Application.DemoControllerService service;
+	@Configuration
+	@EnableAutoConfiguration
+	@RestController
+	protected static class Application {
 
-    @Test
-    public void testSlow() throws Exception {
-        // The first 5 requests should pass.
-        assertEquals("slow", service.slow());
-        assertEquals("slow", service.slow());
-        assertEquals("slow", service.slow());
-        assertEquals("slow", service.slow());
-        assertEquals("slow", service.slow());
+		@GetMapping("/slow")
+		public String slow() throws InterruptedException {
+			Thread.sleep(500);
+			return "slow";
+		}
 
-        // Then in the next 10s, the fallback method should be called.
-        for (int i = 0; i < 10; i++) {
-            assertEquals("fallback", service.slow());
-            Thread.sleep(1000);
-        }
+		@GetMapping("/normal")
+		public String normal() {
+			return "normal";
+		}
 
-        // Recovered.
-        assertEquals("slow", service.slow());
-    }
+		@Bean
+		public Customizer<SentinelCircuitBreakerFactory> slowCustomizer() {
+			String slowId = "slow";
+			List<DegradeRule> rules = Collections.singletonList(
+					new DegradeRule(slowId).setGrade(RuleConstant.DEGRADE_GRADE_RT)
+							.setCount(100).setTimeWindow(10));
+			return factory -> {
+				factory.configure(builder -> builder.rules(rules), slowId);
+				factory.configureDefault(id -> new SentinelConfigBuilder()
+						.resourceName(id)
+						.rules(Collections.singletonList(new DegradeRule(id)
+								.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
+								.setCount(0.5).setTimeWindow(10)))
+						.build());
+			};
+		}
 
-    @Test
-    public void testNormal() {
-        assertEquals("normal", service.normal());
-    }
+		@Service
+		public static class DemoControllerService {
 
+			private TestRestTemplate rest;
 
-    @Before
-    public void setUp() {
-        DegradeRuleManager.loadRules(new ArrayList<>());
-    }
+			private CircuitBreakerFactory cbFactory;
 
-    @Before
-    public void tearDown() {
-        DegradeRuleManager.loadRules(new ArrayList<>());
-    }
+			DemoControllerService(TestRestTemplate rest,
+					CircuitBreakerFactory cbFactory) {
+				this.rest = rest;
+				this.cbFactory = cbFactory;
+			}
+
+			public String slow() {
+				return cbFactory.create("slow").run(
+						() -> rest.getForObject("/slow", String.class), t -> "fallback");
+			}
+
+			public String normal() {
+				return cbFactory.create("normal").run(
+						() -> rest.getForObject("/normal", String.class),
+						t -> "fallback");
+			}
+
+		}
+
+	}
+
 }

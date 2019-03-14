@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.ArrayList;
@@ -26,13 +27,11 @@ import org.springframework.util.Assert;
 /**
  * @author Eric Zhao
  */
-public class SentinelCircuitBreakerFactory extends CircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
+public class SentinelCircuitBreakerFactory extends
+		CircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
 
-	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id ->
-			new SentinelConfigBuilder()
-					.resourceName(id)
-					.rules(new ArrayList<>())
-					.build();
+	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id -> new SentinelConfigBuilder()
+			.resourceName(id).rules(new ArrayList<>()).build();
 
 	@Override
 	public CircuitBreaker create(String id) {
@@ -48,7 +47,9 @@ public class SentinelCircuitBreakerFactory extends CircuitBreakerFactory<Sentine
 	}
 
 	@Override
-	public void configureDefault(Function<String, SentinelCircuitBreakerConfiguration> defaultConfiguration) {
+	public void configureDefault(
+			Function<String, SentinelCircuitBreakerConfiguration> defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
 	}
+
 }

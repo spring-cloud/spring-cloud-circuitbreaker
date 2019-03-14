@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.ArrayList;
@@ -42,11 +43,13 @@ import org.springframework.util.Assert;
 public class SentinelCircuitBreaker implements CircuitBreaker {
 
 	private final String resourceName;
+
 	private final EntryType entryType;
 
 	private final List<DegradeRule> rules;
 
-	public SentinelCircuitBreaker(String resourceName, EntryType entryType, List<DegradeRule> rules) {
+	public SentinelCircuitBreaker(String resourceName, EntryType entryType,
+			List<DegradeRule> rules) {
 		Assert.hasText(resourceName, "resourceName cannot be blank");
 		Assert.notNull(rules, "rules should not be null");
 		this.resourceName = resourceName;
@@ -78,7 +81,8 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 		Entry entry = null;
 		try {
 			entry = SphU.entry(resourceName, entryType);
-			// If the SphU.entry() does not throw `BlockException`, it means that the request can pass.
+			// If the SphU.entry() does not throw `BlockException`, it means that the
+			// request can pass.
 			return toRun.get();
 		}
 		catch (BlockException ex) {
@@ -88,7 +92,8 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 			return fallback.apply(ex);
 		}
 		catch (Exception ex) {
-			// For other kinds of exceptions, we'll trace the exception count via Tracer.trace(ex).
+			// For other kinds of exceptions, we'll trace the exception count via
+			// Tracer.trace(ex).
 			Tracer.trace(ex);
 			return fallback.apply(ex);
 		}
@@ -99,4 +104,5 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 			}
 		}
 	}
+
 }

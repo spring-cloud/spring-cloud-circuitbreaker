@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.ArrayList;
@@ -28,10 +29,13 @@ import org.springframework.util.Assert;
 /**
  * @author Eric Zhao
  */
-public class SentinelConfigBuilder implements ConfigBuilder<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> {
+public class SentinelConfigBuilder implements
+		ConfigBuilder<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> {
 
 	private String resourceName;
+
 	private EntryType entryType;
+
 	private List<DegradeRule> rules;
 
 	public SentinelConfigBuilder() {
@@ -59,17 +63,19 @@ public class SentinelConfigBuilder implements ConfigBuilder<SentinelConfigBuilde
 	@Override
 	public SentinelCircuitBreakerConfiguration build() {
 		Assert.hasText(resourceName, "resourceName cannot be empty");
-		List<DegradeRule> rules = Optional.ofNullable(this.rules).orElse(new ArrayList<>());
+		List<DegradeRule> rules = Optional.ofNullable(this.rules)
+				.orElse(new ArrayList<>());
 
 		EntryType entryType = Optional.ofNullable(this.entryType).orElse(EntryType.OUT);
 		return new SentinelCircuitBreakerConfiguration()
-				.setResourceName(this.resourceName)
-				.setEntryType(entryType)
+				.setResourceName(this.resourceName).setEntryType(entryType)
 				.setRules(rules);
 	}
 
 	public static class SentinelCircuitBreakerConfiguration {
+
 		private String resourceName;
+
 		private EntryType entryType;
 
 		private List<DegradeRule> rules;
@@ -100,5 +106,7 @@ public class SentinelConfigBuilder implements ConfigBuilder<SentinelConfigBuilde
 			this.rules = rules;
 			return this;
 		}
+
 	}
+
 }
