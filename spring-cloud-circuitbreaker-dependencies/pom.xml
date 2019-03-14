@@ -19,7 +19,7 @@
 
     <properties>
         <resilience4j.version>0.13.1</resilience4j.version>
-        <sentinel.version>1.4.2</sentinel.version>
+        <sentinel.version>1.5.0</sentinel.version>
     </properties>
 
     <dependencyManagement>
@@ -42,6 +42,11 @@
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-core</artifactId>
+                <version>${sentinel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-reactor-adapter</artifactId>
                 <version>${sentinel.version}</version>
             </dependency>
             <dependency>
