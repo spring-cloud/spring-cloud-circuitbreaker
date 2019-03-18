@@ -75,6 +75,7 @@
         <module>spring-cloud-circuitbreaker-commons</module>
         <module>spring-cloud-starter-circuitbreaker</module>
         <module>spring-cloud-circuitbreaker-hystrix</module>
+        <module>spring-cloud-circuitbreaker-sentinel</module>
         <module>docs</module>
     </modules>
     <build>
