@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.springframework.cloud.circuitbreaker.sentinel.SentinelCircuitBreakerAutoConfiguration
+org.springframework.cloud.circuitbreaker.sentinel.SentinelCircuitBreakerAutoConfiguration,\
+org.springframework.cloud.circuitbreaker.sentinel.ReactiveSentinelCircuitBreakerAutoConfiguration
