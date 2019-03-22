@@ -3,7 +3,7 @@
 ==== Default Configuration
 
 To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
-`SentinelCircuitBreakerFactory`.
+`SentinelCircuitBreakerFactory` or `ReactiveSentinelCircuitBreakerFactory`.
 The `configureDefault` method can be used to provide a default configuration.
 
 ====
@@ -20,6 +20,20 @@ public Customizer<SentinelCircuitBreakerFactory> defaultCustomizer() {
 You can choose to provide default circuit breaking rules via `SentinelConfigBuilder#rules(rules)`.
 You can also choose to load circuit breaking rules later elsewhere using
 `DegradeRuleManager.loadRules(rules)` API of Sentinel.
+
+
+===== Reactive Example
+
+====
+[source,java]
+----
+@Bean
+public Customizer<ReactiveSentinelCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> factory.configureDefault(id -> new SentinelConfigBuilder(id)
+			.build());
+}
+----
+====
 
 
 ==== Specific Circuit Breaker Configuration
@@ -39,6 +53,23 @@ public Customizer<SentinelCircuitBreakerFactory> slowCustomizer() {
 			.setTimeWindow(10)
 		);
 	return factory -> factory.configure(builder -> builder.rules(rules), slowId);
+}
+----
+====
+
+===== Reactive Example
+
+====
+[source,java]
+----
+@Bean
+public Customizer<ReactiveSentinelCircuitBreakerFactory> customizer() {
+	List<DegradeRule> rules = Collections.singletonList(
+		new DegradeRule().setGrade(RuleConstant.DEGRADE_GRADE_RT)
+			.setCount(100)
+			.setTimeWindow(10)
+		);
+	return factory -> factory.configure(builder -> builder.rules(rules), "foo", "bar");
 }
 ----
 ====
