@@ -45,7 +45,7 @@ public class Resilience4JCircuitBreakerFactory extends
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry
 			.ofDefaults();
 
-	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private ExecutorService executorService = Executors.newCachedThreadPool();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
