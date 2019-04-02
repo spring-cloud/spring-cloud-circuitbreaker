@@ -22,25 +22,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
-import com.alibaba.csp.sentinel.SphU;
-import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
+import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
 import org.springframework.util.Assert;
 
 /**
- * Sentinel implementation of {@link CircuitBreaker}.
+ * Sentinel implementation of {@link ReactiveCircuitBreaker}.
  *
  * @author Eric Zhao
  */
-public class SentinelCircuitBreaker implements CircuitBreaker {
+public class ReactiveSentinelCircuitBreaker implements ReactiveCircuitBreaker {
 
 	private final String resourceName;
 
@@ -48,8 +47,8 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 
 	private final List<DegradeRule> rules;
 
-	public SentinelCircuitBreaker(String resourceName, EntryType entryType,
-		List<DegradeRule> rules) {
+	public ReactiveSentinelCircuitBreaker(String resourceName, EntryType entryType,
+			List<DegradeRule> rules) {
 		Assert.hasText(resourceName, "resourceName cannot be blank");
 		Assert.notNull(rules, "rules should not be null");
 		this.resourceName = resourceName;
@@ -59,11 +58,11 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 		applyToSentinelRuleManager();
 	}
 
-	public SentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
+	public ReactiveSentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
 		this(resourceName, EntryType.OUT, rules);
 	}
 
-	public SentinelCircuitBreaker(String resourceName) {
+	public ReactiveSentinelCircuitBreaker(String resourceName) {
 		this(resourceName, EntryType.OUT, Collections.emptyList());
 	}
 
@@ -83,32 +82,23 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 	}
 
 	@Override
-	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-		Entry entry = null;
-		try {
-			entry = SphU.entry(resourceName, entryType);
-			// If the SphU.entry() does not throw `BlockException`, it means that the
-			// request can pass.
-			return toRun.get();
+	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
+		Mono<T> toReturn = toRun.transform(new SentinelReactorTransformer<>(
+				new EntryConfig(resourceName, entryType)));
+		if (fallback != null) {
+			toReturn = toReturn.onErrorResume(fallback);
 		}
-		catch (BlockException ex) {
-			// SphU.entry() may throw BlockException which indicates that
-			// the request was rejected (flow control or circuit breaking triggered).
-			// So it should not be counted as the business exception.
-			return fallback.apply(ex);
+		return toReturn;
+	}
+
+	@Override
+	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+		Flux<T> toReturn = toRun.transform(new SentinelReactorTransformer<>(
+				new EntryConfig(resourceName, entryType)));
+		if (fallback != null) {
+			toReturn = toReturn.onErrorResume(fallback);
 		}
-		catch (Exception ex) {
-			// For other kinds of exceptions, we'll trace the exception count via
-			// Tracer.trace(ex).
-			Tracer.trace(ex);
-			return fallback.apply(ex);
-		}
-		finally {
-			// Guarantee the invocation has been completed.
-			if (entry != null) {
-				entry.exit();
-			}
-		}
+		return toReturn;
 	}
 
 }

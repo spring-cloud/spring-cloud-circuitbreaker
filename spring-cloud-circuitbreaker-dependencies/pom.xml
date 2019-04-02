@@ -19,7 +19,7 @@
 
     <properties>
         <resilience4j.version>0.13.1</resilience4j.version>
-        <sentinel.version>1.5.0</sentinel.version>
+        <sentinel.version>1.5.1</sentinel.version>
     </properties>
 
     <dependencyManagement>
