@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,10 +35,14 @@ import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,6 +88,12 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
 	}
 
+	@Test
+	public void testSlowResponsesDontFailSubsequentGoodRequests() {
+		assertThat(service.slowOnDemand(5000)).isEqualTo("fallback");
+		assertThat(service.slowOnDemand(0)).isEqualTo("normal");
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -97,6 +107,23 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 		@GetMapping("/normal")
 		public String normal() {
+			return "normal";
+		}
+
+		@GetMapping("/slowOnDemand")
+		public String slowOnDemand(@RequestHeader HttpHeaders headers) {
+			if (headers.containsKey("delayInMilliseconds")) {
+				String delayString = headers.getFirst("delayInMilliseconds");
+				if (delayString != null) {
+					try {
+						Thread.sleep(Integer.parseInt(delayString));
+					}
+					catch (NumberFormatException | InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
 			return "normal";
 		}
 
@@ -144,6 +171,26 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				return cbFactory.create("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
+			}
+
+			public String slowOnDemand(int delayInMilliseconds) {
+				return cbFactory.create("slow")
+						.run(() -> rest
+								.exchange("/slowOnDemand", HttpMethod.GET,
+										createEntityWithOptionalDelayHeader(
+												delayInMilliseconds),
+										String.class)
+								.getBody(), t -> "fallback");
+			}
+
+			private HttpEntity<String> createEntityWithOptionalDelayHeader(
+					int delayInMilliseconds) {
+				HttpHeaders headers = new HttpHeaders();
+				if (delayInMilliseconds > 0) {
+					headers.set("delayInMilliseconds",
+							Integer.toString(delayInMilliseconds));
+				}
+				return new HttpEntity<>(null, headers);
 			}
 
 		}
