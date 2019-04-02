@@ -431,7 +431,7 @@ public Customizer&lt;ReactiveResilience4JCircuitBreakerFactory&gt; slowCusomtize
 <h4 id="_default_configuration_3"><a class="link" href="#_default_configuration_3">Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customizer</code> bean that is passed a
-<code>SentinelCircuitBreakerFactory</code>.
+<code>SentinelCircuitBreakerFactory</code> or <code>ReactiveSentinelCircuitBreakerFactory</code>.
 The <code>configureDefault</code> method can be used to provide a default configuration.</p>
 </div>
 <div class="exampleblock">
@@ -450,7 +450,23 @@ public Customizer&lt;SentinelCircuitBreakerFactory&gt; defaultCustomizer() {
 <div class="paragraph">
 <p>You can choose to provide default circuit breaking rules via <code>SentinelConfigBuilder#rules(rules)</code>.
 You can also choose to load circuit breaking rules later elsewhere using
-<code>DegradeRuleManager.loadRules(rules)</code> API of Sentinel.</p>
+<code>DegradeRuleManager.loadRules(rules)</code> API of Sentinel, or via Sentinel dashboard.</p>
+</div>
+<div class="sect4">
+<h5 id="_reactive_example_5"><a class="link" href="#_reactive_example_5">Reactive Example</a></h5>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public Customizer&lt;ReactiveSentinelCircuitBreakerFactory&gt; defaultCustomizer() {
+	return factory -&gt; factory.configureDefault(id -&gt; new SentinelConfigBuilder(id)
+			.build());
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -473,6 +489,26 @@ public Customizer&lt;SentinelCircuitBreakerFactory&gt; slowCustomizer() {
 		);
 	return factory -&gt; factory.configure(builder -&gt; builder.rules(rules), slowId);
 }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_reactive_example_6"><a class="link" href="#_reactive_example_6">Reactive Example</a></h5>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public Customizer&lt;ReactiveSentinelCircuitBreakerFactory&gt; customizer() {
+	List&lt;DegradeRule&gt; rules = Collections.singletonList(
+		new DegradeRule().setGrade(RuleConstant.DEGRADE_GRADE_RT)
+			.setCount(100)
+			.setTimeWindow(10)
+		);
+	return factory -&gt; factory.configure(builder -&gt; builder.rules(rules), "foo", "bar");
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
