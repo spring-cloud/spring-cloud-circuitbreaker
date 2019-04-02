@@ -19,7 +19,7 @@ public Customizer<SentinelCircuitBreakerFactory> defaultCustomizer() {
 
 You can choose to provide default circuit breaking rules via `SentinelConfigBuilder#rules(rules)`.
 You can also choose to load circuit breaking rules later elsewhere using
-`DegradeRuleManager.loadRules(rules)` API of Sentinel.
+`DegradeRuleManager.loadRules(rules)` API of Sentinel, or via Sentinel dashboard.
 
 
 ===== Reactive Example

@@ -17,7 +17,9 @@
 package org.springframework.cloud.circuitbreaker.sentinel;
 
 import java.util.Arrays;
+import java.util.Collections;
 
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,6 +32,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Eric Zhao
  */
 public class ReactiveSentinelCircuitBreakerTest {
+
+	@Test
+	public void testCreateWithNullRule() {
+		String id = "testCreateReactiveCbWithNullRule";
+		ReactiveSentinelCircuitBreaker cb = new ReactiveSentinelCircuitBreaker(id, Collections.singletonList(null));
+		assertThat(cb.run(Mono.just("foobar")).block()).isEqualTo("foobar");
+		assertThat(DegradeRuleManager.hasConfig(id)).isFalse();
+	}
 
 	@Test
 	public void runMono() {
