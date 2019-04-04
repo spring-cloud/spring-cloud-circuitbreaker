@@ -19,6 +19,7 @@
 
     <properties>
         <resilience4j.version>0.13.1</resilience4j.version>
+		<spring-retry.version>1.2.4</spring-retry.version>
     </properties>
 
     <dependencyManagement>
@@ -38,6 +39,11 @@
                 <artifactId>resilience4j-reactor</artifactId>
                 <version>${resilience4j.version}</version>
             </dependency>
+			<dependency>
+				<groupId>org.springframework.retry</groupId>
+				<artifactId>spring-retry</artifactId>
+				<version>${spring-retry.version}</version>
+			</dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-circuitbreaker-resilience4j</artifactId>
@@ -48,6 +54,11 @@
                 <artifactId>spring-cloud-circuitbreaker-hystrix</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-circuitbreaker-spring-retry</artifactId>
+				<version>${project.version}</version>
+			</dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-circuitbreaker-commons</artifactId>
