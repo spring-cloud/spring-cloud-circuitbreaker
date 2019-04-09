@@ -1,7 +1,7 @@
 :github-tag: master
 :github-repo: spring-cloud-incubator/spring-cloud-circuitbreaker
-:github-raw: http://raw.github.com/{github-repo}/{github-tag}
-:github-code: http://github.com/{github-repo}/tree/{github-tag}
+:github-raw: https://raw.github.com/{github-repo}/{github-tag}
+:github-code: https://github.com/{github-repo}/tree/{github-tag}
 :all: {asterisk}{asterisk}
 :nofooter:
 :branch: master
@@ -20,6 +20,7 @@ breaker implementation that best fits your needs for your app.
 
 * https://github.com/Netflix/Hystrix[Netfix Hystrix]
 * https://github.com/resilience4j/resilience4j[Resilience4J]
+* https://github.com/alibaba/Sentinel[Sentinel]
 
 == Core Concepts
 
@@ -95,6 +96,9 @@ include::spring-cloud-circuitbreaker-hystrix.adoc[]
 
 
 include::spring-cloud-circuitbreaker-resilience4j.adoc[]
+
+
+include::spring-cloud-circuitbreaker-sentinel.adoc[]
 
 == Building
 
