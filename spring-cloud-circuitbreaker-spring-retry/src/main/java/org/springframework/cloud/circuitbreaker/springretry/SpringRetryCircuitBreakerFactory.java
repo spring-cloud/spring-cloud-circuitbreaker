@@ -24,22 +24,19 @@ import java.util.function.Function;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.retry.backoff.NoBackOffPolicy;
-import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
  */
-public class SpringRetryCircuitBreakerFactory extends CircuitBreakerFactory<SpringRetryConfigBuilder.SpringRetryConfig, SpringRetryConfigBuilder> {
+public class SpringRetryCircuitBreakerFactory extends
+		CircuitBreakerFactory<SpringRetryConfigBuilder.SpringRetryConfig, SpringRetryConfigBuilder> {
 
-	private Function<String, SpringRetryConfigBuilder.SpringRetryConfig> defaultConfig = id ->
-		new SpringRetryConfigBuilder(id).backOffPolicy(new NoBackOffPolicy())
-			.retryPolicy(new CircuitBreakerRetryPolicy()).build();
+	private Function<String, SpringRetryConfigBuilder.SpringRetryConfig> defaultConfig = id -> new SpringRetryConfigBuilder(
+			id).build();
 
 	private Map<String, Customizer<RetryTemplate>> retryTemplateCustomizers = new HashMap<>();
-
 
 	@Override
 	protected SpringRetryConfigBuilder configBuilder(String id) {
@@ -47,20 +44,25 @@ public class SpringRetryCircuitBreakerFactory extends CircuitBreakerFactory<Spri
 	}
 
 	@Override
-	public void configureDefault(Function<String, SpringRetryConfigBuilder.SpringRetryConfig> defaultConfiguration) {
+	public void configureDefault(
+			Function<String, SpringRetryConfigBuilder.SpringRetryConfig> defaultConfiguration) {
 		this.defaultConfig = defaultConfiguration;
 	}
 
 	@Override
 	public CircuitBreaker create(String id) {
 		Assert.hasText(id, "A circuit breaker must have an id");
-		SpringRetryConfigBuilder.SpringRetryConfig config = getConfigurations().computeIfAbsent(id, defaultConfig);
-		return new SpringRetryCircuitBreaker(id, config, Optional.ofNullable(retryTemplateCustomizers.get(id)));
+		SpringRetryConfigBuilder.SpringRetryConfig config = getConfigurations()
+				.computeIfAbsent(id, defaultConfig);
+		return new SpringRetryCircuitBreaker(id, config,
+				Optional.ofNullable(retryTemplateCustomizers.get(id)));
 	}
 
-	public void addRetryTemplateCustomizers(Customizer<RetryTemplate> customizer, String... ids) {
-		for(String id : ids) {
+	public void addRetryTemplateCustomizers(Customizer<RetryTemplate> customizer,
+			String... ids) {
+		for (String id : ids) {
 			this.retryTemplateCustomizers.put(id, customizer);
 		}
 	}
+
 }

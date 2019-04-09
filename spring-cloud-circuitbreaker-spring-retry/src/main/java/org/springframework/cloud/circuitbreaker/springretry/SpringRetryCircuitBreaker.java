@@ -31,24 +31,34 @@ import org.springframework.retry.support.RetryTemplate;
 public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
 	private String id;
+
 	private SpringRetryConfigBuilder.SpringRetryConfig config;
+
 	private Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
 
-	public SpringRetryCircuitBreaker(String id, SpringRetryConfigBuilder.SpringRetryConfig config,
-		Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
+	private RetryTemplate retryTemplate;
+
+	public SpringRetryCircuitBreaker(String id,
+			SpringRetryConfigBuilder.SpringRetryConfig config,
+			Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
 		this.id = id;
 		this.config = config;
 		this.retryTemplateCustomizer = retryTemplateCustomizer;
+		this.retryTemplate = new RetryTemplate();
 	}
+
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-		RetryTemplate retryTemplate = new RetryTemplate();
+
 		retryTemplate.setBackOffPolicy(config.getBackOffPolicy());
 		retryTemplate.setRetryPolicy(config.getRetryPolicy());
 
-		retryTemplateCustomizer.ifPresent(customizer -> customizer.customize(retryTemplate));
+		retryTemplateCustomizer
+				.ifPresent(customizer -> customizer.customize(retryTemplate));
 		return retryTemplate.execute(context -> toRun.get(),
-			context -> fallback.apply(context.getLastThrowable()),
-			new DefaultRetryState(id));
+				context -> fallback.apply(context.getLastThrowable()),
+				new DefaultRetryState(id, config.isForceRefreshState(),
+						config.getStateClassifier()));
 	}
+
 }

@@ -16,28 +16,37 @@
 
 package org.springframework.cloud.circuitbreaker.springretry;
 
+import org.springframework.classify.Classifier;
 import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 
 /**
  * @author Ryan Baxter
  */
-public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfigBuilder.SpringRetryConfig> {
+public class SpringRetryConfigBuilder
+		implements ConfigBuilder<SpringRetryConfigBuilder.SpringRetryConfig> {
 
 	private String id;
-	private RetryContext retryContext;
-	private BackOffPolicy backOffPolicy;
-	private RetryPolicy retryPolicy;
+
+	private BackOffPolicy backOffPolicy = new NoBackOffPolicy();
+
+	private RetryPolicy retryPolicy = new CircuitBreakerRetryPolicy();
+
+	private boolean forceRefreshState = false;
+
+	private Classifier<Throwable, Boolean> stateClassifier = new Classifier<Throwable, Boolean>() {
+		@Override
+		public Boolean classify(Throwable classifiable) {
+			return false;
+		}
+	};
 
 	public SpringRetryConfigBuilder(String id) {
 		this.id = id;
-	}
-
-	public SpringRetryConfigBuilder retryContext(RetryContext retryContext) {
-		this.retryContext = retryContext;
-		return this;
 	}
 
 	public SpringRetryConfigBuilder backOffPolicy(BackOffPolicy backOffPolicy) {
@@ -46,7 +55,18 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 	}
 
 	public SpringRetryConfigBuilder retryPolicy(RetryPolicy retryPolicy) {
-		this.retryPolicy = retryPolicy;
+		this.retryPolicy = new CircuitBreakerRetryPolicy(retryPolicy);
+		return this;
+	}
+
+	public SpringRetryConfigBuilder forceRefreshState(boolean refersh) {
+		this.forceRefreshState = forceRefreshState;
+		return this;
+	}
+
+	public SpringRetryConfigBuilder stateClassifier(
+			Classifier<Throwable, Boolean> classifier) {
+		this.stateClassifier = classifier;
 		return this;
 	}
 
@@ -55,17 +75,42 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 		SpringRetryConfig config = new SpringRetryConfig();
 		config.setBackOffPolicy(this.backOffPolicy);
 		config.setId(id);
-		config.setRetryContext(retryContext);
 		config.setRetryPolicy(retryPolicy);
+		config.setForceRefreshState(forceRefreshState);
+		config.setStateClassifier(stateClassifier);
 		return config;
 	}
 
 	public static class SpringRetryConfig {
+
 		private String id;
-		//TODO do we need this?
+
+		// TODO do we need this?
 		private RetryContext retryContext;
+
 		private BackOffPolicy backOffPolicy;
+
 		private RetryPolicy retryPolicy;
+
+		private boolean forceRefreshState;
+
+		private Classifier<Throwable, Boolean> stateClassifier;
+
+		boolean isForceRefreshState() {
+			return forceRefreshState;
+		}
+
+		void setForceRefreshState(boolean forceRefreshState) {
+			this.forceRefreshState = forceRefreshState;
+		}
+
+		Classifier<Throwable, Boolean> getStateClassifier() {
+			return stateClassifier;
+		}
+
+		void setStateClassifier(Classifier<Throwable, Boolean> stateClassifier) {
+			this.stateClassifier = stateClassifier;
+		}
 
 		RetryPolicy getRetryPolicy() {
 			return retryPolicy;
@@ -98,7 +143,7 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 		void setBackOffPolicy(BackOffPolicy backOffPolicy) {
 			this.backOffPolicy = backOffPolicy;
 		}
-	}
 
+	}
 
 }
