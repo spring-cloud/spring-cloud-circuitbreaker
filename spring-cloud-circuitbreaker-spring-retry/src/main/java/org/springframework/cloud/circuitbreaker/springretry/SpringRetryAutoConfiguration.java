@@ -44,7 +44,7 @@ public class SpringRetryAutoConfiguration {
 	}
 
 	@Configuration
-	public static class Resilience4JCustomizerConfiguration {
+	public static class SpringRetryCustomizerConfiguration {
 
 		@Autowired(required = false)
 		private List<Customizer<SpringRetryCircuitBreakerFactory>> customizers = new ArrayList<>();
