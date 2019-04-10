@@ -23,8 +23,11 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
+import org.springframework.retry.support.DefaultRetryState;
 
 /**
+ * Allows consumers to easily construct a {@link SpringRetryConfig} object.
+ *
  * @author Ryan Baxter
  */
 public class SpringRetryConfigBuilder
@@ -45,25 +48,50 @@ public class SpringRetryConfigBuilder
 		}
 	};
 
+	/**
+	 * Constructor.
+	 * @param id The id of the circuit breaker.
+	 */
 	public SpringRetryConfigBuilder(String id) {
 		this.id = id;
 	}
 
+	/**
+	 * Sets the backoff policy when retrying a failed request.
+	 * @param backOffPolicy The {@link BackOffPolicy} to use.
+	 * @return The builder.
+	 */
 	public SpringRetryConfigBuilder backOffPolicy(BackOffPolicy backOffPolicy) {
 		this.backOffPolicy = backOffPolicy;
 		return this;
 	}
 
+	/**
+	 * Sets the {@link RetryPolicy} to use. The {@code RetryPolicy} set here will be
+	 * wrapped in a {@link CircuitBreakerRetryPolicy}.
+	 * @param retryPolicy The {@code RetryPolicy} to use.
+	 * @return The builder.
+	 */
 	public SpringRetryConfigBuilder retryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = new CircuitBreakerRetryPolicy(retryPolicy);
 		return this;
 	}
 
+	/**
+	 * Forces a refresh on the {@link DefaultRetryState} object.
+	 * @param refersh True to refresh, false othrwise.
+	 * @return The builder.
+	 */
 	public SpringRetryConfigBuilder forceRefreshState(boolean refersh) {
 		this.forceRefreshState = forceRefreshState;
 		return this;
 	}
 
+	/**
+	 * The {@link Classifier} used by the {@link DefaultRetryState} object.
+	 * @param classifier The {@code Classifier} to set.
+	 * @return The builder.
+	 */
 	public SpringRetryConfigBuilder stateClassifier(
 			Classifier<Throwable, Boolean> classifier) {
 		this.stateClassifier = classifier;

@@ -31,6 +31,9 @@ import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.stereotype.Service;
@@ -97,6 +100,29 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 				factory.configure(
 						builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(),
 						"slow");
+				factory.addRetryTemplateCustomizers(retryTemplate -> retryTemplate
+						.registerListener(new RetryListener() {
+
+							@Override
+							public <T, E extends Throwable> boolean open(
+									RetryContext context, RetryCallback<T, E> callback) {
+								return false;
+							}
+
+							@Override
+							public <T, E extends Throwable> void close(
+									RetryContext context, RetryCallback<T, E> callback,
+									Throwable throwable) {
+
+							}
+
+							@Override
+							public <T, E extends Throwable> void onError(
+									RetryContext context, RetryCallback<T, E> callback,
+									Throwable throwable) {
+
+							}
+						}));
 			};
 		}
 
