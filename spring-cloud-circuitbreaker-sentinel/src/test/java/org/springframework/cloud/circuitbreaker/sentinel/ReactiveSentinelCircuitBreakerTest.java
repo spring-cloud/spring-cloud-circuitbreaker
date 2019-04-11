@@ -36,7 +36,8 @@ public class ReactiveSentinelCircuitBreakerTest {
 	@Test
 	public void testCreateWithNullRule() {
 		String id = "testCreateReactiveCbWithNullRule";
-		ReactiveSentinelCircuitBreaker cb = new ReactiveSentinelCircuitBreaker(id, Collections.singletonList(null));
+		ReactiveSentinelCircuitBreaker cb = new ReactiveSentinelCircuitBreaker(id,
+				Collections.singletonList(null));
 		assertThat(cb.run(Mono.just("foobar")).block()).isEqualTo("foobar");
 		assertThat(DegradeRuleManager.hasConfig(id)).isFalse();
 	}

@@ -30,19 +30,16 @@ import org.springframework.util.Assert;
  * @author Eric Zhao
  */
 public class SentinelCircuitBreakerFactory extends
-	CircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
+		CircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
 
 	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id -> new SentinelConfigBuilder()
-		.resourceName(id)
-		.entryType(EntryType.OUT)
-		.rules(new ArrayList<>())
-		.build();
+			.resourceName(id).entryType(EntryType.OUT).rules(new ArrayList<>()).build();
 
 	@Override
 	public CircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		SentinelConfigBuilder.SentinelCircuitBreakerConfiguration conf = getConfigurations()
-			.computeIfAbsent(id, defaultConfiguration);
+				.computeIfAbsent(id, defaultConfiguration);
 		return new SentinelCircuitBreaker(id, conf.getEntryType(), conf.getRules());
 	}
 
@@ -53,7 +50,7 @@ public class SentinelCircuitBreakerFactory extends
 
 	@Override
 	public void configureDefault(
-		Function<String, SentinelCircuitBreakerConfiguration> defaultConfiguration) {
+			Function<String, SentinelCircuitBreakerConfiguration> defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
