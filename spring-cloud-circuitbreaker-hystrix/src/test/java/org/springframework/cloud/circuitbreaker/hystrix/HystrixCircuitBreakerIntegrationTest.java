@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -44,12 +45,18 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = HystrixCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = HystrixCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class HystrixCircuitBreakerIntegrationTest {
 
 	@Autowired
 	Application.DemoControllerService service;
+
+	@Test
+	public void testSuperSlow() {
+		assertThat(service.superslow()).isEqualTo("fallback");
+	}
 
 	@Test
 	public void testSlow() {
@@ -77,6 +84,12 @@ public class HystrixCircuitBreakerIntegrationTest {
 			return "normal";
 		}
 
+		@RequestMapping("/superslow")
+		public String superslow() throws InterruptedException {
+			Thread.sleep(5000);
+			return "superslow";
+		}
+
 		@Bean
 		public Customizer<HystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory
@@ -84,6 +97,15 @@ public class HystrixCircuitBreakerIntegrationTest {
 							builder -> builder.commandProperties(HystrixCommandProperties
 									.Setter().withExecutionTimeoutInMilliseconds(2000)),
 							"slow");
+		}
+
+		@Bean
+		public Customizer<HystrixCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> factory
+					.configure(
+							builder -> builder.commandProperties(HystrixCommandProperties
+									.Setter().withExecutionTimeoutInMilliseconds(2000)),
+							"superslow");
 		}
 
 		@Bean
@@ -116,6 +138,15 @@ public class HystrixCircuitBreakerIntegrationTest {
 				return cbFactory.create("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
+			}
+
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public String superslow() {
+				return rest.getForObject("/slow", String.class);
+			}
+
+			public String fallback(Throwable t) {
+				return "fallback";
 			}
 
 		}

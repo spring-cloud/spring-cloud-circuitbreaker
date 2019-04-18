@@ -47,8 +47,8 @@ public class HystrixCircuitBreakerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-			"reactor.core.publisher.Flux" })
+	@ConditionalOnClass(
+			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 	public ReactiveHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory() {
 		return new ReactiveHystrixCircuitBreakerFactory();
 	}
@@ -70,8 +70,8 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	}
 
 	@Configuration
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-			"reactor.core.publisher.Flux" })
+	@ConditionalOnClass(
+			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)

@@ -50,7 +50,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveSentinelCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = ReactiveSentinelCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveSentinelCircuitBreakerIntegrationTest {
 

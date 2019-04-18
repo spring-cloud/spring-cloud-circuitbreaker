@@ -32,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveHystrixCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = ReactiveHystrixCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveHystrixCircuitBreakerIntegrationTest {
 
@@ -74,6 +76,11 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		assertThat(service.normal().block()).isEqualTo("normal");
 	}
 
+	@Test
+	public void testSuperslow() {
+		assertThat(service.superslow().block()).isEqualTo("fallback");
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -89,6 +96,11 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 			return Mono.just("normal");
 		}
 
+		@GetMapping("/superslow")
+		public Mono<String> superslow() {
+			return Mono.just("superslow").delayElement(Duration.ofSeconds(3));
+		}
+
 		@Bean
 		public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory
@@ -96,6 +108,15 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 							builder -> builder.commandProperties(HystrixCommandProperties
 									.Setter().withExecutionTimeoutInMilliseconds(2000)),
 							"slow");
+		}
+
+		@Bean
+		public Customizer<ReactiveHystrixCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> factory
+					.configure(
+							builder -> builder.commandProperties(HystrixCommandProperties
+									.Setter().withExecutionTimeoutInMilliseconds(2000)),
+							"superslow");
 		}
 
 		@Bean
@@ -136,6 +157,16 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 							t.printStackTrace();
 							return Mono.just("fallback");
 						});
+			}
+
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public Mono<String> superslow() {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+					.get().uri("/superslow").retrieve().bodyToMono(String.class);
+			}
+
+			public Mono<String> fallback(Throwable t) {
+				return Mono.just("fallback");
 			}
 
 			public void setPort(int port) {
