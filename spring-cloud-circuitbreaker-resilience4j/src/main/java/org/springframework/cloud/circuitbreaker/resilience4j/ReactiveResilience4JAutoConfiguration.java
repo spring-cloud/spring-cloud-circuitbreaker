@@ -33,8 +33,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Ryan Baxter
  */
 @Configuration
-@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-		"reactor.core.publisher.Flux" })
+@ConditionalOnClass(
+		name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
@@ -44,8 +44,8 @@ public class ReactiveResilience4JAutoConfiguration {
 	}
 
 	@Configuration
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-			"reactor.core.publisher.Flux" })
+	@ConditionalOnClass(
+			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 	public static class ReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)

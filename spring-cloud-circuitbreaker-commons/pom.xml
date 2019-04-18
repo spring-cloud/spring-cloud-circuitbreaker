@@ -14,12 +14,16 @@
     <version>0.0.1.BUILD-SNAPSHOT</version>
 
     <dependencies>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<scope></scope>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>
-
 
 </project>

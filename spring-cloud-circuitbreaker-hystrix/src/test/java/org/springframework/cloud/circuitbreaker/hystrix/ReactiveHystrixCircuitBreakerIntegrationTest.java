@@ -162,7 +162,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
 			public Mono<String> superslow() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
-					.get().uri("/superslow").retrieve().bodyToMono(String.class);
+						.get().uri("/superslow").retrieve().bodyToMono(String.class);
 			}
 
 			public Mono<String> fallback(Throwable t) {

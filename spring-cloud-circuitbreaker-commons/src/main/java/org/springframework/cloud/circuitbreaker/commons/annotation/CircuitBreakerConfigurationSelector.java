@@ -1,11 +1,11 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.circuitbreaker.commons.annotation;
 
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ import org.springframework.util.StringUtils;
  *
  * @author Tim Ysewyn
  */
-public class CircuitBreakerConfigurationSelector extends AdviceModeImportSelector<EnableCircuitBreaker> {
+public class CircuitBreakerConfigurationSelector
+		extends AdviceModeImportSelector<EnableCircuitBreaker> {
 
 	@Override
 	protected String[] selectImports(AdviceMode adviceMode) {
@@ -44,7 +46,8 @@ public class CircuitBreakerConfigurationSelector extends AdviceModeImportSelecto
 	}
 
 	/**
-	 * Return the imports to use if the {@link AdviceMode} is set to {@link AdviceMode#PROXY}.
+	 * Return the imports to use if the {@link AdviceMode} is set to
+	 * {@link AdviceMode#PROXY}.
 	 */
 	private String[] getProxyImports() {
 		List<String> result = new ArrayList<>(2);
@@ -54,10 +57,13 @@ public class CircuitBreakerConfigurationSelector extends AdviceModeImportSelecto
 	}
 
 	/**
-	 * Return the imports to use if the {@link AdviceMode} is set to {@link AdviceMode#ASPECTJ}.
+	 * Return the imports to use if the {@link AdviceMode} is set to
+	 * {@link AdviceMode#ASPECTJ}.
 	 */
 	private String[] getAspectJImports() {
-		List<String> result = Collections.singletonList(AspectJCircuitBreakerConfiguration.class.getName());
+		List<String> result = Collections
+				.singletonList(AspectJCircuitBreakerConfiguration.class.getName());
 		return StringUtils.toStringArray(result);
 	}
+
 }
