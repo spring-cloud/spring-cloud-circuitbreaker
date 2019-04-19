@@ -37,6 +37,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
@@ -78,6 +79,12 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalSuccessConsumer;
 
 	@Mock
+	static EventConsumer<CircuitBreakerOnErrorEvent> superslowErrorConsumer;
+
+	@Mock
+	static EventConsumer<CircuitBreakerOnSuccessEvent> superslowSuccessConsumer;
+
+	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowFluxErrorConsumer;
 
 	@Mock
@@ -88,6 +95,12 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalFluxSuccessConsumer;
+
+	@Mock
+	static EventConsumer<CircuitBreakerOnErrorEvent> superslowFluxErrorConsumer;
+
+	@Mock
+	static EventConsumer<CircuitBreakerOnSuccessEvent> superslowFluxSuccessConsumer;
 
 	@Autowired
 	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
@@ -105,6 +118,9 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		assertThat(service.slow().block()).isEqualTo("fallback");
 		verify(slowErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+		assertThat(service.superslow().block()).isEqualTo("fallback");
+		verify(superslowErrorConsumer, times(1)).consumeEvent(any());
+		verify(superslowSuccessConsumer, times(0)).consumeEvent(any());
 		StepVerifier.create(service.normalFlux()).expectNext("normalflux")
 				.verifyComplete();
 		verify(normalFluxErrorConsumer, times(0)).consumeEvent(any());
@@ -113,6 +129,10 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 				.verifyComplete();
 		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+		StepVerifier.create(service.superslowFlux()).expectNext("fluxfallback")
+				.verifyComplete();
+		verify(superslowFluxErrorConsumer, times(1)).consumeEvent(any());
+		verify(superslowSuccessConsumer, times(0)).consumeEvent(any());
 	}
 
 	@Configuration
@@ -141,7 +161,7 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
+		public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
 				factory.configureDefault(
 						id -> new Resilience4JConfigBuilder(id)
@@ -167,6 +187,26 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
 						.getEventPublisher().onError(normalFluxErrorConsumer)
 						.onSuccess(normalFluxSuccessConsumer), "normalflux");
+			};
+		}
+
+		@Bean
+		public Customizer<ReactiveResilience4JCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> {
+				factory.configure(
+						builder -> builder
+								.timeLimiterConfig(TimeLimiterConfig.custom()
+										.timeoutDuration(Duration.ofSeconds(1)).build())
+								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()),
+						"superslow");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(superslowErrorConsumer)
+						.onSuccess(superslowSuccessConsumer), "superslow");
+				factory.addCircuitBreakerCustomizer(
+						circuitBreaker -> circuitBreaker.getEventPublisher()
+								.onError(superslowFluxErrorConsumer)
+								.onSuccess(superslowFluxSuccessConsumer),
+						"superslowFlux");
 			};
 		}
 
@@ -201,6 +241,16 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 						});
 			}
 
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public Mono<String> superslow() {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slow").retrieve().bodyToMono(String.class);
+			}
+
+			public Mono<String> fallback(Throwable t) {
+				return Mono.just("fallback");
+			}
+
 			public Flux<String> slowFlux() {
 				return cbFactory.create("slowflux")
 						.run(WebClient.builder().baseUrl("http://localhost:" + port)
@@ -220,6 +270,16 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 									t.printStackTrace();
 									return Flux.just("fluxfallback");
 								});
+			}
+
+			@CircuitBreaker(name = "superslowFlux", fallbackMethod = "fluxFallback")
+			public Flux<String> superslowFlux() {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slowflux").retrieve().bodyToFlux(String.class);
+			}
+
+			public Flux<String> fluxFallback(Throwable t) {
+				return Flux.just("fluxfallback");
 			}
 
 			public void setPort(int port) {

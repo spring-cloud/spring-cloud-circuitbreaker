@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
@@ -84,6 +85,22 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 		// Recovered.
 		StepVerifier.create(service.slow()).expectNext("slow").verifyComplete();
 
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+
+		// Then in the next 2s, the fallback method should be called.
+		for (int i = 0; i < 2; i++) {
+			StepVerifier.create(service.superslow()).expectNext("fallback")
+					.verifyComplete();
+			Thread.sleep(1000);
+		}
+
+		// Recovered.
+		StepVerifier.create(service.superslow()).expectNext("slow").verifyComplete();
+
 		StepVerifier.create(service.normalFlux()).expectNext("normalflux")
 				.verifyComplete();
 		StepVerifier.create(service.slowFlux()).expectNext("slowflux").verifyComplete();
@@ -100,6 +117,27 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 
 		// Recovered.
 		StepVerifier.create(service.slowFlux()).expectNext("slowflux").verifyComplete();
+
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
+		// Then in the next 2s, the fallback method should be called.
+		for (int i = 0; i < 2; i++) {
+			StepVerifier.create(service.superslowFlux()).expectNext("flux_fallback")
+					.verifyComplete();
+			Thread.sleep(1000);
+		}
+
+		// Recovered.
+		StepVerifier.create(service.superslowFlux()).expectNext("slowflux")
+				.verifyComplete();
 	}
 
 	@Configuration
@@ -122,7 +160,7 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 			return Flux.just("slow", "flux").delayElements(Duration.ofMillis(500));
 		}
 
-		@GetMapping("normal_flux")
+		@GetMapping("/normal_flux")
 		public Flux<String> normalFlux() {
 			return Flux.just("normal", "flux");
 		}
@@ -146,6 +184,24 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 								.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT)
 								.setCount(0.5).setTimeWindow(10)))
 						.build());
+			};
+		}
+
+		@Bean
+		public Customizer<ReactiveSentinelCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> {
+				factory.configure(
+						builder -> builder.rules(Collections
+								.singletonList(new DegradeRule("superslow_mono")
+										.setGrade(RuleConstant.DEGRADE_GRADE_RT)
+										.setCount(100).setTimeWindow(2))),
+						"superslow_mono");
+				factory.configure(
+						builder -> builder.rules(Collections
+								.singletonList(new DegradeRule("superslow_flux")
+										.setGrade(RuleConstant.DEGRADE_GRADE_RT)
+										.setCount(100).setTimeWindow(2))),
+						"superslow_flux");
 			};
 		}
 
@@ -180,6 +236,17 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 						});
 			}
 
+			@CircuitBreaker(name = "superslow_mono", fallbackMethod = "fallback")
+			public Mono<String> superslow() {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slow").retrieve().bodyToMono(String.class);
+			}
+
+			public Mono<String> fallback(Throwable t) {
+				t.printStackTrace();
+				return Mono.just("fallback");
+			}
+
 			public Flux<String> slowFlux() {
 				return cbFactory.create("slow_flux")
 						.run(WebClient.builder().baseUrl("http://localhost:" + port)
@@ -199,6 +266,17 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 									t.printStackTrace();
 									return Flux.just("flux_fallback");
 								});
+			}
+
+			@CircuitBreaker(name = "superslow_flux", fallbackMethod = "fallbackFlux")
+			public Flux<String> superslowFlux() {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slow_flux").retrieve().bodyToFlux(String.class);
+			}
+
+			public Flux<String> fallbackFlux(Throwable t) {
+				t.printStackTrace();
+				return Flux.just("flux_fallback");
 			}
 
 			public void setPort(int port) {

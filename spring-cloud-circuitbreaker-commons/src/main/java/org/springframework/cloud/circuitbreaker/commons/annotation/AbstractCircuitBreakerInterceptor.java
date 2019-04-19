@@ -50,7 +50,7 @@ public abstract class AbstractCircuitBreakerInterceptor implements BeanFactoryAw
 		Method fallbackMethod = findFallbackMethod(target, annotation.fallbackMethod());
 
 		if (this.isReactiveMethod(method)) {
-			if (this.isFlux(method)) {
+			if (this.returnsFlux(method)) {
 				return invokeFlux(invoker, circuitBreakerName, target, fallbackMethod);
 			}
 			else {
@@ -74,7 +74,7 @@ public abstract class AbstractCircuitBreakerInterceptor implements BeanFactoryAw
 		return Publisher.class.isAssignableFrom(method.getReturnType());
 	}
 
-	private boolean isFlux(Method method) {
+	private boolean returnsFlux(Method method) {
 		return Flux.class.isAssignableFrom(method.getReturnType());
 	}
 

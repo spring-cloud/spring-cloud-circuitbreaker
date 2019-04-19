@@ -26,9 +26,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryCallback;
@@ -72,6 +72,12 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 		assertThat(service.normal()).isEqualTo("normal");
 	}
 
+	@Test
+	public void testSuperslow() {
+		assertThat(service.superslow()).isEqualTo("fallback");
+		service.verifyTimesSuperslowInvoked();
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -86,6 +92,12 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 		@GetMapping("/normal")
 		public String normal() {
 			return "normal";
+		}
+
+		@GetMapping("/superslow")
+		public String superslow() throws InterruptedException {
+			Thread.sleep(1000);
+			return "superslow";
 		}
 
 		@Bean
@@ -127,6 +139,13 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			};
 		}
 
+		@Bean
+		public Customizer<SpringRetryCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> factory.configure(
+					builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(),
+					"superslow");
+		}
+
 		@Service
 		public static class DemoControllerService {
 
@@ -141,7 +160,8 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			}
 
 			public String slow() {
-				CircuitBreaker cb = cbFactory.create("slow");
+				org.springframework.cloud.circuitbreaker.commons.CircuitBreaker cb = cbFactory
+						.create("slow");
 				for (int i = 0; i < 10; i++) {
 					cb.run(() -> rest.getForObject("/slow", String.class),
 							t -> "fallback");
@@ -158,6 +178,23 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 
 			public void verifyTimesSlowInvoked() {
 				verify(rest, times(1)).getForObject(eq("/slow"), eq(String.class));
+			}
+
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public String superslow() {
+				String value = rest.getForObject("/superslow", String.class);
+				for (int i = 0; i < 10; i++) {
+					value = rest.getForObject("/superslow", String.class);
+				}
+				return value;
+			}
+
+			public String fallback(Throwable t) {
+				return "fallback";
+			}
+
+			public void verifyTimesSuperslowInvoked() {
+				verify(rest, times(1)).getForObject(eq("/superslow"), eq(String.class));
 			}
 
 		}

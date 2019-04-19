@@ -33,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,25 @@ public class SentinelCircuitBreakerIntegrationTest {
 
 		// Recovered.
 		assertThat(service.slow()).isEqualTo("slow");
+	}
+
+	@Test
+	public void testSuperslow() throws Exception {
+		// The first 5 requests should pass.
+		assertThat(service.superslow()).isEqualTo("slow");
+		assertThat(service.superslow()).isEqualTo("slow");
+		assertThat(service.superslow()).isEqualTo("slow");
+		assertThat(service.superslow()).isEqualTo("slow");
+		assertThat(service.superslow()).isEqualTo("slow");
+
+		// Then in the next 2s, the fallback method should be called.
+		for (int i = 0; i < 2; i++) {
+			assertThat(service.superslow()).isEqualTo("fallback");
+			Thread.sleep(1000);
+		}
+
+		// Recovered.
+		assertThat(service.superslow()).isEqualTo("slow");
 	}
 
 	@Test
@@ -123,6 +143,16 @@ public class SentinelCircuitBreakerIntegrationTest {
 			};
 		}
 
+		@Bean
+		public Customizer<SentinelCircuitBreakerFactory> superslowCustomizer() {
+			String superslowId = "superslow";
+			List<DegradeRule> rules = Collections.singletonList(
+					new DegradeRule("superslow").setGrade(RuleConstant.DEGRADE_GRADE_RT)
+							.setCount(100).setTimeWindow(2));
+			return factory -> factory.configure(builder -> builder.rules(rules),
+					superslowId);
+		}
+
 		@Service
 		public static class DemoControllerService {
 
@@ -145,6 +175,15 @@ public class SentinelCircuitBreakerIntegrationTest {
 				return cbFactory.create("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
+			}
+
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public String superslow() {
+				return rest.getForObject("/slow", String.class);
+			}
+
+			public String fallback(Throwable t) {
+				return "fallback";
 			}
 
 		}

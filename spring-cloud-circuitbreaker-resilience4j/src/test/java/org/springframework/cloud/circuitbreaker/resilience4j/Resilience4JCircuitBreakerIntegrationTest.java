@@ -33,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.circuitbreaker.commons.annotation.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
@@ -95,6 +96,13 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		assertThat(service.slowOnDemand(0)).isEqualTo("normal");
 	}
 
+	@Test
+	public void testSuperslow() {
+		assertThat(service.superslow()).isEqualTo("fallback");
+		verify(slowErrorConsumer, times(1)).consumeEvent(any());
+		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -150,6 +158,21 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			};
 		}
 
+		@Bean
+		public Customizer<Resilience4JCircuitBreakerFactory> superslowCustomizer() {
+			return factory -> {
+				factory.configure(
+						builder -> builder
+								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+								.timeLimiterConfig(TimeLimiterConfig.custom()
+										.timeoutDuration(Duration.ofSeconds(1)).build()),
+						"superslow");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
+						.getEventPublisher().onError(slowErrorConsumer)
+						.onSuccess(slowSuccessConsumer), "superslow");
+			};
+		}
+
 		@Service
 		public static class DemoControllerService {
 
@@ -172,6 +195,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				return cbFactory.create("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
+			}
+
+			@CircuitBreaker(name = "superslow", fallbackMethod = "fallback")
+			public String superslow() {
+				return rest
+						.exchange("/slowOnDemand", HttpMethod.GET,
+								createEntityWithOptionalDelayHeader(2000), String.class)
+						.getBody();
+			}
+
+			public String fallback(Throwable t) {
+				return "fallback";
 			}
 
 			public String slowOnDemand(int delayInMilliseconds) {
