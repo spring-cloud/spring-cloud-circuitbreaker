@@ -76,8 +76,8 @@ public static class DemoControllerService {
 	}
 
 	public Mono<String> slow() {
-		return cbFactory.create("slow").run(webClient.get().uri("/slow").retrieve().bodyToMono(String.class),
-		throwable -> return Mono.just("fallback"));
+		return webClient.get().uri("/slow").retrieve().bodyToMono(String.class).transform(
+		it -> cbFactory.create("slow").run(it, throwable -> return Mono.just("fallback")));
 	}
 }
 ----
