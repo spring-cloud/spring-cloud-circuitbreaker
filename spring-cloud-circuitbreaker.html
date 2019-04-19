@@ -223,8 +223,8 @@ public static class DemoControllerService {
 	}
 
 	public Mono&lt;String&gt; slow() {
-		return cbFactory.create("slow").run(webClient.get().uri("/slow").retrieve().bodyToMono(String.class),
-		throwable -&gt; return Mono.just("fallback"));
+		return webClient.get().uri("/slow").retrieve().bodyToMono(String.class).transform(
+		it -&gt; cbFactory.create("slow").run(it, throwable -&gt; return Mono.just("fallback")));
 	}
 }</code></pre>
 </div>
