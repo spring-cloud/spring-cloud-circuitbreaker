@@ -77,7 +77,8 @@
         <module>spring-cloud-circuitbreaker-hystrix</module>
         <module>spring-cloud-circuitbreaker-sentinel</module>
         <module>docs</module>
-    </modules>
+		<module>spring-cloud-circuitbreaker-spring-retry</module>
+	</modules>
     <build>
         <plugins>
             <plugin>

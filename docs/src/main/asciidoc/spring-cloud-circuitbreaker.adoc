@@ -21,6 +21,7 @@ breaker implementation that best fits your needs for your app.
 * https://github.com/Netflix/Hystrix[Netfix Hystrix]
 * https://github.com/resilience4j/resilience4j[Resilience4J]
 * https://github.com/alibaba/Sentinel[Sentinel]
+* https://github.com/spring-projects/spring-retry[Spring Retry]
 
 == Core Concepts
 
@@ -99,6 +100,8 @@ include::spring-cloud-circuitbreaker-resilience4j.adoc[]
 
 
 include::spring-cloud-circuitbreaker-sentinel.adoc[]
+
+include::spring-cloud-circuitbreaker-spring-retry.adoc[]
 
 == Building
 
