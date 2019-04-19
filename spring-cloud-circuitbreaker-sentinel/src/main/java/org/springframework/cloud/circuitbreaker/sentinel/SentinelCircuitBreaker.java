@@ -49,7 +49,7 @@ public class SentinelCircuitBreaker implements CircuitBreaker {
 	private final List<DegradeRule> rules;
 
 	public SentinelCircuitBreaker(String resourceName, EntryType entryType,
-		List<DegradeRule> rules) {
+			List<DegradeRule> rules) {
 		Assert.hasText(resourceName, "resourceName cannot be blank");
 		Assert.notNull(rules, "rules should not be null");
 		this.resourceName = resourceName;

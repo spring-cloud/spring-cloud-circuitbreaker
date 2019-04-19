@@ -48,7 +48,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Eric Zhao
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = SentinelCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = SentinelCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class SentinelCircuitBreakerIntegrationTest {
 

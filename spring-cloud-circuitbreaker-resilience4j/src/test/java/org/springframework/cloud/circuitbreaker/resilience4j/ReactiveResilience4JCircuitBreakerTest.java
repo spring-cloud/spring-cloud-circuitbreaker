@@ -35,33 +35,34 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runMono() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb.run(Mono.just("foobar")).block()).isEqualTo("foobar");
+		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block())
+				.isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb
-				.run(Mono.error(new RuntimeException("boom")), t -> Mono.just("fallback"))
-				.block()).isEqualTo("fallback");
+		assertThat(Mono.error(new RuntimeException("boom"))
+				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
+						.isEqualTo("fallback");
 	}
 
 	@Test
 	public void runFlux() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb.run(Flux.just("foobar", "hello world")).collectList().block())
-				.isEqualTo(Arrays.asList("foobar", "hello world"));
+		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it))
+				.collectList().block()).isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb
-				.run(Flux.error(new RuntimeException("boom")), t -> Flux.just("fallback"))
-				.collectList().block()).isEqualTo(Arrays.asList("fallback"));
+		assertThat(Flux.error(new RuntimeException("boom"))
+				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
+				.block()).isEqualTo(Arrays.asList("fallback"));
 	}
 
 }

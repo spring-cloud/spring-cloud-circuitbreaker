@@ -49,7 +49,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveHystrixCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = ReactiveHystrixCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveHystrixCircuitBreakerIntegrationTest {
 
@@ -119,23 +120,21 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 			}
 
 			public Mono<String> slow() {
-				return cbFactory.create("slow").run(
-						WebClient.builder().baseUrl("http://localhost:" + port).build()
-								.get().uri("/slow").retrieve().bodyToMono(String.class),
-						t -> {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slow").retrieve().bodyToMono(String.class)
+						.transform(it -> cbFactory.create("slow").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
-						});
+						}));
 			}
 
 			public Mono<String> normal() {
-				return cbFactory.create("normal").run(
-						WebClient.builder().baseUrl("http://localhost:" + port).build()
-								.get().uri("/normal").retrieve().bodyToMono(String.class),
-						t -> {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/normal").retrieve().bodyToMono(String.class)
+						.transform(it -> cbFactory.create("normal").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
-						});
+						}));
 			}
 
 			public void setPort(int port) {

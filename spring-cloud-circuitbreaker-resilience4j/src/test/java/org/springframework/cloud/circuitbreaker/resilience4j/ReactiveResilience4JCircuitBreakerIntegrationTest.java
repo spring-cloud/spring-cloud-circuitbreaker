@@ -57,7 +57,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveResilience4JCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = ReactiveResilience4JCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
@@ -181,44 +182,40 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 			}
 
 			public Mono<String> slow() {
-				return cbFactory.create("slow").run(
-						WebClient.builder().baseUrl("http://localhost:" + port).build()
-								.get().uri("/slow").retrieve().bodyToMono(String.class),
-						t -> {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slow").retrieve().bodyToMono(String.class)
+						.transform(it -> cbFactory.create("slow").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
-						});
+						}));
 			}
 
 			public Mono<String> normal() {
-				return cbFactory.create("normal").run(
-						WebClient.builder().baseUrl("http://localhost:" + port).build()
-								.get().uri("/normal").retrieve().bodyToMono(String.class),
-						t -> {
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/normal").retrieve().bodyToMono(String.class)
+						.transform(it -> cbFactory.create("normal").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
-						});
+						}));
 			}
 
 			public Flux<String> slowFlux() {
-				return cbFactory.create("slowflux")
-						.run(WebClient.builder().baseUrl("http://localhost:" + port)
-								.build().get().uri("/slowflux").retrieve()
-								.bodyToFlux(new ParameterizedTypeReference<String>() {
-								}), t -> {
-									t.printStackTrace();
-									return Flux.just("fluxfallback");
-								});
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/slowflux").retrieve()
+						.bodyToFlux(new ParameterizedTypeReference<String>() {
+						}).transform(it -> cbFactory.create("slowflux").run(it, t -> {
+							t.printStackTrace();
+							return Flux.just("fluxfallback");
+						}));
 			}
 
 			public Flux<String> normalFlux() {
-				return cbFactory.create("normalflux")
-						.run(WebClient.builder().baseUrl("http://localhost:" + port)
-								.build().get().uri("/normalflux").retrieve()
-								.bodyToFlux(String.class), t -> {
-									t.printStackTrace();
-									return Flux.just("fluxfallback");
-								});
+				return WebClient.builder().baseUrl("http://localhost:" + port).build()
+						.get().uri("/normalflux").retrieve().bodyToFlux(String.class)
+						.transform(it -> cbFactory.create("normalflux").run(it, t -> {
+							t.printStackTrace();
+							return Flux.just("fluxfallback");
+						}));
 			}
 
 			public void setPort(int port) {

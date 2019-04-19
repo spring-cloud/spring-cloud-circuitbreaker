@@ -34,7 +34,8 @@ public class ReactiveHystrixCircuitBreakerTest {
 	public void monoRun() {
 		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
 				.create("foo");
-		Mono<String> s = cb.run(Mono.just("foobar"), t -> Mono.just("fallback"));
+		Mono<String> s = Mono.just("foobar")
+				.transform(it -> cb.run(it, t -> Mono.just("fallback")));
 		assertThat(s.block()).isEqualTo("foobar");
 	}
 
@@ -42,17 +43,17 @@ public class ReactiveHystrixCircuitBreakerTest {
 	public void monoFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb
-				.run(Mono.error(new RuntimeException("boom")), t -> Mono.just("fallback"))
-				.block()).isEqualTo("fallback");
+		assertThat(Mono.error(new RuntimeException("boom"))
+				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
+						.isEqualTo("fallback");
 	}
 
 	@Test
 	public void fluxRun() {
 		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
 				.create("foo");
-		Flux<String> s = cb.run(Flux.just("foobar", "hello world"),
-				t -> Flux.just("fallback"));
+		Flux<String> s = Flux.just("foobar", "hello world")
+				.transform(it -> cb.run(it, t -> Flux.just("fallback")));
 		assertThat(s.collectList().block())
 				.isEqualTo(Arrays.asList(new String[] { "foobar", "hello world" }));
 	}
@@ -61,10 +62,9 @@ public class ReactiveHystrixCircuitBreakerTest {
 	public void fluxFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
 				.create("foo");
-		assertThat(cb
-				.run(Flux.error(new RuntimeException("boom")), t -> Flux.just("fallback"))
-				.collectList().block())
-						.isEqualTo(Arrays.asList(new String[] { "fallback" }));
+		assertThat(Flux.error(new RuntimeException("boom"))
+				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
+				.block()).isEqualTo(Arrays.asList(new String[] { "fallback" }));
 	}
 
 }
