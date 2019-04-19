@@ -53,7 +53,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT,
+		classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class SpringRetryCircuitBreakerIntegrationTest {
 
