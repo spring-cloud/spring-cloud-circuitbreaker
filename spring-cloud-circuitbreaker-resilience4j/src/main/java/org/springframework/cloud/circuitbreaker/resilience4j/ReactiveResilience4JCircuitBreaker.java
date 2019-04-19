@@ -67,7 +67,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 						config.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
 						t));
 		if (fallback != null) {
-			toReturn = toReturn.onErrorResume(t -> fallback.apply(t));
+			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
 	}
@@ -86,7 +86,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 						config.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
 						t));
 		if (fallback != null) {
-			toReturn = toReturn.onErrorResume(t -> fallback.apply(t));
+			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
 	}
