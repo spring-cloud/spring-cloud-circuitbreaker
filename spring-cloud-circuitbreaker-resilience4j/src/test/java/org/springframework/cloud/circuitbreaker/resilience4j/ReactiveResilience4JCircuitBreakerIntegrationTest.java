@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -99,10 +98,13 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
 	@Test
 	public void test() {
-		assertThat(service.normal().block()).isEqualTo("normal");
+		StepVerifier.create(service.normal()).expectNext("normal").expectComplete()
+				.verify();
 		verify(normalErrorConsumer, times(0)).consumeEvent(any());
 		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
-		assertThat(service.slow().block()).isEqualTo("fallback");
+		StepVerifier.withVirtualTime(() -> service.slow()).expectSubscription()
+				.expectNoEvent(Duration.ofSeconds(2)).expectNext("fallback")
+				.expectComplete().verify();
 		verify(slowErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 		StepVerifier.create(service.normalFlux()).expectNext("normalflux")
