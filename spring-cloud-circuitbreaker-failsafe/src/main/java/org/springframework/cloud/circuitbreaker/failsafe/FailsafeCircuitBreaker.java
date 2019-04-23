@@ -58,8 +58,9 @@ public class FailsafeCircuitBreaker implements CircuitBreaker {
 		// retryTemplateCustomizer
 		// .ifPresent(customizer -> customizer.customize(retryTemplate));
 
-		Fallback<T> f = Fallback.of(extract(fallback));
-		return Failsafe.with(f).get(ex -> toRun.get());
+		Fallback<T> failsafeFallback = Fallback.of(extract(fallback));
+		return Failsafe.with(failsafeFallback, config.getRetryPolicy(),
+				config.getCircuitBreaker()).get(ex -> toRun.get());
 		// return retryTemplate.execute(context -> toRun.get(),
 		// context -> fallback.apply(context.getLastThrowable()),
 		// new DefaultRetryState(id, config.isForceRefreshState(),

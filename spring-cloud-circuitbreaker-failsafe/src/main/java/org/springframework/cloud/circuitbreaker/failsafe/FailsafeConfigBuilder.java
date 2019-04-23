@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.circuitbreaker.failsafe;
 
+import net.jodah.failsafe.CircuitBreaker;
+import net.jodah.failsafe.RetryPolicy;
+
 import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
 
 /**
@@ -30,7 +33,9 @@ public class FailsafeConfigBuilder
 
 	// private BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 	//
-	// private RetryPolicy retryPolicy = new CircuitBreakerRetryPolicy();
+	private RetryPolicy<? extends Object> retryPolicy = new RetryPolicy<>();
+
+	private CircuitBreaker<? extends Object> circuitBreaker = new CircuitBreaker<>();
 
 	// private boolean forceRefreshState = false;
 
@@ -60,16 +65,17 @@ public class FailsafeConfigBuilder
 	// return this;
 	// }
 	//
-	// /**
-	// * Sets the {@link RetryPolicy} to use. The {@code RetryPolicy} set here will be
-	// * wrapped in a {@link CircuitBreakerRetryPolicy}.
-	// * @param retryPolicy The {@code RetryPolicy} to use.
-	// * @return The builder.
-	// */
-	// public FailsafeConfigBuilder retryPolicy(RetryPolicy retryPolicy) {
-	// this.retryPolicy = new CircuitBreakerRetryPolicy(retryPolicy);
-	// return this;
-	// }
+
+	public <T> FailsafeConfigBuilder retryPolicy(RetryPolicy<T> retryPolicy) {
+		this.retryPolicy = retryPolicy;
+		return this;
+	}
+
+	public <T> FailsafeConfigBuilder circuitBreaker(CircuitBreaker<T> circuitBreaker) {
+		this.circuitBreaker = circuitBreaker;
+		return this;
+	}
+
 	//
 	// /**
 	// * Forces a refresh on the {@link DefaultRetryState} object.
@@ -96,8 +102,9 @@ public class FailsafeConfigBuilder
 	public FailsafeConfig build() {
 		FailsafeConfig config = new FailsafeConfig();
 		// config.setBackOffPolicy(this.backOffPolicy);
-		// config.setId(id);
-		// config.setRetryPolicy(retryPolicy);
+		config.setId(id);
+		config.setRetryPolicy(retryPolicy);
+		config.setCircuitBreaker(circuitBreaker);
 		// config.setForceRefreshState(forceRefreshState);
 		// config.setStateClassifier(stateClassifier);
 		return config;
@@ -112,7 +119,10 @@ public class FailsafeConfigBuilder
 		//
 		// private BackOffPolicy backOffPolicy;
 		//
-		// private RetryPolicy retryPolicy;
+		private RetryPolicy retryPolicy;
+
+		private CircuitBreaker circuitBreaker;
+
 		//
 		// private boolean forceRefreshState;
 		//
@@ -134,22 +144,30 @@ public class FailsafeConfigBuilder
 		// this.stateClassifier = stateClassifier;
 		// }
 		//
-		// RetryPolicy getRetryPolicy() {
-		// return retryPolicy;
-		// }
-		//
-		// void setRetryPolicy(RetryPolicy retryPolicy) {
-		// this.retryPolicy = retryPolicy;
-		// }
-		//
-		// String getId() {
-		// return id;
-		// }
-		//
-		// void setId(String id) {
-		// this.id = id;
-		// }
-		//
+		<T> CircuitBreaker<T> getCircuitBreaker() {
+			return circuitBreaker;
+		}
+
+		<T> void setCircuitBreaker(CircuitBreaker<T> circuitBreaker) {
+			this.circuitBreaker = circuitBreaker;
+		}
+
+		<T> RetryPolicy<T> getRetryPolicy() {
+			return retryPolicy;
+		}
+
+		<T> void setRetryPolicy(RetryPolicy<T> retryPolicy) {
+			this.retryPolicy = retryPolicy;
+		}
+
+		String getId() {
+			return id;
+		}
+
+		void setId(String id) {
+			this.id = id;
+		}
+
 		// RetryContext getRetryContext() {
 		// return retryContext;
 		// }
