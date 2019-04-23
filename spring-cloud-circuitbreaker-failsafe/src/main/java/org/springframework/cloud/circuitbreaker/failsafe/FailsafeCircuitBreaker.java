@@ -16,55 +16,48 @@
 
 package org.springframework.cloud.circuitbreaker.failsafe;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.FailsafeExecutor;
 import net.jodah.failsafe.Fallback;
 import net.jodah.failsafe.event.ExecutionAttemptedEvent;
 import net.jodah.failsafe.function.CheckedFunction;
 
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.Customizer;
 
 /**
  * @author Jakub Marchwicki
  */
 public class FailsafeCircuitBreaker implements CircuitBreaker {
 
-	private String id;
+	private final String id;
 
-	private FailsafeConfigBuilder.FailsafeConfig config;
+	private final FailsafeConfigBuilder.FailsafeConfig config;
 
-	// private Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
-	//
-	// private RetryTemplate retryTemplate;
+	private final Optional<Customizer<FailsafeExecutor>> failsafeCustomizer;
 
-	public FailsafeCircuitBreaker(String id,
-			FailsafeConfigBuilder.FailsafeConfig config) {
-		// ,
-		// Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
+	public FailsafeCircuitBreaker(String id, FailsafeConfigBuilder.FailsafeConfig config,
+			Optional<Customizer<FailsafeExecutor>> failsafeCustomizer) {
 		this.id = id;
 		this.config = config;
-		// this.retryTemplateCustomizer = retryTemplateCustomizer;
-		// this.retryTemplate = new RetryTemplate();
+		this.failsafeCustomizer = failsafeCustomizer;
 	}
 
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
 
-		// retryTemplate.setBackOffPolicy(config.getBackOffPolicy());
-		// retryTemplate.setRetryPolicy(config.getRetryPolicy());
-		//
-		// retryTemplateCustomizer
-		// .ifPresent(customizer -> customizer.customize(retryTemplate));
-
 		Fallback<T> failsafeFallback = Fallback.of(extract(fallback));
-		return Failsafe.with(failsafeFallback, config.getRetryPolicy(),
-				config.getCircuitBreaker()).get(ex -> toRun.get());
-		// return retryTemplate.execute(context -> toRun.get(),
-		// context -> fallback.apply(context.getLastThrowable()),
-		// new DefaultRetryState(id, config.isForceRefreshState(),
-		// config.getStateClassifier()));
+		FailsafeExecutor<T> failsafeExecutor = Failsafe.with(failsafeFallback,
+				config.getRetryPolicy(), config.getCircuitBreaker());
+
+		failsafeCustomizer
+				.ifPresent(customizer -> customizer.customize(failsafeExecutor));
+
+		return failsafeExecutor.get(ex -> toRun.get());
 	}
 
 	private <T> CheckedFunction<ExecutionAttemptedEvent<? extends T>, ? extends T> extract(

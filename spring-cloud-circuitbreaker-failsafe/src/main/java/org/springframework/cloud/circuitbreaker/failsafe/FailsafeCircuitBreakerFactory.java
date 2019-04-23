@@ -18,9 +18,10 @@ package org.springframework.cloud.circuitbreaker.failsafe;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
-import net.jodah.failsafe.Policy;
+import net.jodah.failsafe.FailsafeExecutor;
 
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
@@ -36,7 +37,7 @@ public class FailsafeCircuitBreakerFactory extends
 	private Function<String, FailsafeConfigBuilder.FailsafeConfig> defaultConfig = id -> new FailsafeConfigBuilder(
 			id).build();
 
-	private Map<String, Customizer<Policy>> failsafeCustomizers = new HashMap<>();
+	private Map<String, Customizer<FailsafeExecutor>> failsafeCustomizers = new HashMap<>();
 
 	@Override
 	protected FailsafeConfigBuilder configBuilder(String id) {
@@ -54,10 +55,11 @@ public class FailsafeCircuitBreakerFactory extends
 		Assert.hasText(id, "A circuit breaker must have an id");
 		FailsafeConfigBuilder.FailsafeConfig config = getConfigurations()
 				.computeIfAbsent(id, defaultConfig);
-		return new FailsafeCircuitBreaker(id, config);
+		return new FailsafeCircuitBreaker(id, config,
+				Optional.ofNullable(failsafeCustomizers.get(id)));
 	}
 
-	public void addRetryTemplateCustomizers(Customizer<Policy> customizer,
+	public void addRetryTemplateCustomizers(Customizer<FailsafeExecutor> customizer,
 			String... ids) {
 		for (String id : ids) {
 			this.failsafeCustomizers.put(id, customizer);

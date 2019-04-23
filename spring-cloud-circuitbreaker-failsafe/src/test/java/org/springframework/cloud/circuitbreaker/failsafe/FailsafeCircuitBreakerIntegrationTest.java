@@ -19,6 +19,7 @@ package org.springframework.cloud.circuitbreaker.failsafe;
 import java.time.Duration;
 
 import net.jodah.failsafe.RetryPolicy;
+import net.jodah.failsafe.function.CheckedConsumer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +40,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -57,10 +60,14 @@ public class FailsafeCircuitBreakerIntegrationTest {
 	@Autowired
 	Application.DemoControllerService service;
 
+	@Autowired
+	CheckedConsumer onFailureConsumer;
+
 	@Test
-	public void testSlow() {
+	public void testSlow() throws Exception {
 		assertThat(service.slow()).isEqualTo("fallback");
 		service.verifyTimesSlowInvoked();
+		verify(onFailureConsumer, times(11)).accept(any());
 	}
 
 	@Test
@@ -90,7 +97,13 @@ public class FailsafeCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<FailsafeCircuitBreakerFactory> factoryCustomizer() {
+		public CheckedConsumer onFailureConsumer() {
+			return mock(CheckedConsumer.class);
+		}
+
+		@Bean
+		public Customizer<FailsafeCircuitBreakerFactory> factoryCustomizer(
+				CheckedConsumer onFailureConsumer) {
 			return factory -> {
 				factory.configureDefault(id -> new FailsafeConfigBuilder(id).build());
 				factory.configure(
@@ -101,33 +114,10 @@ public class FailsafeCircuitBreakerIntegrationTest {
 										.withDelay(Duration.ofMinutes(1)))
 								.build(),
 						"slow");
+				factory.addRetryTemplateCustomizers(
+						failsafe -> failsafe.onFailure(onFailureConsumer), "slow");
 			};
 		}
-		// factory.addRetryTemplateCustomizers(retryTemplate -> retryTemplate
-		// .registerListener(new RetryListener() {
-		//
-		// @Override
-		// public <T, E extends Throwable> boolean open(
-		// RetryContext context, RetryCallback<T, E> callback) {
-		// return false;
-		// }
-		//
-		// @Override
-		// public <T, E extends Throwable> void close(
-		// RetryContext context, RetryCallback<T, E> callback,
-		// Throwable throwable) {
-		//
-		// }
-		//
-		// @Override
-		// public <T, E extends Throwable> void onError(
-		// RetryContext context, RetryCallback<T, E> callback,
-		// Throwable throwable) {
-		//
-		// }
-		// }));
-		// };
-		// }
 
 		@Service
 		public static class DemoControllerService {
@@ -142,7 +132,7 @@ public class FailsafeCircuitBreakerIntegrationTest {
 				this.cbFactory = cbFactory;
 			}
 
-			public String slow() {
+			String slow() {
 				CircuitBreaker cb = cbFactory.create("slow");
 				for (int i = 0; i < 10; i++) {
 					cb.run(() -> rest.getForObject("/slow", String.class),
@@ -152,13 +142,13 @@ public class FailsafeCircuitBreakerIntegrationTest {
 						t -> "fallback");
 			}
 
-			public String normal() {
+			String normal() {
 				return cbFactory.create("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}
 
-			public void verifyTimesSlowInvoked() {
+			void verifyTimesSlowInvoked() {
 				verify(rest, times(1)).getForObject(eq("/slow"), eq(String.class));
 			}
 
