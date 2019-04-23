@@ -19,6 +19,7 @@
 
     <properties>
         <resilience4j.version>0.13.1</resilience4j.version>
+        <failsafe.version>2.0.1</failsafe.version>
         <sentinel.version>1.5.1</sentinel.version>
     </properties>
 
@@ -39,6 +40,11 @@
                 <artifactId>resilience4j-reactor</artifactId>
                 <version>${resilience4j.version}</version>
             </dependency>
+			<dependency>
+				<groupId>net.jodah</groupId>
+				<artifactId>failsafe</artifactId>
+				<version>${failsafe.version}</version>
+			</dependency>
             <dependency>
                 <groupId>com.alibaba.csp</groupId>
                 <artifactId>sentinel-core</artifactId>
