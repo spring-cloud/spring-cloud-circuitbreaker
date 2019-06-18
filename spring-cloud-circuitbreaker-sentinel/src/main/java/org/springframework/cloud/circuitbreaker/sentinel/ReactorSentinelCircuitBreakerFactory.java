@@ -20,27 +20,37 @@ import java.util.ArrayList;
 import java.util.function.Function;
 
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.sentinel.SentinelConfigBuilder.SentinelCircuitBreakerConfiguration;
 import org.springframework.util.Assert;
 
 /**
- * Factory for {@link ReactiveSentinelCircuitBreaker}.
+ * Factory for {@link ReactorSentinelCircuitBreaker}.
  *
  * @author Eric Zhao
  */
-public class ReactiveSentinelCircuitBreakerFactory extends
-		ReactiveCircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
+public class ReactorSentinelCircuitBreakerFactory extends
+		ReactorCircuitBreakerFactory<SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
 
 	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id -> new SentinelConfigBuilder()
 			.resourceName(id).rules(new ArrayList<>()).build();
 
 	@Override
-	public ReactiveCircuitBreaker create(String id) {
+	public ReactorCircuitBreaker createReactor(String id) {
+		return create(id);
+	}
+
+	@Override
+	public ReactiveCircuitBreaker createReactive(String id) {
+		return create(id);
+	}
+
+	private ReactorSentinelCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		SentinelConfigBuilder.SentinelCircuitBreakerConfiguration conf = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveSentinelCircuitBreaker(id, conf.getEntryType(),
+		return new ReactorSentinelCircuitBreaker(id, conf.getEntryType(),
 				conf.getRules());
 	}
 

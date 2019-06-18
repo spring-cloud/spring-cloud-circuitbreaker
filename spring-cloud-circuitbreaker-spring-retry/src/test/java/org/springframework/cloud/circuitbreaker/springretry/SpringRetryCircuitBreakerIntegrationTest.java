@@ -141,7 +141,7 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			}
 
 			public String slow() {
-				CircuitBreaker cb = cbFactory.create("slow");
+				CircuitBreaker cb = cbFactory.createReactor("slow");
 				for (int i = 0; i < 10; i++) {
 					cb.run(() -> rest.getForObject("/slow", String.class),
 							t -> "fallback");
@@ -151,7 +151,7 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(
+				return cbFactory.createReactor("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}

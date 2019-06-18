@@ -36,7 +36,7 @@ public class SentinelCircuitBreakerFactory extends
 			.resourceName(id).entryType(EntryType.OUT).rules(new ArrayList<>()).build();
 
 	@Override
-	public CircuitBreaker create(String id) {
+	public CircuitBreaker createReactor(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		SentinelConfigBuilder.SentinelCircuitBreakerConfiguration conf = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);

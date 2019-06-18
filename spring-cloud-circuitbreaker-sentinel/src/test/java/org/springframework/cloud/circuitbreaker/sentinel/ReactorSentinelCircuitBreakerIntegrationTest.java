@@ -33,7 +33,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
@@ -51,15 +51,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = ReactiveSentinelCircuitBreakerIntegrationTest.Application.class)
+		classes = ReactorSentinelCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
-public class ReactiveSentinelCircuitBreakerIntegrationTest {
+public class ReactorSentinelCircuitBreakerIntegrationTest {
 
 	@LocalServerPort
 	private int port = 0;
 
 	@Autowired
-	private ReactiveSentinelCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+	private ReactorSentinelCircuitBreakerIntegrationTest.Application.DemoControllerService service;
 
 	@Before
 	public void setup() {
@@ -128,7 +128,7 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveSentinelCircuitBreakerFactory> slowCustomizer() {
+		public Customizer<ReactorSentinelCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
 				factory.configure(builder -> builder
 						.rules(Collections.singletonList(new DegradeRule("slow_mono")
@@ -154,47 +154,50 @@ public class ReactiveSentinelCircuitBreakerIntegrationTest {
 
 			private int port = 0;
 
-			private ReactiveCircuitBreakerFactory cbFactory;
+			private ReactorCircuitBreakerFactory cbFactory;
 
-			DemoControllerService(ReactiveCircuitBreakerFactory cbFactory) {
+			DemoControllerService(ReactorCircuitBreakerFactory cbFactory) {
 				this.cbFactory = cbFactory;
 			}
 
 			public Mono<String> slow() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
-						.get().uri("/slow").retrieve().bodyToMono(String.class)
-						.transform(it -> cbFactory.create("slow_mono").run(it, t -> {
-							t.printStackTrace();
-							return Mono.just("fallback");
-						}));
+						.get().uri("/slow").retrieve().bodyToMono(String.class).transform(
+								it -> cbFactory.createReactor("slow_mono").run(it, t -> {
+									t.printStackTrace();
+									return Mono.just("fallback");
+								}));
 			}
 
 			public Mono<String> normal() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/normal").retrieve().bodyToMono(String.class)
-						.transform(it -> cbFactory.create("normal_mono").run(it, t -> {
-							t.printStackTrace();
-							return Mono.just("fallback");
-						}));
+						.transform(it -> cbFactory.createReactor("normal_mono").run(it,
+								t -> {
+									t.printStackTrace();
+									return Mono.just("fallback");
+								}));
 			}
 
 			public Flux<String> slowFlux() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/slow_flux").retrieve()
 						.bodyToFlux(new ParameterizedTypeReference<String>() {
-						}).transform(it -> cbFactory.create("slow_flux").run(it, t -> {
-							t.printStackTrace();
-							return Flux.just("flux_fallback");
-						}));
+						}).transform(
+								it -> cbFactory.createReactor("slow_flux").run(it, t -> {
+									t.printStackTrace();
+									return Flux.just("flux_fallback");
+								}));
 			}
 
 			public Flux<String> normalFlux() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/normal_flux").retrieve().bodyToFlux(String.class)
-						.transform(it -> cbFactory.create("normal_flux").run(it, t -> {
-							t.printStackTrace();
-							return Flux.just("flux_fallback");
-						}));
+						.transform(it -> cbFactory.createReactor("normal_flux").run(it,
+								t -> {
+									t.printStackTrace();
+									return Flux.just("flux_fallback");
+								}));
 			}
 
 			public void setPort(int port) {

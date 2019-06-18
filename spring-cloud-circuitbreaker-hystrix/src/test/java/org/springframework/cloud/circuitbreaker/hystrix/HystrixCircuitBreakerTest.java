@@ -29,14 +29,14 @@ public class HystrixCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new HystrixCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new HystrixCircuitBreakerFactory().createReactor("foo");
 		String s = cb.run(() -> "foobar", t -> "fallback");
 		assertThat(cb.run(() -> "foobar", t -> "fallback")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void fallback() {
-		CircuitBreaker cb = new HystrixCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new HystrixCircuitBreakerFactory().createReactor("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("Boom");
 		}, t -> "fallback")).isEqualTo("fallback");

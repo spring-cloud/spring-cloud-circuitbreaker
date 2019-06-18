@@ -44,7 +44,7 @@ public class HystrixCircuitBreakerFactory extends
 		return new HystrixConfigBuilder(id);
 	}
 
-	public HystrixCircuitBreaker create(String id) {
+	public HystrixCircuitBreaker createReactor(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		HystrixCommand.Setter setter = getConfigurations().computeIfAbsent(id,
 				defaultConfiguration);

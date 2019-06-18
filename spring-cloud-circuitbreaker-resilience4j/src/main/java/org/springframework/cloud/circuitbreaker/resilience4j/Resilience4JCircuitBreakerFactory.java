@@ -69,7 +69,7 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	@Override
-	public Resilience4JCircuitBreaker create(String id) {
+	public Resilience4JCircuitBreaker createReactor(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);

@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,9 +38,9 @@ import org.springframework.context.annotation.Configuration;
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
-	public ReactiveCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
-		return new ReactiveResilience4JCircuitBreakerFactory();
+	@ConditionalOnMissingBean(ReactorCircuitBreakerFactory.class)
+	public ReactorCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
+		return new ReactorResilience4JCircuitBreakerFactory();
 	}
 
 	@Configuration
@@ -49,10 +49,10 @@ public class ReactiveResilience4JAutoConfiguration {
 	public static class ReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<ReactorResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		private ReactiveResilience4JCircuitBreakerFactory factory;
+		private ReactorResilience4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

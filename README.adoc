@@ -53,7 +53,7 @@ public static class DemoControllerService {
 	}
 
 	public String slow() {
-		return cbFactory.create("slow").run(() -> rest.getForObject("/slow", String.class), throwable -> "fallback");
+		return cbFactory.createReactor("slow").run(() -> rest.getForObject("/slow", String.class), throwable -> "fallback");
 	}
 
 }
@@ -86,7 +86,7 @@ public static class DemoControllerService {
 	}
 
 	public Mono<String> slow() {
-		return cbFactory.create("slow").run(webClient.get().uri("/slow").retrieve().bodyToMono(String.class),
+		return cbFactory.createReactor("slow").run(webClient.get().uri("/slow").retrieve().bodyToMono(String.class),
 		throwable -> return Mono.just("fallback"));
 	}
 }

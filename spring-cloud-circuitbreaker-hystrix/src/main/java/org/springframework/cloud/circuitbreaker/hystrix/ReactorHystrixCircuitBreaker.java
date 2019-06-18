@@ -27,15 +27,17 @@ import rx.RxReactiveStreams;
 import rx.Subscription;
 
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
+public class ReactorHystrixCircuitBreaker
+		implements ReactorCircuitBreaker, ReactiveCircuitBreaker {
 
 	private HystrixObservableCommand.Setter setter;
 
-	public ReactiveHystrixCircuitBreaker(HystrixObservableCommand.Setter setter) {
+	public ReactorHystrixCircuitBreaker(HystrixObservableCommand.Setter setter) {
 		this.setter = setter;
 	}
 
@@ -52,6 +54,10 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 
 	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+		return runFlux(toRun, fallback);
+	}
+
+	private <T> Flux<T> runFlux(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		HystrixObservableCommand<T> command = createCommand(toRun, fallback);
 
 		return Flux.create(s -> {
@@ -79,6 +85,12 @@ public class ReactiveHystrixCircuitBreaker implements ReactiveCircuitBreaker {
 			}
 		};
 		return command;
+	}
+
+	@Override
+	public <T> Publisher<T> run(Publisher<T> toRun,
+			Function<Throwable, Publisher<T>> fallback) {
+		return runFlux(Flux.from(toRun), t -> Flux.from(fallback.apply(t)));
 	}
 
 }

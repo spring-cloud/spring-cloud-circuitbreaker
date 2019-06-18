@@ -29,13 +29,13 @@ public class Resilience4JCircuitBreakerTest {
 
 	@Test
 	public void run() {
-		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().createReactor("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithFallback() {
-		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().create("foo");
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory().createReactor("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");

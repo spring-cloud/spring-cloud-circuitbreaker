@@ -33,8 +33,8 @@ import static org.mockito.Mockito.verify;
 public class SpringRetryCircuitBreakerTest {
 
 	@Test
-	public void testCreate() {
-		CircuitBreaker cb = new SpringRetryCircuitBreakerFactory().create("foo");
+	public void testcreateReactor() {
+		CircuitBreaker cb = new SpringRetryCircuitBreakerFactory().createReactor("foo");
 		assertThat(cb.run(() -> "foo")).isEqualTo("foo");
 	}
 
@@ -47,7 +47,7 @@ public class SpringRetryCircuitBreakerTest {
 				throw new RuntimeException("boom");
 			}
 		});
-		CircuitBreaker cb = factory.create("foo");
+		CircuitBreaker cb = factory.createReactor("foo");
 		for (int i = 0; i < 10; i++) {
 			cb.run(spyedSup, t -> "fallback");
 		}

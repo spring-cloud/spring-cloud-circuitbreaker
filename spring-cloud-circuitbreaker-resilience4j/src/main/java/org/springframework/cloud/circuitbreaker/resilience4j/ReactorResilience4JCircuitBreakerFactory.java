@@ -28,14 +28,15 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveResilience4JCircuitBreakerFactory extends
-		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
+public class ReactorResilience4JCircuitBreakerFactory extends
+		ReactorCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
 			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
@@ -47,11 +48,20 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
 	@Override
-	public ReactiveCircuitBreaker create(String id) {
+	public ReactorCircuitBreaker createReactor(String id) {
+		return create(id);
+	}
+
+	@Override
+	public ReactiveCircuitBreaker createReactive(String id) {
+		return create(id);
+	}
+
+	private ReactorResilience4JCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry,
+		return new ReactorResilience4JCircuitBreaker(id, config, circuitBreakerRegistry,
 				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 

@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,10 +38,10 @@ import org.springframework.context.annotation.Configuration;
 public class ReactiveSentinelCircuitBreakerAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
+	@ConditionalOnMissingBean(ReactorCircuitBreakerFactory.class)
 
-	public ReactiveCircuitBreakerFactory reactiveSentinelCircuitBreakerFactory() {
-		return new ReactiveSentinelCircuitBreakerFactory();
+	public ReactorCircuitBreakerFactory reactiveSentinelCircuitBreakerFactory() {
+		return new ReactorSentinelCircuitBreakerFactory();
 	}
 
 	@Configuration
@@ -50,10 +50,10 @@ public class ReactiveSentinelCircuitBreakerAutoConfiguration {
 	public static class ReactiveSentinelCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveSentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<ReactorSentinelCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		private ReactiveSentinelCircuitBreakerFactory factory;
+		private ReactorSentinelCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

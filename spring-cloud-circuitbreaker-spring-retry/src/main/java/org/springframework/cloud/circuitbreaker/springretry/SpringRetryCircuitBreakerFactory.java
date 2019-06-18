@@ -50,7 +50,7 @@ public class SpringRetryCircuitBreakerFactory extends
 	}
 
 	@Override
-	public CircuitBreaker create(String id) {
+	public CircuitBreaker createReactor(String id) {
 		Assert.hasText(id, "A circuit breaker must have an id");
 		SpringRetryConfigBuilder.SpringRetryConfig config = getConfigurations()
 				.computeIfAbsent(id, defaultConfig);

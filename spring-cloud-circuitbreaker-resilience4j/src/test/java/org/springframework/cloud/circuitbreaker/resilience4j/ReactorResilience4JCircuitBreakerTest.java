@@ -23,26 +23,27 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveResilience4JCircuitBreakerTest {
+public class ReactorResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runMono() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block())
 				.isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Mono.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
 						.isEqualTo("fallback");
@@ -50,16 +51,33 @@ public class ReactiveResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runFlux() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it))
 				.collectList().block()).isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactor("foo");
+		assertThat(Flux.error(new RuntimeException("boom"))
+				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
+				.block()).isEqualTo(Arrays.asList("fallback"));
+	}
+
+	@Test
+	public void runPublisher() {
+		ReactiveCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactive("foo");
+		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it))
+				.collectList().block()).isEqualTo(Arrays.asList("foobar", "hello world"));
+	}
+
+	@Test
+	public void runPublisherWithFallback() {
+		ReactiveCircuitBreaker cb = new ReactorResilience4JCircuitBreakerFactory()
+				.createReactive("foo");
 		assertThat(Flux.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
 				.block()).isEqualTo(Arrays.asList("fallback"));

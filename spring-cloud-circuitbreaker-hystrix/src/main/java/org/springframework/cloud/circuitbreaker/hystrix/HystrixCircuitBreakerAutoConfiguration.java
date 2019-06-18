@@ -28,7 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -46,11 +46,11 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
+	@ConditionalOnMissingBean(ReactorCircuitBreakerFactory.class)
 	@ConditionalOnClass(
 			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
-	public ReactiveHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory() {
-		return new ReactiveHystrixCircuitBreakerFactory();
+	public ReactorHystrixCircuitBreakerFactory reactiveHystrixCircuitBreakerFactory() {
+		return new ReactorHystrixCircuitBreakerFactory();
 	}
 
 	@Configuration
@@ -75,10 +75,10 @@ public class HystrixCircuitBreakerAutoConfiguration {
 	protected static class ReactiveHystrixCircuitBreakerCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveHystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
+		private List<Customizer<ReactorHystrixCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 		@Autowired(required = false)
-		private ReactiveHystrixCircuitBreakerFactory factory;
+		private ReactorHystrixCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {

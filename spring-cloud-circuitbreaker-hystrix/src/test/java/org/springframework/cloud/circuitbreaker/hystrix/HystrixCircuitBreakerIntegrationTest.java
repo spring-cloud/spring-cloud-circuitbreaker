@@ -109,12 +109,12 @@ public class HystrixCircuitBreakerIntegrationTest {
 			}
 
 			public String slow() {
-				return cbFactory.create("slow").run(
+				return cbFactory.createReactor("slow").run(
 						() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(
+				return cbFactory.createReactor("normal").run(
 						() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}

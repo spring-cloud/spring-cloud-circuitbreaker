@@ -31,7 +31,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -50,15 +50,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = ReactiveHystrixCircuitBreakerIntegrationTest.Application.class)
+		classes = ReactorHystrixCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
-public class ReactiveHystrixCircuitBreakerIntegrationTest {
+public class ReactorHystrixCircuitBreakerIntegrationTest {
 
 	@LocalServerPort
 	int port = 0;
 
 	@Autowired
-	ReactiveHystrixCircuitBreakerIntegrationTest.Application.DemoControllerService service;
+	ReactorHystrixCircuitBreakerIntegrationTest.Application.DemoControllerService service;
 
 	@Before
 	public void setup() {
@@ -91,7 +91,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
+		public Customizer<ReactorHystrixCircuitBreakerFactory> customizer() {
 			return factory -> factory
 					.configure(
 							builder -> builder.commandProperties(HystrixCommandProperties
@@ -100,7 +100,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 		}
 
 		@Bean
-		public Customizer<ReactiveHystrixCircuitBreakerFactory> defaultConfig() {
+		public Customizer<ReactorHystrixCircuitBreakerFactory> defaultConfig() {
 			return factory -> factory
 					.configureDefault(id -> HystrixObservableCommand.Setter
 							.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
@@ -113,16 +113,16 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 
 			private int port = 0;
 
-			private ReactiveCircuitBreakerFactory cbFactory;
+			private ReactorCircuitBreakerFactory cbFactory;
 
-			DemoControllerService(ReactiveCircuitBreakerFactory cbBuilder) {
+			DemoControllerService(ReactorCircuitBreakerFactory cbBuilder) {
 				this.cbFactory = cbBuilder;
 			}
 
 			public Mono<String> slow() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/slow").retrieve().bodyToMono(String.class)
-						.transform(it -> cbFactory.create("slow").run(it, t -> {
+						.transform(it -> cbFactory.createReactor("slow").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
 						}));
@@ -131,7 +131,7 @@ public class ReactiveHystrixCircuitBreakerIntegrationTest {
 			public Mono<String> normal() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/normal").retrieve().bodyToMono(String.class)
-						.transform(it -> cbFactory.create("normal").run(it, t -> {
+						.transform(it -> cbFactory.createReactor("normal").run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
 						}));

@@ -28,18 +28,21 @@ import com.alibaba.csp.sentinel.adapter.reactor.EntryConfig;
 import com.alibaba.csp.sentinel.adapter.reactor.SentinelReactorTransformer;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 import org.springframework.util.Assert;
 
 /**
- * Sentinel implementation of {@link ReactiveCircuitBreaker}.
+ * Sentinel implementation of {@link ReactorCircuitBreaker}.
  *
  * @author Eric Zhao
  */
-public class ReactiveSentinelCircuitBreaker implements ReactiveCircuitBreaker {
+public class ReactorSentinelCircuitBreaker
+		implements ReactorCircuitBreaker, ReactiveCircuitBreaker {
 
 	private final String resourceName;
 
@@ -47,7 +50,7 @@ public class ReactiveSentinelCircuitBreaker implements ReactiveCircuitBreaker {
 
 	private final List<DegradeRule> rules;
 
-	public ReactiveSentinelCircuitBreaker(String resourceName, EntryType entryType,
+	public ReactorSentinelCircuitBreaker(String resourceName, EntryType entryType,
 			List<DegradeRule> rules) {
 		Assert.hasText(resourceName, "resourceName cannot be blank");
 		Assert.notNull(rules, "rules should not be null");
@@ -58,11 +61,11 @@ public class ReactiveSentinelCircuitBreaker implements ReactiveCircuitBreaker {
 		applyToSentinelRuleManager();
 	}
 
-	public ReactiveSentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
+	public ReactorSentinelCircuitBreaker(String resourceName, List<DegradeRule> rules) {
 		this(resourceName, EntryType.OUT, rules);
 	}
 
-	public ReactiveSentinelCircuitBreaker(String resourceName) {
+	public ReactorSentinelCircuitBreaker(String resourceName) {
 		this(resourceName, EntryType.OUT, Collections.emptyList());
 	}
 
@@ -93,12 +96,22 @@ public class ReactiveSentinelCircuitBreaker implements ReactiveCircuitBreaker {
 
 	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+		return runFlux(toRun, fallback);
+	}
+
+	private <T> Flux<T> runFlux(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		Flux<T> toReturn = toRun.transform(new SentinelReactorTransformer<>(
 				new EntryConfig(resourceName, entryType)));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
+	}
+
+	@Override
+	public <T> Publisher<T> run(Publisher<T> toRun,
+			Function<Throwable, Publisher<T>> fallback) {
+		return runFlux(Flux.from(toRun), t -> Flux.from(fallback.apply(t)));
 	}
 
 }

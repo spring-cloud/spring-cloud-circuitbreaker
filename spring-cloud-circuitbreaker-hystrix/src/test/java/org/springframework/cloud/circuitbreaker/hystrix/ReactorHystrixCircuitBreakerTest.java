@@ -21,19 +21,19 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveHystrixCircuitBreakerTest {
+public class ReactorHystrixCircuitBreakerTest {
 
 	@Test
 	public void monoRun() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorHystrixCircuitBreakerFactory()
+				.createReactor("foo");
 		Mono<String> s = Mono.just("foobar")
 				.transform(it -> cb.run(it, t -> Mono.just("fallback")));
 		assertThat(s.block()).isEqualTo("foobar");
@@ -41,8 +41,8 @@ public class ReactiveHystrixCircuitBreakerTest {
 
 	@Test
 	public void monoFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorHystrixCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Mono.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
 						.isEqualTo("fallback");
@@ -50,8 +50,8 @@ public class ReactiveHystrixCircuitBreakerTest {
 
 	@Test
 	public void fluxRun() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorHystrixCircuitBreakerFactory()
+				.createReactor("foo");
 		Flux<String> s = Flux.just("foobar", "hello world")
 				.transform(it -> cb.run(it, t -> Flux.just("fallback")));
 		assertThat(s.collectList().block())
@@ -60,8 +60,8 @@ public class ReactiveHystrixCircuitBreakerTest {
 
 	@Test
 	public void fluxFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveHystrixCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorHystrixCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Flux.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
 				.block()).isEqualTo(Arrays.asList(new String[] { "fallback" }));

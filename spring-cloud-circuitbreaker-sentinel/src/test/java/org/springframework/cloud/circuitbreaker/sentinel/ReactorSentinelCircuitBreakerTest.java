@@ -24,19 +24,19 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Eric Zhao
  */
-public class ReactiveSentinelCircuitBreakerTest {
+public class ReactorSentinelCircuitBreakerTest {
 
 	@Test
 	public void testCreateWithNullRule() {
 		String id = "testCreateReactiveCbWithNullRule";
-		ReactiveSentinelCircuitBreaker cb = new ReactiveSentinelCircuitBreaker(id,
+		ReactorSentinelCircuitBreaker cb = new ReactorSentinelCircuitBreaker(id,
 				Collections.singletonList(null));
 		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block())
 				.isEqualTo("foobar");
@@ -45,16 +45,16 @@ public class ReactiveSentinelCircuitBreakerTest {
 
 	@Test
 	public void runMono() {
-		ReactiveCircuitBreaker cb = new ReactiveSentinelCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorSentinelCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block())
 				.isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveSentinelCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorSentinelCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Mono.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
 						.isEqualTo("fallback");
@@ -62,16 +62,16 @@ public class ReactiveSentinelCircuitBreakerTest {
 
 	@Test
 	public void runFlux() {
-		ReactiveCircuitBreaker cb = new ReactiveSentinelCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorSentinelCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it))
 				.collectList().block()).isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveSentinelCircuitBreakerFactory()
-				.create("foo");
+		ReactorCircuitBreaker cb = new ReactorSentinelCircuitBreakerFactory()
+				.createReactor("foo");
 		assertThat(Flux.error(new RuntimeException("boom"))
 				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
 				.block()).isEqualTo(Arrays.asList("fallback"));

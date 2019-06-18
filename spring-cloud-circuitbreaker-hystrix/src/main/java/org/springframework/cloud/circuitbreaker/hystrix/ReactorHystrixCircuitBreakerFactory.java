@@ -22,14 +22,15 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixObservableCommand;
 
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreakerFactory;
 import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveHystrixCircuitBreakerFactory extends
-		ReactiveCircuitBreakerFactory<HystrixObservableCommand.Setter, ReactiveHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder> {
+public class ReactorHystrixCircuitBreakerFactory extends
+		ReactorCircuitBreakerFactory<HystrixObservableCommand.Setter, ReactorHystrixCircuitBreakerFactory.ReactiveHystrixConfigBuilder> {
 
 	private Function<String, HystrixObservableCommand.Setter> defaultConfiguration = id -> HystrixObservableCommand.Setter
 			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id));
@@ -46,11 +47,20 @@ public class ReactiveHystrixCircuitBreakerFactory extends
 	}
 
 	@Override
-	public ReactiveCircuitBreaker create(String id) {
+	public ReactorCircuitBreaker createReactor(String id) {
+		return createReactorHystrixCircuitBreaker(id);
+	}
+
+	private ReactorHystrixCircuitBreaker createReactorHystrixCircuitBreaker(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		HystrixObservableCommand.Setter setter = getConfigurations().computeIfAbsent(id,
 				defaultConfiguration);
-		return new ReactiveHystrixCircuitBreaker(setter);
+		return new ReactorHystrixCircuitBreaker(setter);
+	}
+
+	@Override
+	public ReactiveCircuitBreaker createReactive(String id) {
+		return createReactorHystrixCircuitBreaker(id);
 	}
 
 	public static class ReactiveHystrixConfigBuilder

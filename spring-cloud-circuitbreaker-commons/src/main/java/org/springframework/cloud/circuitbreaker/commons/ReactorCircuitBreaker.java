@@ -18,19 +18,30 @@ package org.springframework.cloud.circuitbreaker.commons;
 
 import java.util.function.Function;
 
-import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
+ * Spring Cloud reactor circuit breaker API.
+ *
  * @author Ryan Baxter
  */
-public interface ReactiveCircuitBreaker {
+public interface ReactorCircuitBreaker {
 
-	default <T> Publisher<T> run(Publisher<T> toRun) {
+	default <T> Mono<T> run(Mono<T> toRun) {
 		return run(toRun, throwable -> {
 			throw new NoFallbackAvailableException("No fallback available.", throwable);
 		});
 	}
 
-	<T> Publisher<T> run(Publisher<T> toRun, Function<Throwable, Publisher<T>> fallback);
+	<T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback);
+
+	default <T> Flux<T> run(Flux<T> toRun) {
+		return run(toRun, throwable -> {
+			throw new NoFallbackAvailableException("No fallback available.", throwable);
+		});
+	}
+
+	<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback);
 
 }

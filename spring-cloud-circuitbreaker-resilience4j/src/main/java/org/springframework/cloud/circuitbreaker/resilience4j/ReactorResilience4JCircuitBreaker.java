@@ -23,16 +23,19 @@ import java.util.function.Function;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.circuitbreaker.commons.Customizer;
 import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.circuitbreaker.commons.ReactorCircuitBreaker;
 
 /**
  * @author Ryan Baxter
  */
-public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreaker {
+public class ReactorResilience4JCircuitBreaker
+		implements ReactorCircuitBreaker, ReactiveCircuitBreaker {
 
 	private String id;
 
@@ -42,7 +45,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer;
 
-	public ReactiveResilience4JCircuitBreaker(String id,
+	public ReactorResilience4JCircuitBreaker(String id,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry,
 			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
@@ -72,7 +75,12 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		return toReturn;
 	}
 
+	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+		return runFlux(toRun, fallback);
+	}
+
+	private <T> Flux<T> runFlux(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry
 				.circuitBreaker(id, config.getCircuitBreakerConfig());
 		circuitBreakerCustomizer
@@ -89,6 +97,12 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
+	}
+
+	@Override
+	public <T> Publisher<T> run(Publisher<T> toRun,
+			Function<Throwable, Publisher<T>> fallback) {
+		return runFlux(Flux.from(toRun), t -> Flux.from(fallback.apply(t)));
 	}
 
 }

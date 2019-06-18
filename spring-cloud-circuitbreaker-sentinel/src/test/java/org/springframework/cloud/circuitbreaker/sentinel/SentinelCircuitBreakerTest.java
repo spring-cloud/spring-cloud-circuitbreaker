@@ -69,14 +69,15 @@ public class SentinelCircuitBreakerTest {
 
 	@Test
 	public void testCreateFromFactoryThenRun() {
-		CircuitBreaker cb = new SentinelCircuitBreakerFactory().create("testSentinelRun");
+		CircuitBreaker cb = new SentinelCircuitBreakerFactory()
+				.createReactor("testSentinelRun");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void testRunWithFallback() {
 		CircuitBreaker cb = new SentinelCircuitBreakerFactory()
-				.create("testSentinelRunWithFallback");
+				.createReactor("testSentinelRunWithFallback");
 		assertThat(cb.<String>run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
