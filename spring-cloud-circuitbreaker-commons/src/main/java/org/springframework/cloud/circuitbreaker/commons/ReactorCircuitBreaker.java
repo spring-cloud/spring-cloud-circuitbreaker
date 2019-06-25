@@ -29,17 +29,15 @@ import reactor.core.publisher.Mono;
 public interface ReactorCircuitBreaker {
 
 	default <T> Mono<T> run(Mono<T> toRun) {
-		return run(toRun, throwable -> {
-			throw new NoFallbackAvailableException("No fallback available.", throwable);
-		});
+		return run(toRun, throwable -> Mono.error(
+				new NoFallbackAvailableException("No fallback available.", throwable)));
 	}
 
 	<T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback);
 
 	default <T> Flux<T> run(Flux<T> toRun) {
-		return run(toRun, throwable -> {
-			throw new NoFallbackAvailableException("No fallback available.", throwable);
-		});
+		return run(toRun, throwable -> Flux.error(
+				new NoFallbackAvailableException("No fallback available.", throwable)));
 	}
 
 	<T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback);
