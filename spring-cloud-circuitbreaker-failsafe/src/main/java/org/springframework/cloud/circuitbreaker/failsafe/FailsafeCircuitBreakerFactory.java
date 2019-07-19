@@ -59,7 +59,7 @@ public class FailsafeCircuitBreakerFactory extends
 				Optional.ofNullable(failsafeCustomizers.get(id)));
 	}
 
-	public void addRetryTemplateCustomizers(Customizer<FailsafeExecutor> customizer,
+	public void addFailsafeCustomizers(Customizer<FailsafeExecutor> customizer,
 			String... ids) {
 		for (String id : ids) {
 			this.failsafeCustomizers.put(id, customizer);

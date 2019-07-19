@@ -114,7 +114,7 @@ public class FailsafeCircuitBreakerIntegrationTest {
 										.withDelay(Duration.ofMinutes(1)))
 								.build(),
 						"slow");
-				factory.addRetryTemplateCustomizers(
+				factory.addFailsafeCustomizers(
 						failsafe -> failsafe.onFailure(onFailureConsumer), "slow");
 			};
 		}
