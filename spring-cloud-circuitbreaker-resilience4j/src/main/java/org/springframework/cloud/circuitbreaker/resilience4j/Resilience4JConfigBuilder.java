@@ -29,9 +29,9 @@ public class Resilience4JConfigBuilder implements
 
 	private String id;
 
-	private TimeLimiterConfig timeLimiterConfig;
+	private TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.ofDefaults();
 
-	private CircuitBreakerConfig circuitBreakerConfig;
+	private CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.ofDefaults();
 
 	public Resilience4JConfigBuilder(String id) {
 		this.id = id;
@@ -52,7 +52,6 @@ public class Resilience4JConfigBuilder implements
 	public Resilience4JCircuitBreakerConfiguration build() {
 		Resilience4JCircuitBreakerConfiguration config = new Resilience4JCircuitBreakerConfiguration();
 		config.setId(id);
-		// TODO null checks?
 		config.setCircuitBreakerConfig(circuitBreakerConfig);
 		config.setTimeLimiterConfig(timeLimiterConfig);
 		return config;
