@@ -1,5 +1,12 @@
 === Configuring Resilience4J Circuit Breakers
 
+==== Starters
+There are two starters for the Resilience4J implementations, one for reactive applications and
+one for non-reactive applications.
+
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j` - non-reactive applications
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
+
 ==== Default Configuration
 
 To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a

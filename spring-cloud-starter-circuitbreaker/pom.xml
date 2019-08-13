@@ -17,6 +17,7 @@
         <module>spring-cloud-starter-circuitbreaker-hystrix</module>
         <module>spring-cloud-starter-circuitbreaker-sentinel</module>
 		<module>spring-cloud-starter-circuitbreaker-spring-retry</module>
+		<module>spring-cloud-starter-circuitbreaker-reactor-resilience4j</module>
 	</modules>
     <packaging>pom</packaging>
 
