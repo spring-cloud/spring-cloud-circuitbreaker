@@ -9,9 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-circuitbreaker-hystrix</artifactId>
-    <version>0.0.1.BUILD-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -27,6 +25,4 @@
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
     </dependencies>
-
-
 </project>
