@@ -337,6 +337,23 @@ public Customizer&lt;ReactiveHystrixCircuitBreakerFactory&gt; customizer() {
 <div class="sect2">
 <h3 id="_configuring_resilience4j_circuit_breakers"><a class="link" href="#_configuring_resilience4j_circuit_breakers">Configuring Resilience4J Circuit Breakers</a></h3>
 <div class="sect3">
+<h4 id="_starters"><a class="link" href="#_starters">Starters</a></h4>
+<div class="paragraph">
+<p>There are two starters for the Resilience4J implementations, one for reactive applications and
+one for non-reactive applications.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j</code> - non-reactive applications</p>
+</li>
+<li>
+<p><code>org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j</code> - reactive applications</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
 <h4 id="_default_configuration_2"><a class="link" href="#_default_configuration_2">Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
