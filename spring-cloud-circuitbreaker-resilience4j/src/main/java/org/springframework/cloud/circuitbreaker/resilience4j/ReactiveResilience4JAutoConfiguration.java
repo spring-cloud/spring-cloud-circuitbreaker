@@ -33,8 +33,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Ryan Baxter
  */
 @Configuration
-@ConditionalOnClass(
-		name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
+@ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
+		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean

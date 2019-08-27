@@ -21,7 +21,6 @@ You can choose to provide default circuit breaking rules via `SentinelConfigBuil
 You can also choose to load circuit breaking rules later elsewhere using
 `DegradeRuleManager.loadRules(rules)` API of Sentinel, or via Sentinel dashboard.
 
-
 ===== Reactive Example
 
 ====
@@ -34,7 +33,6 @@ public Customizer<ReactiveSentinelCircuitBreakerFactory> defaultCustomizer() {
 }
 ----
 ====
-
 
 ==== Specific Circuit Breaker Configuration
 

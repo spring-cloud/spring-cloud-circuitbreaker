@@ -1,8 +1,8 @@
 === Configuring Resilience4J Circuit Breakers
 
 ==== Starters
-There are two starters for the Resilience4J implementations, one for reactive applications and
-one for non-reactive applications.
+
+There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
 
 * `org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j` - non-reactive applications
 * `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
@@ -40,7 +40,6 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ----
 ====
 
-
 ==== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
@@ -57,9 +56,10 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 ----
 ====
 
-In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the `addCircuitBreakerCustomizer`
-method.  This can be useful for adding event handlers to Resilience4J circuit breakers.
+In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the `addCircuitBreakerCustomizer`
+method.
+This can be useful for adding event handlers to Resilience4J circuit breakers.
 
 ====
 [source,java]

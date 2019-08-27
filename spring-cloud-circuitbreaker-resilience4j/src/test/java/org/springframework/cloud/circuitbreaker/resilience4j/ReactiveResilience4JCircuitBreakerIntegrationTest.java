@@ -61,9 +61,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext
 public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
-	@LocalServerPort
-	int port = 0;
-
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
 
@@ -87,6 +84,9 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
 	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalFluxSuccessConsumer;
+
+	@LocalServerPort
+	int port = 0;
 
 	@Autowired
 	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
