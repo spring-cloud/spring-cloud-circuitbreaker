@@ -21,16 +21,16 @@ import java.util.function.Function;
 
 import com.alibaba.csp.sentinel.EntryType;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.sentinel.SentinelConfigBuilder.SentinelCircuitBreakerConfiguration;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.util.Assert;
 
 /**
  * @author Eric Zhao
  */
 public class SentinelCircuitBreakerFactory extends
-		CircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
+		CircuitBreakerFactory<SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
 
 	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id -> new SentinelConfigBuilder()
 			.resourceName(id).entryType(EntryType.OUT).rules(new ArrayList<>()).build();

@@ -5,18 +5,15 @@
 	<parent>
 		<artifactId>spring-cloud-circuitbreaker</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>0.0.1.BUILD-SNAPSHOT</version>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-circuitbreaker-hystrix</artifactId>
-	<version>0.0.1.BUILD-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-circuitbreaker-commons</artifactId>
+			<artifactId>spring-cloud-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

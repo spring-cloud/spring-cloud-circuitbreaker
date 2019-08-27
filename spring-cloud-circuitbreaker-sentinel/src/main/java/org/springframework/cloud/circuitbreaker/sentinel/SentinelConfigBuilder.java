@@ -23,7 +23,7 @@ import java.util.Optional;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 import org.springframework.util.Assert;
 
 /**

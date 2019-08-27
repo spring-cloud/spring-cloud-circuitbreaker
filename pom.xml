@@ -7,7 +7,7 @@
 	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-circuitbreaker</artifactId>
 	<packaging>pom</packaging>
-	<version>0.0.1.BUILD-SNAPSHOT</version>
+	<version>1.0.0.BUILD-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
@@ -73,7 +73,6 @@
 	<modules>
 		<module>spring-cloud-circuitbreaker-dependencies</module>
 		<module>spring-cloud-circuitbreaker-resilience4j</module>
-		<module>spring-cloud-circuitbreaker-commons</module>
 		<module>spring-cloud-starter-circuitbreaker</module>
 		<module>spring-cloud-circuitbreaker-hystrix</module>
 		<module>spring-cloud-circuitbreaker-sentinel</module>

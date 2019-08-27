@@ -19,7 +19,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 
 /**
  * @author Ryan Baxter

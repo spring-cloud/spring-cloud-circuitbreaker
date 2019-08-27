@@ -20,7 +20,7 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 import org.springframework.util.StringUtils;
 
 /**

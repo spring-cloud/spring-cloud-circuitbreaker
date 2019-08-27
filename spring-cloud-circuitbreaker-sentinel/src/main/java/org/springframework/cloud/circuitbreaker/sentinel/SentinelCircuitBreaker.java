@@ -32,7 +32,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.util.Assert;
 
 /**

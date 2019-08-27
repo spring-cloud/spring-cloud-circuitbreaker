@@ -12,7 +12,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-circuitbreaker-dependencies</artifactId>
-	<version>0.0.1.BUILD-SNAPSHOT</version>
+	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>spring-cloud-circuitbreaker-dependencies</name>
 	<description>Spring Cloud Circuit Breaker Dependencies</description>
@@ -67,11 +67,6 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-circuitbreaker-sentinel</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-circuitbreaker-commons</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

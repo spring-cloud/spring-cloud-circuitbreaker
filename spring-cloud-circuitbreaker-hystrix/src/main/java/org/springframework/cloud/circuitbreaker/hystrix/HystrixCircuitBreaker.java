@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 import com.netflix.hystrix.HystrixCommand;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 /**
  * Hystrix implementation of {@link CircuitBreaker}.

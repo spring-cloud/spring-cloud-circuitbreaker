@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.util.Assert;
 
 /**

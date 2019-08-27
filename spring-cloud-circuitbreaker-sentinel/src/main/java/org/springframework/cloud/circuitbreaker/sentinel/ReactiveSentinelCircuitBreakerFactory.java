@@ -19,9 +19,9 @@ package org.springframework.cloud.circuitbreaker.sentinel;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.sentinel.SentinelConfigBuilder.SentinelCircuitBreakerConfiguration;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * @author Eric Zhao
  */
 public class ReactiveSentinelCircuitBreakerFactory extends
-		ReactiveCircuitBreakerFactory<SentinelConfigBuilder.SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
+		ReactiveCircuitBreakerFactory<SentinelCircuitBreakerConfiguration, SentinelConfigBuilder> {
 
 	private Function<String, SentinelConfigBuilder.SentinelCircuitBreakerConfiguration> defaultConfiguration = id -> new SentinelConfigBuilder()
 			.resourceName(id).rules(new ArrayList<>()).build();

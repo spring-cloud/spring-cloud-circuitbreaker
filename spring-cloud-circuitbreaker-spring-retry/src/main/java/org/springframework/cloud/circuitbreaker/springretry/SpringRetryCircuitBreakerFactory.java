@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 

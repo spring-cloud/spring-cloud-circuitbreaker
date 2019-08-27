@@ -26,8 +26,8 @@ import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOper
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 /**
  * @author Ryan Baxter

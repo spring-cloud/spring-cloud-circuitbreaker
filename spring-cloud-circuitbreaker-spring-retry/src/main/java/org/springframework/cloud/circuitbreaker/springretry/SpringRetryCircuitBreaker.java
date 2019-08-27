@@ -20,8 +20,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
 

@@ -24,7 +24,7 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import org.junit.After;
 import org.junit.Test;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

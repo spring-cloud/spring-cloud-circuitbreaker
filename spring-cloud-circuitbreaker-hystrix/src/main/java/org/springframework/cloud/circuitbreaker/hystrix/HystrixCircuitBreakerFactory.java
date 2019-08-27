@@ -21,7 +21,7 @@ import java.util.function.Function;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.util.Assert;
 
 /**

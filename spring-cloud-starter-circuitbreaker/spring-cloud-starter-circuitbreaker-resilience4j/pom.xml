@@ -5,13 +5,10 @@
 	<parent>
 		<artifactId>spring-cloud-starter-circuitbreaker</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>0.0.1.BUILD-SNAPSHOT</version>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-	<version>0.0.1.BUILD-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>

@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 import org.junit.Test;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;

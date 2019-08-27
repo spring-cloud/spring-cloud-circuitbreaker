@@ -26,7 +26,7 @@ import rx.Observable;
 import rx.RxReactiveStreams;
 import rx.Subscription;
 
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 /**
  * @author Ryan Baxter
