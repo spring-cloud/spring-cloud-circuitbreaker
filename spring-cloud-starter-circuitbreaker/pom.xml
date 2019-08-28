@@ -12,7 +12,6 @@
 	<artifactId>spring-cloud-starter-circuitbreaker</artifactId>
 	<modules>
 		<module>spring-cloud-starter-circuitbreaker-resilience4j</module>
-		<module>spring-cloud-starter-circuitbreaker-hystrix</module>
 		<module>spring-cloud-starter-circuitbreaker-sentinel</module>
 		<module>spring-cloud-starter-circuitbreaker-spring-retry</module>
 		<module>spring-cloud-starter-circuitbreaker-reactor-resilience4j</module>

@@ -50,13 +50,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
-				<version>${spring-cloud-netflix.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-circuitbreaker-dependencies</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
@@ -74,7 +67,6 @@
 		<module>spring-cloud-circuitbreaker-dependencies</module>
 		<module>spring-cloud-circuitbreaker-resilience4j</module>
 		<module>spring-cloud-starter-circuitbreaker</module>
-		<module>spring-cloud-circuitbreaker-hystrix</module>
 		<module>spring-cloud-circuitbreaker-sentinel</module>
 		<module>docs</module>
 		<module>spring-cloud-circuitbreaker-spring-retry</module>
