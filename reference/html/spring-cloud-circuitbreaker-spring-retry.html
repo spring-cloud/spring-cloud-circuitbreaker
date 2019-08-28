@@ -103,12 +103,12 @@ $(addBlockSwitches);
 <div class="sect2">
 <h3 id="_configuring_spring_retry_circuit_breakers"><a class="link" href="#_configuring_spring_retry_circuit_breakers">Configuring Spring Retry Circuit Breakers</a></h3>
 <div class="paragraph">
-<p>Spring Retry provides declarative retry support for Spring applications.  A subset of the project
-includes the ability to implement circuit breaker functionality.  Spring Retry provides a circuit breaker
-implementation via a combination of it&#8217;s
+<p>Spring Retry provides declarative retry support for Spring applications.
+A subset of the project includes the ability to implement circuit breaker functionality.
+Spring Retry provides a circuit breaker implementation via a combination of it&#8217;s
 <a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/policy/CircuitBreakerRetryPolicy.java"><code>CircuitBreakerRetryPolicy</code></a>
-and a <a href="https://github.com/spring-projects/spring-retry#stateful-retry">stateful retry</a>.  All circuit
-breakers created using Spring Retry will be created using the <code>CircuitBreakerRetryPolicy</code> and a
+and a <a href="https://github.com/spring-projects/spring-retry#stateful-retry">stateful retry</a>.
+All circuit breakers created using Spring Retry will be created using the <code>CircuitBreakerRetryPolicy</code> and a
 <a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/support/DefaultRetryState.java"><code>DefaultRetryState</code></a>.
 Both of these classes can be configured using <code>SpringRetryConfigBuilder</code>.</p>
 </div>
@@ -152,9 +152,10 @@ public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; slowCustomizer() {
 </div>
 </div>
 <div class="paragraph">
-<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the <code>addRetryTemplateCustomizers</code>
-method.  This can be useful for adding event handlers to the <code>RetryTemplate</code>.</p>
+<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the <code>addRetryTemplateCustomizers</code>
+method.
+This can be useful for adding event handlers to the <code>RetryTemplate</code>.</p>
 </div>
 <div class="exampleblock">
 <div class="content">

@@ -96,25 +96,10 @@ $(addBlockSwitches);
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel0">
 <li><a href="#_spring_cloud_circuit_breaker">Spring Cloud Circuit Breaker</a>
-<ul class="sectlevel1">
-<li><a href="#_introduction">Introduction</a>
 <ul class="sectlevel2">
-<li><a href="#_supported_implementations">Supported Implementations</a></li>
-</ul>
-</li>
-<li><a href="#_core_concepts">Core Concepts</a>
-<ul class="sectlevel2">
-<li><a href="#_circuit_breakers_in_reactive_code">Circuit Breakers In Reactive Code</a></li>
-</ul>
-</li>
-<li><a href="#_configuration">Configuration</a>
-<ul class="sectlevel2">
-<li><a href="#_configuring_hystrix_circuit_breakers">Configuring Hystrix Circuit Breakers</a></li>
 <li><a href="#_configuring_resilience4j_circuit_breakers">Configuring Resilience4J Circuit Breakers</a></li>
 <li><a href="#_configuring_sentinel_circuit_breakers">Configuring Sentinel Circuit Breakers</a></li>
 <li><a href="#_configuring_spring_retry_circuit_breakers">Configuring Spring Retry Circuit Breakers</a></li>
-</ul>
-</li>
 <li><a href="#_building">Building</a>
 <ul class="sectlevel2">
 <li><a href="#_basic_compile_and_test">Basic Compile and Test</a></li>
@@ -159,200 +144,7 @@ $(addBlockSwitches);
 <h1 id="_spring_cloud_circuit_breaker" class="sect0"><a class="link" href="#_spring_cloud_circuit_breaker">Spring Cloud Circuit Breaker</a></h1>
 <div class="openblock partintro">
 <div class="content">
-<strong>0.0.1.BUILD-SNAPSHOT</strong>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_introduction"><a class="link" href="#_introduction">Introduction</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Spring Cloud Circuit breaker provides an abstraction across different circuit breaker implementations.
-It provides a consistent API to use in your applications allowing you the developer to choose the circuit
-breaker implementation that best fits your needs for your app.</p>
-</div>
-<div class="sect2">
-<h3 id="_supported_implementations"><a class="link" href="#_supported_implementations">Supported Implementations</a></h3>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://github.com/Netflix/Hystrix">Netfix Hystrix</a></p>
-</li>
-<li>
-<p><a href="https://github.com/resilience4j/resilience4j">Resilience4J</a></p>
-</li>
-<li>
-<p><a href="https://github.com/alibaba/Sentinel">Sentinel</a></p>
-</li>
-<li>
-<p><a href="https://github.com/spring-projects/spring-retry">Spring Retry</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_core_concepts"><a class="link" href="#_core_concepts">Core Concepts</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>To create a circuit breaker in your code you can use the <code>CircuitBreakerFactory</code> API.  When you include a Spring
-Cloud Circuit Breaker starter on your classpath a bean implementing this API will automatically be created
-for you.  A very simple example of using this API is given below</p>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Service
-public static class DemoControllerService {
-	private RestTemplate rest;
-	private CircuitBreakerFactory cbFactory;
-
-	public DemoControllerService(RestTemplate rest, CircuitBreakerFactory cbFactory) {
-		this.rest = rest;
-		this.cbFactory = cbFactory;
-	}
-
-	public String slow() {
-		return cbFactory.create("slow").run(() -&gt; rest.getForObject("/slow", String.class), throwable -&gt; "fallback");
-	}
-
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p>The <code>CircuitBreakerFactory.create</code> API will create an instance of a class called <code>CircuitBreaker</code>.
-The <code>run</code> method takes a <code>Supplier</code> and a <code>Function</code>.  The <code>Supplier</code> is the code that you are going to
-wrap in a circuit breaker.  The <code>Function</code> is the fallback that will be executed if the circuit
-breaker is tripped.  The function will be passed the <code>Throwable</code> that caused the fallback to be
-triggered.  You can optionally exclude the fallback if you do not want to provide one.</p>
-</div>
-<div class="sect2">
-<h3 id="_circuit_breakers_in_reactive_code"><a class="link" href="#_circuit_breakers_in_reactive_code">Circuit Breakers In Reactive Code</a></h3>
-<div class="paragraph">
-<p>If Project Reactor is on the class path then you can also use <code>ReactiveCircuitBreakerFactory</code> for your reactive
-code.</p>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Service
-public static class DemoControllerService {
-	private ReactiveCircuitBreakerFactory cbFactory;
-	private WebClient webClient;
-
-
-	public DemoControllerService(WebClient webClient, ReactiveCircuitBreakerFactory cbFactory) {
-		this.webClient = webClient;
-		this.cbFactory = cbFactory;
-	}
-
-	public Mono&lt;String&gt; slow() {
-		return webClient.get().uri("/slow").retrieve().bodyToMono(String.class).transform(
-		it -&gt; cbFactory.create("slow").run(it, throwable -&gt; return Mono.just("fallback")));
-	}
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p>The <code>ReactiveCircuitBreakerFactory.create</code> API will create an instance of a class called <code>ReactiveCircuitBreaker</code>.
-The <code>run</code> method takes with a <code>Mono</code> or <code>Flux</code> and wraps it in a circuit breaker.  You can optionally profile
-a fallback <code>Function</code> which will be called if the circuit breaker is tripped and will be passed the <code>Throwable</code>
-that caused the failure.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>You can configure your circuit breakers using by creating beans of type <code>Customizer</code>.  The <code>Customizer</code> interface
-has a single method called <code>customize</code> that takes in the <code>Object</code> to customize.</p>
-</div>
-<div class="sect2">
-<h3 id="_configuring_hystrix_circuit_breakers"><a class="link" href="#_configuring_hystrix_circuit_breakers">Configuring Hystrix Circuit Breakers</a></h3>
-<div class="sect3">
-<h4 id="_default_configuration"><a class="link" href="#_default_configuration">Default Configuration</a></h4>
-<div class="paragraph">
-<p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
-<code>HystrixCircuitBreakerFactory</code> or <code>ReactiveHystrixCircuitBreakerFactory</code>.
-The <code>configureDefault</code> method can be used to provide a default configuration.</p>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
-public Customizer&lt;HystrixCircuitBreakerFactory&gt; defaultConfig() {
-	return factory -&gt; factory.configureDefault(id -&gt; HystrixCommand.Setter
-			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-			.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-			.withExecutionTimeoutInMilliseconds(4000)));
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_reactive_example"><a class="link" href="#_reactive_example">Reactive Example</a></h5>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
-public Customizer&lt;ReactiveHystrixCircuitBreakerFactory&gt; defaultConfig() {
-	return factory -&gt; factory.configureDefault(id -&gt; HystrixObservableCommand.Setter
-			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-			.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-					.withExecutionTimeoutInMilliseconds(4000)));
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_specific_circuit_breaker_configuration"><a class="link" href="#_specific_circuit_breaker_configuration">Specific Circuit Breaker Configuration</a></h4>
-<div class="paragraph">
-<p>Similarly to providing a default configuration, you can create a <code>Customize</code> bean this is passed a
-<code>HystrixCircuitBreakerFactory</code></p>
-</div>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
-public Customizer&lt;HystrixCircuitBreakerFactory&gt; customizer() {
-	return factory -&gt; factory.configure(builder -&gt; builder.commandProperties(
-					HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "foo", "bar");
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_reactive_example_2"><a class="link" href="#_reactive_example_2">Reactive Example</a></h5>
-<div class="exampleblock">
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
-public Customizer&lt;ReactiveHystrixCircuitBreakerFactory&gt; customizer() {
-	return factory -&gt; factory.configure(builder -&gt; builder.commandProperties(
-					HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "foo", "bar");
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
+<strong>1.0.0.BUILD-SNAPSHOT</strong>
 </div>
 </div>
 <div class="sect2">
@@ -360,8 +152,7 @@ public Customizer&lt;ReactiveHystrixCircuitBreakerFactory&gt; customizer() {
 <div class="sect3">
 <h4 id="_starters"><a class="link" href="#_starters">Starters</a></h4>
 <div class="paragraph">
-<p>There are two starters for the Resilience4J implementations, one for reactive applications and
-one for non-reactive applications.</p>
+<p>There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -375,7 +166,7 @@ one for non-reactive applications.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_default_configuration_2"><a class="link" href="#_default_configuration_2">Default Configuration</a></h4>
+<h4 id="_default_configuration"><a class="link" href="#_default_configuration">Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
 <code>Resilience4JCircuitBreakerFactory</code> or <code>ReactiveResilience4JCircuitBreakerFactory</code>.
@@ -397,7 +188,7 @@ public Customizer&lt;Resilience4JCircuitBreakerFactory&gt; defaultCustomizer() {
 </div>
 </div>
 <div class="sect4">
-<h5 id="_reactive_example_3"><a class="link" href="#_reactive_example_3">Reactive Example</a></h5>
+<h5 id="_reactive_example"><a class="link" href="#_reactive_example">Reactive Example</a></h5>
 <div class="exampleblock">
 <div class="content">
 <div class="listingblock">
@@ -415,7 +206,7 @@ public Customizer&lt;ReactiveResilience4JCircuitBreakerFactory&gt; defaultCustom
 </div>
 </div>
 <div class="sect3">
-<h4 id="_specific_circuit_breaker_configuration_2"><a class="link" href="#_specific_circuit_breaker_configuration_2">Specific Circuit Breaker Configuration</a></h4>
+<h4 id="_specific_circuit_breaker_configuration"><a class="link" href="#_specific_circuit_breaker_configuration">Specific Circuit Breaker Configuration</a></h4>
 <div class="paragraph">
 <p>Similarly to providing a default configuration, you can create a <code>Customize</code> bean this is passed a
 <code>Resilience4JCircuitBreakerFactory</code> or <code>ReactiveResilience4JCircuitBreakerFactory</code>.</p>
@@ -434,9 +225,10 @@ public Customizer&lt;Resilience4JCircuitBreakerFactory&gt; slowCustomizer() {
 </div>
 </div>
 <div class="paragraph">
-<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the <code>addCircuitBreakerCustomizer</code>
-method.  This can be useful for adding event handlers to Resilience4J circuit breakers.</p>
+<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the <code>addCircuitBreakerCustomizer</code>
+method.
+This can be useful for adding event handlers to Resilience4J circuit breakers.</p>
 </div>
 <div class="exampleblock">
 <div class="content">
@@ -452,7 +244,7 @@ public Customizer&lt;Resilience4JCircuitBreakerFactory&gt; slowCustomizer() {
 </div>
 </div>
 <div class="sect4">
-<h5 id="_reactive_example_4"><a class="link" href="#_reactive_example_4">Reactive Example</a></h5>
+<h5 id="_reactive_example_2"><a class="link" href="#_reactive_example_2">Reactive Example</a></h5>
 <div class="exampleblock">
 <div class="content">
 <div class="listingblock">
@@ -477,7 +269,7 @@ public Customizer&lt;ReactiveResilience4JCircuitBreakerFactory&gt; slowCusomtize
 <div class="sect2">
 <h3 id="_configuring_sentinel_circuit_breakers"><a class="link" href="#_configuring_sentinel_circuit_breakers">Configuring Sentinel Circuit Breakers</a></h3>
 <div class="sect3">
-<h4 id="_default_configuration_3"><a class="link" href="#_default_configuration_3">Default Configuration</a></h4>
+<h4 id="_default_configuration_2"><a class="link" href="#_default_configuration_2">Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customizer</code> bean that is passed a
 <code>SentinelCircuitBreakerFactory</code> or <code>ReactiveSentinelCircuitBreakerFactory</code>.
@@ -502,7 +294,7 @@ You can also choose to load circuit breaking rules later elsewhere using
 <code>DegradeRuleManager.loadRules(rules)</code> API of Sentinel, or via Sentinel dashboard.</p>
 </div>
 <div class="sect4">
-<h5 id="_reactive_example_5"><a class="link" href="#_reactive_example_5">Reactive Example</a></h5>
+<h5 id="_reactive_example_3"><a class="link" href="#_reactive_example_3">Reactive Example</a></h5>
 <div class="exampleblock">
 <div class="content">
 <div class="listingblock">
@@ -519,7 +311,7 @@ public Customizer&lt;ReactiveSentinelCircuitBreakerFactory&gt; defaultCustomizer
 </div>
 </div>
 <div class="sect3">
-<h4 id="_specific_circuit_breaker_configuration_3"><a class="link" href="#_specific_circuit_breaker_configuration_3">Specific Circuit Breaker Configuration</a></h4>
+<h4 id="_specific_circuit_breaker_configuration_2"><a class="link" href="#_specific_circuit_breaker_configuration_2">Specific Circuit Breaker Configuration</a></h4>
 <div class="paragraph">
 <p>Similarly to providing a default configuration, you can create a <code>Customizer</code> bean this is passed a
 <code>SentinelCircuitBreakerFactory</code>.</p>
@@ -543,7 +335,7 @@ public Customizer&lt;SentinelCircuitBreakerFactory&gt; slowCustomizer() {
 </div>
 </div>
 <div class="sect4">
-<h5 id="_reactive_example_6"><a class="link" href="#_reactive_example_6">Reactive Example</a></h5>
+<h5 id="_reactive_example_4"><a class="link" href="#_reactive_example_4">Reactive Example</a></h5>
 <div class="exampleblock">
 <div class="content">
 <div class="listingblock">
@@ -567,17 +359,17 @@ public Customizer&lt;ReactiveSentinelCircuitBreakerFactory&gt; customizer() {
 <div class="sect2">
 <h3 id="_configuring_spring_retry_circuit_breakers"><a class="link" href="#_configuring_spring_retry_circuit_breakers">Configuring Spring Retry Circuit Breakers</a></h3>
 <div class="paragraph">
-<p>Spring Retry provides declarative retry support for Spring applications.  A subset of the project
-includes the ability to implement circuit breaker functionality.  Spring Retry provides a circuit breaker
-implementation via a combination of it&#8217;s
+<p>Spring Retry provides declarative retry support for Spring applications.
+A subset of the project includes the ability to implement circuit breaker functionality.
+Spring Retry provides a circuit breaker implementation via a combination of it&#8217;s
 <a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/policy/CircuitBreakerRetryPolicy.java"><code>CircuitBreakerRetryPolicy</code></a>
-and a <a href="https://github.com/spring-projects/spring-retry#stateful-retry">stateful retry</a>.  All circuit
-breakers created using Spring Retry will be created using the <code>CircuitBreakerRetryPolicy</code> and a
+and a <a href="https://github.com/spring-projects/spring-retry#stateful-retry">stateful retry</a>.
+All circuit breakers created using Spring Retry will be created using the <code>CircuitBreakerRetryPolicy</code> and a
 <a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/support/DefaultRetryState.java"><code>DefaultRetryState</code></a>.
 Both of these classes can be configured using <code>SpringRetryConfigBuilder</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_default_configuration_4"><a class="link" href="#_default_configuration_4">Default Configuration</a></h4>
+<h4 id="_default_configuration_3"><a class="link" href="#_default_configuration_3">Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
 <code>SpringRetryCircuitBreakerFactory</code>.
@@ -598,7 +390,7 @@ public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; defaultCustomizer() {
 </div>
 </div>
 <div class="sect3">
-<h4 id="_specific_circuit_breaker_configuration_4"><a class="link" href="#_specific_circuit_breaker_configuration_4">Specific Circuit Breaker Configuration</a></h4>
+<h4 id="_specific_circuit_breaker_configuration_3"><a class="link" href="#_specific_circuit_breaker_configuration_3">Specific Circuit Breaker Configuration</a></h4>
 <div class="paragraph">
 <p>Similarly to providing a default configuration, you can create a <code>Customize</code> bean this is passed a
 <code>SpringRetryCircuitBreakerFactory</code>.</p>
@@ -616,9 +408,10 @@ public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; slowCustomizer() {
 </div>
 </div>
 <div class="paragraph">
-<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the <code>addRetryTemplateCustomizers</code>
-method.  This can be useful for adding event handlers to the <code>RetryTemplate</code>.</p>
+<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the <code>addRetryTemplateCustomizers</code>
+method.
+This can be useful for adding event handlers to the <code>RetryTemplate</code>.</p>
 </div>
 <div class="exampleblock">
 <div class="content">
@@ -644,8 +437,6 @@ public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; slowCustomizer() {
 		}
 	}));
 }</code></pre>
-</div>
-</div>
 </div>
 </div>
 </div>
