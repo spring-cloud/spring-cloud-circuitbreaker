@@ -4,19 +4,40 @@ Manual changes to this file will be lost when it is generated again.
 Edit the files in the src/main/asciidoc/ directory instead.
 ////
 
-image::https://circleci.com/gh/spring-cloud/spring-cloud-circuitbreaker.svg?style=svg["CircleCI",link="https://circleci.com/gh/spring-cloud/spring-cloud-circuitbreaker"]
-image::https://codecov.io/gh/spring-cloud/spring-cloud-circuitbreaker/branch/master/graph/badge.svg["Codecov",link="https://codecov.io/gh/spring-cloud/spring-cloud-circuitbreaker"]
-image::https://api.codacy.com/project/badge/Grade/a6885a06921e4f72a0df0b7aabd6d118["Codacy code quality",link="https://www.codacy.com/app/Spring-Cloud/spring-cloud-circuitbreaker?utm_source=github.com&utm_medium=referral&utm_content=spring-cloud/spring-cloud-circuitbreaker&utm_campaign=Badge_Grade"]
+:doctype: book
+:idprefix:
+:idseparator: -
+:toc: left
+:toclevels: 4
+:tabsize: 4
+:numbered:
+:sectanchors:
+:sectnums:
+:icons: font
+:hide-uri-scheme:
+:docinfo: shared,private
 
-:github-tag: master
-:github-repo: spring-cloud-incubator/spring-cloud-circuitbreaker
-:github-raw: https://raw.github.com/{github-repo}/{github-tag}
-:github-code: https://github.com/{github-repo}/tree/{github-tag}
+:sc-ext: java
+:project-full-name: Spring Cloud Circuitbreaker
 :all: {asterisk}{asterisk}
-:nofooter:
-:branch: master
 
 = Spring Cloud Circuit Breaker
+:doctype: book
+:idprefix:
+:idseparator: -
+:toc: left
+:toclevels: 4
+:tabsize: 4
+:numbered:
+:sectanchors:
+:sectnums:
+:icons: font
+:hide-uri-scheme:
+:docinfo: shared,private
+
+:sc-ext: java
+:project-full-name: Spring Cloud Circuitbreaker
+:all: {asterisk}{asterisk}
 
 *{spring-cloud-version}*
 
@@ -528,7 +549,7 @@ image::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/{spring
 
 Go to `File` -> `Settings` -> `Other settings` -> `Checkstyle`. There click on the `+` icon in the `Configuration file` section. There, you'll have to define where the checkstyle rules should be picked from. In the image above, we've picked the rules from the cloned Spring Cloud Build repository. However, you can point to the Spring Cloud Build's GitHub repository (e.g. for the `checkstyle.xml` : `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle.xml`). We need to provide the following variables:
 
-- `checkstyle.header.file` - please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/main/resources/checkstyle/checkstyle-header.txt` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` URL.
+- `checkstyle.header.file` - please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` URL.
 - `checkstyle.suppressions.file` - default suppressions. Please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml` URL.
 - `checkstyle.additional.suppressions.file` - this variable corresponds to suppressions in your local project. E.g. you're working on `spring-cloud-contract`. Then point to the `project-root/src/checkstyle/checkstyle-suppressions.xml` folder. Example for `spring-cloud-contract` would be: `/home/username/spring-cloud-contract/src/checkstyle/checkstyle-suppressions.xml`.
 

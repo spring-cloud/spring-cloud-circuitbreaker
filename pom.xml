@@ -4,7 +4,6 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-circuitbreaker</artifactId>
 	<packaging>pom</packaging>
 	<version>1.0.0.BUILD-SNAPSHOT</version>
@@ -15,17 +14,7 @@
 		<version>2.2.0.BUILD-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
-	<scm>
-		<url>https://github.com/spring-cloud-incubator/spring-cloud-circuitbreaker</url>
-		<connection>scm:git:git://github.com/spring-cloud-incubator/spring-cloud-circuitbreaker.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/spring-cloud-incubator/spring-cloud-circuitbreaker.git
-		</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
 	<properties>
-		<!-- Plugin versions -->
-		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 		<!-- Sonar -->
 		<surefire.plugin.version>2.19.1</surefire.plugin.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -34,10 +23,6 @@
 		<sonar.language>java</sonar.language>
 		<spring-cloud-commons.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-netflix.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
-		<maven-checkstyle-plugin.includeTestSourceDirectory>true
-		</maven-checkstyle-plugin.includeTestSourceDirectory>
-		<maven-checkstyle-plugin.failOnViolation>true
-		</maven-checkstyle-plugin.failOnViolation>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
