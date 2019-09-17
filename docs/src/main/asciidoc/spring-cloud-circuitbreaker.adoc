@@ -12,8 +12,6 @@
 
 include::spring-cloud-circuitbreaker-resilience4j.adoc[]
 
-include::spring-cloud-circuitbreaker-sentinel.adoc[]
-
 include::spring-cloud-circuitbreaker-spring-retry.adoc[]
 
 == Building

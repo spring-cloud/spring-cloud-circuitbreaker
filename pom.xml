@@ -67,7 +67,6 @@
 		<module>spring-cloud-circuitbreaker-dependencies</module>
 		<module>spring-cloud-circuitbreaker-resilience4j</module>
 		<module>spring-cloud-starter-circuitbreaker</module>
-		<module>spring-cloud-circuitbreaker-sentinel</module>
 		<module>docs</module>
 		<module>spring-cloud-circuitbreaker-spring-retry</module>
 	</modules>
