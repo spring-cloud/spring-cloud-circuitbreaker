@@ -29,10 +29,6 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>spring-cloud-starter-circuitbreaker-sentinel</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-cloud-circuitbreaker-spring-retry</artifactId>
 		</dependency>
 	</dependencies>

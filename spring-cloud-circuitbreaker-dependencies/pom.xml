@@ -19,7 +19,6 @@
 
 	<properties>
 		<resilience4j.version>0.13.1</resilience4j.version>
-		<sentinel.version>1.5.1</sentinel.version>
 	</properties>
 
 	<dependencyManagement>
@@ -40,16 +39,6 @@
 				<version>${resilience4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.alibaba.csp</groupId>
-				<artifactId>sentinel-core</artifactId>
-				<version>${sentinel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.alibaba.csp</groupId>
-				<artifactId>sentinel-reactor-adapter</artifactId>
-				<version>${sentinel.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-circuitbreaker-resilience4j</artifactId>
 				<version>${project.version}</version>
@@ -61,22 +50,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-circuitbreaker-sentinel</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-circuitbreaker-sentinel</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
