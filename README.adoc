@@ -133,6 +133,14 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 ----
 ====
 
+==== Collecting Metrics
+
+Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
+dependencies are on the classpath.  To enable metric collection you must include `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer`.  For more information on the metrics that
+get produced when these dependencies are present, see the https://resilience4j.readme.io/docs/micrometer[Resilience4j documentation].
+
+NOTE:  You don't have to include `micrometer-core` directly as it is brought in by `spring-boot-starter-actuator`
+
 === Configuring Spring Retry Circuit Breakers
 
 Spring Retry provides declarative retry support for Spring applications.
