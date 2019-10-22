@@ -64,6 +64,10 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = registry;
 	}
 
+	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+		return circuitBreakerRegistry;
+	}
+
 	public void configureExecutorService(ExecutorService executorService) {
 		this.executorService = executorService;
 	}

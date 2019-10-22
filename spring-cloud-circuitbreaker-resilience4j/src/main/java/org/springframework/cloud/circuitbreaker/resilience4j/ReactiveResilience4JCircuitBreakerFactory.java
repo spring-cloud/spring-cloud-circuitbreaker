@@ -60,6 +60,10 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		return new Resilience4JConfigBuilder(id);
 	}
 
+	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+		return circuitBreakerRegistry;
+	}
+
 	@Override
 	public void configureDefault(
 			Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration) {
