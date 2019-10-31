@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Ryan Baxter
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
+		matchIfMissing = true)
 public class Resilience4JAutoConfiguration {
 
 	@Bean

@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
+@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
+	matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
