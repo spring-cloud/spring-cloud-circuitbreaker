@@ -47,7 +47,7 @@ public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
-	public ReactiveCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
+	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
 		return new ReactiveResilience4JCircuitBreakerFactory();
 	}
 
