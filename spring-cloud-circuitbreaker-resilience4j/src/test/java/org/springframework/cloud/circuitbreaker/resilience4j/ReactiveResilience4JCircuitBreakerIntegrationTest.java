@@ -17,6 +17,8 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
@@ -43,10 +45,12 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -57,7 +61,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = ReactiveResilience4JCircuitBreakerIntegrationTest.Application.class)
+		classes = ReactiveResilience4JCircuitBreakerIntegrationTest.Application.class,
+		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
@@ -91,6 +96,9 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 	@Autowired
 	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
 
+	@Autowired
+	private WebTestClient webClient;
+
 	@Before
 	public void setup() {
 		service.setPort(port);
@@ -115,6 +123,11 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 				.verifyComplete();
 		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+		assertThat(
+				((List) webClient.get().uri("/actuator/metrics").exchange().expectStatus()
+						.isOk().expectBody(Map.class).returnResult().getResponseBody()
+						.get("names")).contains("resilience4j.circuitbreaker.calls"))
+								.isTrue();
 	}
 
 	@Configuration

@@ -21,8 +21,14 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -44,6 +50,9 @@ public class Resilience4JAutoConfiguration {
 	}
 
 	@Configuration
+	@ConditionalOnMissingClass({
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
+			"io.micrometer.core.instrument.MeterRegistry" })
 	public static class Resilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
@@ -55,6 +64,33 @@ public class Resilience4JAutoConfiguration {
 		@PostConstruct
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
+		}
+
+	}
+
+	@Configuration
+	@ConditionalOnBean({ MeterRegistry.class })
+	@ConditionalOnClass(name = {
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
+	public static class MicrometerResilience4JCustomizerConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<Resilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired(required = false)
+		private Resilience4JCircuitBreakerFactory factory;
+
+		@Autowired
+		private MeterRegistry meterRegistry;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+			if (factory != null) {
+				TaggedCircuitBreakerMetrics
+						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+						.bindTo(meterRegistry);
+			}
 		}
 
 	}

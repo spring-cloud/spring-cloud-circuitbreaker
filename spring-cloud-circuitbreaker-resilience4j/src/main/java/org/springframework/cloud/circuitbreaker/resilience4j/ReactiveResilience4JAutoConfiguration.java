@@ -21,9 +21,14 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
@@ -37,7 +42,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
-	matchIfMissing = true)
+		matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
@@ -49,6 +54,9 @@ public class ReactiveResilience4JAutoConfiguration {
 	@Configuration
 	@ConditionalOnClass(
 			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
+	@ConditionalOnMissingClass({
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
+			"io.micrometer.core.instrument.MeterRegistry" })
 	public static class ReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
@@ -60,6 +68,34 @@ public class ReactiveResilience4JAutoConfiguration {
 		@PostConstruct
 		public void init() {
 			customizers.forEach(customizer -> customizer.customize(factory));
+		}
+
+	}
+
+	@Configuration
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
+			"reactor.core.publisher.Flux",
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
+	@ConditionalOnBean({ MeterRegistry.class })
+	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
+
+		@Autowired(required = false)
+		private ReactiveResilience4JCircuitBreakerFactory factory;
+
+		@Autowired
+		private MeterRegistry meterRegistry;
+
+		@PostConstruct
+		public void init() {
+			customizers.forEach(customizer -> customizer.customize(factory));
+			if (factory != null) {
+				TaggedCircuitBreakerMetrics
+						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+						.bindTo(meterRegistry);
+			}
 		}
 
 	}
