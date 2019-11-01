@@ -99,17 +99,18 @@ $(addBlockSwitches);
 <li><a href="#configuring-resilience4j-circuit-breakers">1. Configuring Resilience4J Circuit Breakers</a>
 <ul class="sectlevel3">
 <li><a href="#starters">1.1. Starters</a></li>
-<li><a href="#default-configuration">1.2. Default Configuration</a>
+<li><a href="#auto-configuration">1.2. Auto-Configuration</a></li>
+<li><a href="#default-configuration">1.3. Default Configuration</a>
 <ul class="sectlevel4">
 <li><a href="#reactive-example">Reactive Example</a></li>
 </ul>
 </li>
-<li><a href="#specific-circuit-breaker-configuration">1.3. Specific Circuit Breaker Configuration</a>
+<li><a href="#specific-circuit-breaker-configuration">1.4. Specific Circuit Breaker Configuration</a>
 <ul class="sectlevel4">
 <li><a href="#reactive-example-2">Reactive Example</a></li>
 </ul>
 </li>
-<li><a href="#collecting-metrics">1.4. Collecting Metrics</a></li>
+<li><a href="#collecting-metrics">1.5. Collecting Metrics</a></li>
 </ul>
 </li>
 <li><a href="#configuring-spring-retry-circuit-breakers">2. Configuring Spring Retry Circuit Breakers</a>
@@ -177,7 +178,14 @@ $(addBlockSwitches);
 </div>
 </div>
 <div class="sect3">
-<h4 id="default-configuration"><a class="anchor" href="#default-configuration"></a><a class="link" href="#default-configuration">1.2. Default Configuration</a></h4>
+<h4 id="auto-configuration"><a class="anchor" href="#auto-configuration"></a><a class="link" href="#auto-configuration">1.2. Auto-Configuration</a></h4>
+<div class="paragraph">
+<p>You can disable the Resilience4J auto-configuration by setting
+<code>spring.cloud.circuitbreaker.resilience4j.enabled</code> to <code>false</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="default-configuration"><a class="anchor" href="#default-configuration"></a><a class="link" href="#default-configuration">1.3. Default Configuration</a></h4>
 <div class="paragraph">
 <p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
 <code>Resilience4JCircuitBreakerFactory</code> or <code>ReactiveResilience4JCircuitBreakerFactory</code>.
@@ -217,7 +225,7 @@ public Customizer&lt;ReactiveResilience4JCircuitBreakerFactory&gt; defaultCustom
 </div>
 </div>
 <div class="sect3">
-<h4 id="specific-circuit-breaker-configuration"><a class="anchor" href="#specific-circuit-breaker-configuration"></a><a class="link" href="#specific-circuit-breaker-configuration">1.3. Specific Circuit Breaker Configuration</a></h4>
+<h4 id="specific-circuit-breaker-configuration"><a class="anchor" href="#specific-circuit-breaker-configuration"></a><a class="link" href="#specific-circuit-breaker-configuration">1.4. Specific Circuit Breaker Configuration</a></h4>
 <div class="paragraph">
 <p>Similarly to providing a default configuration, you can create a <code>Customize</code> bean this is passed a
 <code>Resilience4JCircuitBreakerFactory</code> or <code>ReactiveResilience4JCircuitBreakerFactory</code>.</p>
@@ -277,7 +285,7 @@ public Customizer&lt;ReactiveResilience4JCircuitBreakerFactory&gt; slowCusomtize
 </div>
 </div>
 <div class="sect3">
-<h4 id="collecting-metrics"><a class="anchor" href="#collecting-metrics"></a><a class="link" href="#collecting-metrics">1.4. Collecting Metrics</a></h4>
+<h4 id="collecting-metrics"><a class="anchor" href="#collecting-metrics"></a><a class="link" href="#collecting-metrics">1.5. Collecting Metrics</a></h4>
 <div class="paragraph">
 <p>Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
 dependencies are on the classpath.  To enable metric collection you must include <code>org.springframework.boot:spring-boot-starter-actuator</code>, and <code>io.github.resilience4j:resilience4j-micrometer</code>.  For more information on the metrics that
