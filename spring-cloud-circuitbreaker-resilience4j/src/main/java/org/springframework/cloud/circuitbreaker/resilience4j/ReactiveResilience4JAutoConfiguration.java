@@ -55,8 +55,7 @@ public class ReactiveResilience4JAutoConfiguration {
 	@ConditionalOnClass(
 			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 	@ConditionalOnMissingClass({
-			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
-			"io.micrometer.core.instrument.MeterRegistry" })
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
 	public static class ReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
