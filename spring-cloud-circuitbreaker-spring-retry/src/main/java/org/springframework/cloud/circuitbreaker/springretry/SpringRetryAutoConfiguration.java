@@ -33,7 +33,7 @@ import org.springframework.retry.support.RetryTemplate;
 /**
  * @author Ryan Baxter
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(RetryTemplate.class)
 public class SpringRetryAutoConfiguration {
 
@@ -43,7 +43,7 @@ public class SpringRetryAutoConfiguration {
 		return new SpringRetryCircuitBreakerFactory();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	public static class SpringRetryCustomizerConfiguration {
 
 		@Autowired(required = false)

@@ -130,7 +130,7 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 								.isTrue();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application {
