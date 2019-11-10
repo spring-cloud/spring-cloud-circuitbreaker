@@ -18,7 +18,7 @@ package org.springframework.cloud.circuitbreaker.failsafe;
 
 import org.junit.Test;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,5 +1,16 @@
 === Configuring Resilience4J Circuit Breakers
 
+==== Starters
+
+There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
+
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j` - non-reactive applications
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
+
+==== Auto-Configuration
+You can disable the Resilience4J auto-configuration by setting
+`spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.
+
 ==== Default Configuration
 
 To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
@@ -33,7 +44,6 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ----
 ====
 
-
 ==== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
@@ -50,9 +60,10 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 ----
 ====
 
-In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the `addCircuitBreakerCustomizer`
-method.  This can be useful for adding event handlers to Resilience4J circuit breakers.
+In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the `addCircuitBreakerCustomizer`
+method.
+This can be useful for adding event handlers to Resilience4J circuit breakers.
 
 ====
 [source,java]
@@ -82,3 +93,11 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 }
 ----
 ====
+
+==== Collecting Metrics
+
+Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
+dependencies are on the classpath.  To enable metric collection you must include `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer`.  For more information on the metrics that
+get produced when these dependencies are present, see the https://resilience4j.readme.io/docs/micrometer[Resilience4j documentation].
+
+NOTE:  You don't have to include `micrometer-core` directly as it is brought in by `spring-boot-starter-actuator`

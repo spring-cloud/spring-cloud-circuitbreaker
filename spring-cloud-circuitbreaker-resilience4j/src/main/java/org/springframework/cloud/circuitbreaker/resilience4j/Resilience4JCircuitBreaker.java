@@ -28,8 +28,8 @@ import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.vavr.control.Try;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreaker;
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 
 /**
  * @author Ryan Baxter

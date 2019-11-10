@@ -4,173 +4,55 @@ Manual changes to this file will be lost when it is generated again.
 Edit the files in the src/main/asciidoc/ directory instead.
 ////
 
-image::https://circleci.com/gh/spring-cloud-incubator/spring-cloud-circuitbreaker.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud-incubator/spring-cloud-circuitbreaker"]
-image::https://codecov.io/gh/spring-cloud-incubator/spring-cloud-circuitbreaker/branch/master/graph/badge.svg["Codecov", link="https://codecov.io/gh/spring-cloud-incubator/spring-cloud-circuitbreaker"]
-image::https://api.codacy.com/project/badge/Grade/a6885a06921e4f72a0df0b7aabd6d118["Codacy code quality", link="https://www.codacy.com/app/Spring-Cloud-Incubator/spring-cloud-circuitbreaker?utm_source=github.com&utm_medium=referral&utm_content=spring-cloud/spring-cloud-circuitbreaker&utm_campaign=Badge_Grade"]
+:doctype: book
+:idprefix:
+:idseparator: -
+:toc: left
+:toclevels: 4
+:tabsize: 4
+:numbered:
+:sectanchors:
+:sectnums:
+:icons: font
+:hide-uri-scheme:
+:docinfo: shared,private
 
-:github-tag: master
-:github-repo: spring-cloud-incubator/spring-cloud-circuitbreaker
-:github-raw: https://raw.github.com/{github-repo}/{github-tag}
-:github-code: https://github.com/{github-repo}/tree/{github-tag}
+:sc-ext: java
+:project-full-name: Spring Cloud Circuitbreaker
 :all: {asterisk}{asterisk}
-:nofooter:
-:branch: master
 
 = Spring Cloud Circuit Breaker
+:doctype: book
+:idprefix:
+:idseparator: -
+:toc: left
+:toclevels: 4
+:tabsize: 4
+:numbered:
+:sectanchors:
+:sectnums:
+:icons: font
+:hide-uri-scheme:
+:docinfo: shared,private
+
+:sc-ext: java
+:project-full-name: Spring Cloud Circuitbreaker
+:all: {asterisk}{asterisk}
 
 *{spring-cloud-version}*
 
-== Introduction
-
-Spring Cloud Circuit breaker provides an abstraction across different circuit breaker implementations.
-It provides a consistent API to use in your applications allowing you the developer to choose the circuit
-breaker implementation that best fits your needs for your app.
-
-=== Supported Implementations
-
-* https://github.com/Netflix/Hystrix[Netfix Hystrix]
-* https://github.com/resilience4j/resilience4j[Resilience4J]
-* https://github.com/alibaba/Sentinel[Sentinel]
-* https://github.com/spring-projects/spring-retry[Spring Retry]
-
-== Core Concepts
-
-To create a circuit breaker in your code you can use the `CircuitBreakerFactory` API.  When you include a Spring
-Cloud Circuit Breaker starter on your classpath a bean implementing this API will automatically be created
-for you.  A very simple example of using this API is given below
-
-====
-[source,java]
-----
-@Service
-public static class DemoControllerService {
-	private RestTemplate rest;
-	private CircuitBreakerFactory cbFactory;
-
-	public DemoControllerService(RestTemplate rest, CircuitBreakerFactory cbFactory) {
-		this.rest = rest;
-		this.cbFactory = cbFactory;
-	}
-
-	public String slow() {
-		return cbFactory.create("slow").run(() -> rest.getForObject("/slow", String.class), throwable -> "fallback");
-	}
-
-}
-----
-====
-
-The `CircuitBreakerFactory.create` API will create an instance of a class called `CircuitBreaker`.
-The `run` method takes a `Supplier` and a `Function`.  The `Supplier` is the code that you are going to
-wrap in a circuit breaker.  The `Function` is the fallback that will be executed if the circuit
-breaker is tripped.  The function will be passed the `Throwable` that caused the fallback to be
-triggered.  You can optionally exclude the fallback if you do not want to provide one.
-
-=== Circuit Breakers In Reactive Code
-
-If Project Reactor is on the class path then you can also use `ReactiveCircuitBreakerFactory` for your reactive
-code.
-
-====
-[source,java]
-----
-@Service
-public static class DemoControllerService {
-	private ReactiveCircuitBreakerFactory cbFactory;
-	private WebClient webClient;
-
-
-	public DemoControllerService(WebClient webClient, ReactiveCircuitBreakerFactory cbFactory) {
-		this.webClient = webClient;
-		this.cbFactory = cbFactory;
-	}
-
-	public Mono<String> slow() {
-		return cbFactory.create("slow").run(webClient.get().uri("/slow").retrieve().bodyToMono(String.class),
-		throwable -> return Mono.just("fallback"));
-	}
-}
-----
-====
-
-The `ReactiveCircuitBreakerFactory.create` API will create an instance of a class called `ReactiveCircuitBreaker`.
-The `run` method takes with a `Mono` or `Flux` and wraps it in a circuit breaker.  You can optionally profile
-a fallback `Function` which will be called if the circuit breaker is tripped and will be passed the `Throwable`
-that caused the failure.
-
-== Configuration
-
-You can configure your circuit breakers using by creating beans of type `Customizer`.  The `Customizer` interface
-has a single method called `customize` that takes in the `Object` to customize.
-
-=== Configuring Hystrix Circuit Breakers
-
-==== Default Configuration
-
-To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
-`HystrixCircuitBreakerFactory` or `ReactiveHystrixCircuitBreakerFactory`.
-The `configureDefault` method can be used to provide a default configuration.
-
-====
-[source,java]
-----
-@Bean
-public Customizer<HystrixCircuitBreakerFactory> defaultConfig() {
-	return factory -> factory.configureDefault(id -> HystrixCommand.Setter
-			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-			.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-			.withExecutionTimeoutInMilliseconds(4000)));
-}
-----
-====
-
-===== Reactive Example
-
-====
-[source,java]
-----
-@Bean
-public Customizer<ReactiveHystrixCircuitBreakerFactory> defaultConfig() {
-	return factory -> factory.configureDefault(id -> HystrixObservableCommand.Setter
-			.withGroupKey(HystrixCommandGroupKey.Factory.asKey(id))
-			.andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-					.withExecutionTimeoutInMilliseconds(4000)));
-}
-----
-====
-
-
-==== Specific Circuit Breaker Configuration
-
-Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
-`HystrixCircuitBreakerFactory`
-
-====
-[source,java]
-----
-@Bean
-public Customizer<HystrixCircuitBreakerFactory> customizer() {
-	return factory -> factory.configure(builder -> builder.commandProperties(
-					HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "foo", "bar");
-}
-----
-====
-
-===== Reactive Example
-
-====
-[source,java]
-----
-@Bean
-public Customizer<ReactiveHystrixCircuitBreakerFactory> customizer() {
-	return factory -> factory.configure(builder -> builder.commandProperties(
-					HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000)), "foo", "bar");
-}
-----
-====
-
-
 === Configuring Resilience4J Circuit Breakers
+
+==== Starters
+
+There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
+
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j` - non-reactive applications
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
+
+==== Auto-Configuration
+You can disable the Resilience4J auto-configuration by setting
+`spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.
 
 ==== Default Configuration
 
@@ -205,7 +87,6 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ----
 ====
 
-
 ==== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
@@ -222,9 +103,10 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 ----
 ====
 
-In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the `addCircuitBreakerCustomizer`
-method.  This can be useful for adding event handlers to Resilience4J circuit breakers.
+In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the `addCircuitBreakerCustomizer`
+method.
+This can be useful for adding event handlers to Resilience4J circuit breakers.
 
 ====
 [source,java]
@@ -255,94 +137,24 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 ----
 ====
 
+==== Collecting Metrics
 
-=== Configuring Sentinel Circuit Breakers
+Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
+dependencies are on the classpath.  To enable metric collection you must include `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer`.  For more information on the metrics that
+get produced when these dependencies are present, see the https://resilience4j.readme.io/docs/micrometer[Resilience4j documentation].
 
-==== Default Configuration
-
-To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
-`SentinelCircuitBreakerFactory` or `ReactiveSentinelCircuitBreakerFactory`.
-The `configureDefault` method can be used to provide a default configuration.
-
-====
-[source,java]
-----
-@Bean
-public Customizer<SentinelCircuitBreakerFactory> defaultCustomizer() {
-	return factory -> factory.configureDefault(id -> new SentinelConfigBuilder(id)
-			.build());
-}
-----
-====
-
-You can choose to provide default circuit breaking rules via `SentinelConfigBuilder#rules(rules)`.
-You can also choose to load circuit breaking rules later elsewhere using
-`DegradeRuleManager.loadRules(rules)` API of Sentinel, or via Sentinel dashboard.
-
-
-===== Reactive Example
-
-====
-[source,java]
-----
-@Bean
-public Customizer<ReactiveSentinelCircuitBreakerFactory> defaultCustomizer() {
-	return factory -> factory.configureDefault(id -> new SentinelConfigBuilder(id)
-			.build());
-}
-----
-====
-
-
-==== Specific Circuit Breaker Configuration
-
-Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
-`SentinelCircuitBreakerFactory`.
-
-====
-[source,java]
-----
-@Bean
-public Customizer<SentinelCircuitBreakerFactory> slowCustomizer() {
-	String slowId = "slow";
-	List<DegradeRule> rules = Collections.singletonList(
-		new DegradeRule(slowId).setGrade(RuleConstant.DEGRADE_GRADE_RT)
-			.setCount(100)
-			.setTimeWindow(10)
-		);
-	return factory -> factory.configure(builder -> builder.rules(rules), slowId);
-}
-----
-====
-
-===== Reactive Example
-
-====
-[source,java]
-----
-@Bean
-public Customizer<ReactiveSentinelCircuitBreakerFactory> customizer() {
-	List<DegradeRule> rules = Collections.singletonList(
-		new DegradeRule().setGrade(RuleConstant.DEGRADE_GRADE_RT)
-			.setCount(100)
-			.setTimeWindow(10)
-		);
-	return factory -> factory.configure(builder -> builder.rules(rules), "foo", "bar");
-}
-----
-====
+NOTE:  You don't have to include `micrometer-core` directly as it is brought in by `spring-boot-starter-actuator`
 
 === Configuring Spring Retry Circuit Breakers
 
-Spring Retry provides declarative retry support for Spring applications.  A subset of the project
-includes the ability to implement circuit breaker functionality.  Spring Retry provides a circuit breaker
-implementation via a combination of it's
+Spring Retry provides declarative retry support for Spring applications.
+A subset of the project includes the ability to implement circuit breaker functionality.
+Spring Retry provides a circuit breaker implementation via a combination of it's
 https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/policy/CircuitBreakerRetryPolicy.java[`CircuitBreakerRetryPolicy`]
-and a https://github.com/spring-projects/spring-retry#stateful-retry[stateful retry].  All circuit
-breakers created using Spring Retry will be created using the `CircuitBreakerRetryPolicy` and a
+and a https://github.com/spring-projects/spring-retry#stateful-retry[stateful retry].
+All circuit breakers created using Spring Retry will be created using the `CircuitBreakerRetryPolicy` and a
 https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/support/DefaultRetryState.java[`DefaultRetryState`].
 Both of these classes can be configured using `SpringRetryConfigBuilder`.
-
 
 ==== Default Configuration
 
@@ -376,9 +188,10 @@ public Customizer<SpringRetryCircuitBreakerFactory> slowCustomizer() {
 ----
 ====
 
-In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it
-has been created but before it is returned to the caller.  To do this you can use the `addRetryTemplateCustomizers`
-method.  This can be useful for adding event handlers to the `RetryTemplate`.
+In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the `addRetryTemplateCustomizers`
+method.
+This can be useful for adding event handlers to the `RetryTemplate`.
 
 ====
 [source,java]
@@ -633,6 +446,7 @@ $ touch .springformat
 ==== Intellij IDEA
 
 In order to setup Intellij you should import our coding conventions, inspection profiles and set up the checkstyle plugin.
+The following files can be found in the https://github.com/spring-cloud/spring-cloud-build/tree/master/spring-cloud-build-tools[Spring Cloud Build] project.
 
 .spring-cloud-build-tools/
 ----
@@ -673,7 +487,7 @@ image::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/{spring
 
 Go to `File` -> `Settings` -> `Other settings` -> `Checkstyle`. There click on the `+` icon in the `Configuration file` section. There, you'll have to define where the checkstyle rules should be picked from. In the image above, we've picked the rules from the cloned Spring Cloud Build repository. However, you can point to the Spring Cloud Build's GitHub repository (e.g. for the `checkstyle.xml` : `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle.xml`). We need to provide the following variables:
 
-- `checkstyle.header.file` - please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/main/resources/checkstyle/checkstyle-header.txt` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` URL.
+- `checkstyle.header.file` - please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/main/resources/checkstyle-header.txt` URL.
 - `checkstyle.suppressions.file` - default suppressions. Please point it to the Spring Cloud Build's, `spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml` file either in your cloned repo or via the `https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml` URL.
 - `checkstyle.additional.suppressions.file` - this variable corresponds to suppressions in your local project. E.g. you're working on `spring-cloud-contract`. Then point to the `project-root/src/checkstyle/checkstyle-suppressions.xml` folder. Example for `spring-cloud-contract` would be: `/home/username/spring-cloud-contract/src/checkstyle/checkstyle-suppressions.xml`.
 

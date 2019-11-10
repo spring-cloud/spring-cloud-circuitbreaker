@@ -28,8 +28,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.util.Assert;
 
 /**
@@ -62,6 +62,10 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	public void configureCircuitBreakerRegistry(CircuitBreakerRegistry registry) {
 		this.circuitBreakerRegistry = registry;
+	}
+
+	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+		return circuitBreakerRegistry;
 	}
 
 	public void configureExecutorService(ExecutorService executorService) {

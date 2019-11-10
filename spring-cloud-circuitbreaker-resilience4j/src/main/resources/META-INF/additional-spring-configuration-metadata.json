@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "defaultValue": "true",
+      "name": "spring.cloud.circuitbreaker.resilience4j.enabled",
+      "description": "Enables Resilience4J auto-configuration.",
+      "type": "java.lang.Boolean"
+    }
+  ]
+}

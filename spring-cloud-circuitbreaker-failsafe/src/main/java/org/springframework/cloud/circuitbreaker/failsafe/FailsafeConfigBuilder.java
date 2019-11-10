@@ -19,7 +19,7 @@ package org.springframework.cloud.circuitbreaker.failsafe;
 import net.jodah.failsafe.CircuitBreaker;
 import net.jodah.failsafe.RetryPolicy;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 
 /**
  * Allows consumers to easily construct a {@link FailsafeConfig} object.

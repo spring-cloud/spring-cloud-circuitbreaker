@@ -17,6 +17,8 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
@@ -31,8 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.circuitbreaker.commons.CircuitBreakerFactory;
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
@@ -56,7 +58,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = Resilience4JCircuitBreakerIntegrationTest.Application.class)
+		classes = Resilience4JCircuitBreakerIntegrationTest.Application.class,
+		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class Resilience4JCircuitBreakerIntegrationTest {
 
@@ -74,6 +77,9 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 	@Autowired
 	Application.DemoControllerService service;
+
+	@Autowired
+	private TestRestTemplate rest;
 
 	@Test
 	public void testSlow() {
@@ -93,6 +99,13 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	public void testSlowResponsesDontFailSubsequentGoodRequests() {
 		assertThat(service.slowOnDemand(5000)).isEqualTo("fallback");
 		assertThat(service.slowOnDemand(0)).isEqualTo("normal");
+	}
+
+	@Test
+	public void testResilience4JMetricsAvailable() {
+		assertThat(service.normal()).isEqualTo("normal");
+		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
+				.contains("resilience4j.circuitbreaker.calls")).isTrue();
 	}
 
 	@Configuration

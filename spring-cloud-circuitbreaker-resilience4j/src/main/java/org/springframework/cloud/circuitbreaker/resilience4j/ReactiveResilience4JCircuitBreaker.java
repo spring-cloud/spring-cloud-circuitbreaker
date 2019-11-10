@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
@@ -26,8 +27,8 @@ import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOper
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.circuitbreaker.commons.Customizer;
-import org.springframework.cloud.circuitbreaker.commons.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 /**
  * @author Ryan Baxter
@@ -63,9 +64,10 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Mono timeout we need to tell the circuit breaker
 				// about the error
-				.doOnError(TimeoutException.class, t -> defaultCircuitBreaker.onError(
-						config.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
-						t));
+				.doOnError(TimeoutException.class,
+						t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig()
+								.getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
+								t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}
@@ -82,9 +84,10 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Flux timeout we need to tell the circuit breaker
 				// about the error
-				.doOnError(TimeoutException.class, t -> defaultCircuitBreaker.onError(
-						config.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
-						t));
+				.doOnError(TimeoutException.class,
+						t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig()
+								.getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
+								t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}

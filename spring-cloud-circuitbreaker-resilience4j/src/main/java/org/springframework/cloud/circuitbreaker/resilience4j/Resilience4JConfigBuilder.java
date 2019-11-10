@@ -19,7 +19,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
-import org.springframework.cloud.circuitbreaker.commons.ConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 
 /**
  * @author Ryan Baxter
@@ -29,9 +29,9 @@ public class Resilience4JConfigBuilder implements
 
 	private String id;
 
-	private TimeLimiterConfig timeLimiterConfig;
+	private TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.ofDefaults();
 
-	private CircuitBreakerConfig circuitBreakerConfig;
+	private CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.ofDefaults();
 
 	public Resilience4JConfigBuilder(String id) {
 		this.id = id;
@@ -52,7 +52,6 @@ public class Resilience4JConfigBuilder implements
 	public Resilience4JCircuitBreakerConfiguration build() {
 		Resilience4JCircuitBreakerConfiguration config = new Resilience4JCircuitBreakerConfiguration();
 		config.setId(id);
-		// TODO null checks?
 		config.setCircuitBreakerConfig(circuitBreakerConfig);
 		config.setTimeLimiterConfig(timeLimiterConfig);
 		return config;
