@@ -108,7 +108,7 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				.contains("resilience4j.circuitbreaker.calls")).isTrue();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application {

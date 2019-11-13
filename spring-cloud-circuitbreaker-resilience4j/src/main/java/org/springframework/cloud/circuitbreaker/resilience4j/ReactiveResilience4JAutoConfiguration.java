@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
@@ -51,7 +51,7 @@ public class ReactiveResilience4JAutoConfiguration {
 		return new ReactiveResilience4JCircuitBreakerFactory();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(
 			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
 	@ConditionalOnMissingClass({
@@ -71,7 +71,7 @@ public class ReactiveResilience4JAutoConfiguration {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
 			"reactor.core.publisher.Flux",
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })

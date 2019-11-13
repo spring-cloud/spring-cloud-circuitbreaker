@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
 		matchIfMissing = true)
 public class Resilience4JAutoConfiguration {
@@ -49,7 +49,7 @@ public class Resilience4JAutoConfiguration {
 		return new Resilience4JCircuitBreakerFactory();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingClass({
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
 			"io.micrometer.core.instrument.MeterRegistry" })
@@ -68,7 +68,7 @@ public class Resilience4JAutoConfiguration {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean({ MeterRegistry.class })
 	@ConditionalOnClass(name = {
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })

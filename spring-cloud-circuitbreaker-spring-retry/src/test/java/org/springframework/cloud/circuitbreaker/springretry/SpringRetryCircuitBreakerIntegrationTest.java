@@ -72,7 +72,7 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 		assertThat(service.normal()).isEqualTo("normal");
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application {
