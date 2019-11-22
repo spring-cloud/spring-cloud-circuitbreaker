@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
@@ -168,16 +169,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 			private TestRestTemplate rest;
 
-			private CircuitBreakerFactory cbFactory;
+			private final CircuitBreakerFactory cbFactory;
+			private final CircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(TestRestTemplate rest,
 					CircuitBreakerFactory cbFactory) {
 				this.rest = rest;
 				this.cbFactory = cbFactory;
+				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				return cbFactory.create("slow").run(
+				return circuitBreakerSlow.run(
 						() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
@@ -188,7 +191,7 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			}
 
 			public String slowOnDemand(int delayInMilliseconds) {
-				return cbFactory.create("slow")
+				return circuitBreakerSlow
 						.run(() -> rest
 								.exchange("/slowOnDemand", HttpMethod.GET,
 										createEntityWithOptionalDelayHeader(

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
@@ -44,31 +43,15 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
 		matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
+	@Autowired(required = false)
+	private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
-		return new ReactiveResilience4JCircuitBreakerFactory();
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(
-			name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux" })
-	@ConditionalOnMissingClass({
-			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
-	public static class ReactiveResilience4JCustomizerConfiguration {
-
-		@Autowired(required = false)
-		private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
-
-		@Autowired(required = false)
-		private ReactiveResilience4JCircuitBreakerFactory factory;
-
-		@PostConstruct
-		public void init() {
-			customizers.forEach(customizer -> customizer.customize(factory));
-		}
-
+		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory();
+		customizers.forEach(customizer -> customizer.customize(factory));
+		return factory;
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -79,9 +62,6 @@ public class ReactiveResilience4JAutoConfiguration {
 	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
-
-		@Autowired(required = false)
 		private ReactiveResilience4JCircuitBreakerFactory factory;
 
 		@Autowired
@@ -89,7 +69,6 @@ public class ReactiveResilience4JAutoConfiguration {
 
 		@PostConstruct
 		public void init() {
-			customizers.forEach(customizer -> customizer.customize(factory));
 			if (factory != null) {
 				TaggedCircuitBreakerMetrics
 						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
