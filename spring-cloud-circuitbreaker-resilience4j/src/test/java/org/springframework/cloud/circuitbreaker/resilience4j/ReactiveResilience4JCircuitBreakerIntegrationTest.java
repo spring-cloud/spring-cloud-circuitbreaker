@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -190,16 +191,18 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 
 			private int port = 0;
 
-			private ReactiveCircuitBreakerFactory cbFactory;
+			private final ReactiveCircuitBreakerFactory cbFactory;
+			private final ReactiveCircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(ReactiveCircuitBreakerFactory cbFactory) {
 				this.cbFactory = cbFactory;
+				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public Mono<String> slow() {
 				return WebClient.builder().baseUrl("http://localhost:" + port).build()
 						.get().uri("/slow").retrieve().bodyToMono(String.class)
-						.transform(it -> cbFactory.create("slow").run(it, t -> {
+						.transform(it -> circuitBreakerSlow.run(it, t -> {
 							t.printStackTrace();
 							return Mono.just("fallback");
 						}));
