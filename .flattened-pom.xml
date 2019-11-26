@@ -10,7 +10,7 @@
   </parent>
   <groupId>org.springframework.cloud</groupId>
   <artifactId>spring-cloud-circuitbreaker</artifactId>
-  <version>1.0.0.RELEASE</version>
+  <version>1.0.0.BUILD-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Spring Cloud parent pom, managing plugins and dependencies for Spring
 		Cloud projects</description>

@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-circuitbreaker</artifactId>
-    <version>1.0.0.RELEASE</version>
+    <version>1.0.0.BUILD-SNAPSHOT</version>
   </parent>
   <groupId>org.springframework.cloud</groupId>
   <artifactId>spring-cloud-circuitbreaker-docs</artifactId>
-  <version>1.0.0.RELEASE</version>
+  <version>1.0.0.BUILD-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Spring Cloud CircuitBreaker Docs</name>
   <description>Spring Cloud Docs</description>
@@ -100,19 +100,19 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
-      <version>1.0.0.RELEASE</version>
+      <version>1.0.0.BUILD-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-      <version>1.0.0.RELEASE</version>
+      <version>1.0.0.BUILD-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-circuitbreaker-spring-retry</artifactId>
-      <version>1.0.0.RELEASE</version>
+      <version>1.0.0.BUILD-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
