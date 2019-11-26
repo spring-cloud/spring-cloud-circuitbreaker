@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-circuitbreaker</artifactId>
-    <version>1.0.0.BUILD-SNAPSHOT</version>
+    <version>1.0.0.RELEASE</version>
     <relativePath>..</relativePath>
   </parent>
   <groupId>org.springframework.cloud</groupId>
   <artifactId>spring-cloud-circuitbreaker-resilience4j</artifactId>
-  <version>1.0.0.BUILD-SNAPSHOT</version>
+  <version>1.0.0.RELEASE</version>
   <name>spring-cloud-circuitbreaker-resilience4j</name>
   <description>Spring Cloud Resilience4J</description>
   <url>https://spring.io/spring-cloud/spring-cloud-circuitbreaker/spring-cloud-circuitbreaker-resilience4j</url>
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-commons</artifactId>
-      <version>2.2.0.BUILD-SNAPSHOT</version>
+      <version>2.2.0.RELEASE</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
