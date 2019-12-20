@@ -16,11 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.springretry;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,33 +25,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.support.RetryTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Ryan Baxter
+ * @author Eric Bussieres
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(RetryTemplate.class)
 public class SpringRetryAutoConfiguration {
+	@Autowired(required = false)
+	private List<Customizer<SpringRetryCircuitBreakerFactory>> customizers = new ArrayList<>();
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory resilience4jCircuitBreakerFactory() {
-		return new SpringRetryCircuitBreakerFactory();
+	public CircuitBreakerFactory springRetryCircuitBreakerFactory() {
+		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
+		customizers.forEach(customizer -> customizer.customize(factory));
+		return factory;
 	}
-
-	@Configuration(proxyBeanMethods = false)
-	public static class SpringRetryCustomizerConfiguration {
-
-		@Autowired(required = false)
-		private List<Customizer<SpringRetryCircuitBreakerFactory>> customizers = new ArrayList<>();
-
-		@Autowired(required = false)
-		private SpringRetryCircuitBreakerFactory factory;
-
-		@PostConstruct
-		public void init() {
-			customizers.forEach(customizer -> customizer.customize(factory));
-		}
-
-	}
-
 }

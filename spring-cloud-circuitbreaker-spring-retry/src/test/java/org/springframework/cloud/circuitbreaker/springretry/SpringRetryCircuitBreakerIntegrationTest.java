@@ -16,11 +16,8 @@
 
 package org.springframework.cloud.circuitbreaker.springretry;
 
-import java.time.Duration;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,6 +38,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -133,20 +132,21 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			private TestRestTemplate rest;
 
 			private CircuitBreakerFactory cbFactory;
+			private CircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(TestRestTemplate rest,
 					CircuitBreakerFactory cbFactory) {
 				this.rest = spy(rest);
 				this.cbFactory = cbFactory;
+				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				CircuitBreaker cb = cbFactory.create("slow");
 				for (int i = 0; i < 10; i++) {
-					cb.run(() -> rest.getForObject("/slow", String.class),
+					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class),
 							t -> "fallback");
 				}
-				return cb.run(() -> rest.getForObject("/slow", String.class),
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class),
 						t -> "fallback");
 			}
 
