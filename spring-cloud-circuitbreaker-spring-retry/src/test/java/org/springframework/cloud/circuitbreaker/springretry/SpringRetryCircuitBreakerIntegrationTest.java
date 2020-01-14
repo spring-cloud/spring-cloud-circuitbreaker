@@ -133,20 +133,21 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 			private TestRestTemplate rest;
 
 			private CircuitBreakerFactory cbFactory;
+			private CircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(TestRestTemplate rest,
 					CircuitBreakerFactory cbFactory) {
 				this.rest = spy(rest);
 				this.cbFactory = cbFactory;
+				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				CircuitBreaker cb = cbFactory.create("slow");
 				for (int i = 0; i < 10; i++) {
-					cb.run(() -> rest.getForObject("/slow", String.class),
+					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class),
 							t -> "fallback");
 				}
-				return cb.run(() -> rest.getForObject("/slow", String.class),
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class),
 						t -> "fallback");
 			}
 
