@@ -35,6 +35,7 @@ import org.springframework.retry.support.RetryTemplate;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(RetryTemplate.class)
 public class SpringRetryAutoConfiguration {
+
 	@Autowired(required = false)
 	private List<Customizer<SpringRetryCircuitBreakerFactory>> customizers = new ArrayList<>();
 
@@ -45,4 +46,5 @@ public class SpringRetryAutoConfiguration {
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
+
 }

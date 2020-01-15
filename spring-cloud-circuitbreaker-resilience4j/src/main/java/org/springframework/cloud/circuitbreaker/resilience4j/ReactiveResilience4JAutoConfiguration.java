@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
 		matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
+
 	@Autowired(required = false)
 	private List<Customizer<ReactiveResilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 

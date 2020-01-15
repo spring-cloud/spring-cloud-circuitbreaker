@@ -42,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
 		matchIfMissing = true)
 public class Resilience4JAutoConfiguration {
+
 	@Autowired(required = false)
 	private List<Customizer<Resilience4JCircuitBreakerFactory>> customizers = new ArrayList<>();
 
@@ -58,6 +59,7 @@ public class Resilience4JAutoConfiguration {
 	@ConditionalOnClass(name = {
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
 	public static class MicrometerResilience4JCustomizerConfiguration {
+
 		@Autowired(required = false)
 		private Resilience4JCircuitBreakerFactory factory;
 

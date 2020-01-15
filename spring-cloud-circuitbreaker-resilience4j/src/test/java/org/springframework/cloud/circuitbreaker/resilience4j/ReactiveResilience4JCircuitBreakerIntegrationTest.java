@@ -192,6 +192,7 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 			private int port = 0;
 
 			private final ReactiveCircuitBreakerFactory cbFactory;
+
 			private final ReactiveCircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(ReactiveCircuitBreakerFactory cbFactory) {
