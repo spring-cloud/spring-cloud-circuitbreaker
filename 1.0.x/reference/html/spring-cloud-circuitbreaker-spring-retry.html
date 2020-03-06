@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Configuring Spring Retry Circuit Breakers</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel2">
+<li><a href="#_configuring_spring_retry_circuit_breakers">Configuring Spring Retry Circuit Breakers</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect2">
+<h3 id="_configuring_spring_retry_circuit_breakers"><a class="link" href="#_configuring_spring_retry_circuit_breakers">Configuring Spring Retry Circuit Breakers</a></h3>
+<div class="paragraph">
+<p>Spring Retry provides declarative retry support for Spring applications.
+A subset of the project includes the ability to implement circuit breaker functionality.
+Spring Retry provides a circuit breaker implementation via a combination of it&#8217;s
+<a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/policy/CircuitBreakerRetryPolicy.java"><code>CircuitBreakerRetryPolicy</code></a>
+and a <a href="https://github.com/spring-projects/spring-retry#stateful-retry">stateful retry</a>.
+All circuit breakers created using Spring Retry will be created using the <code>CircuitBreakerRetryPolicy</code> and a
+<a href="https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/springframework/retry/support/DefaultRetryState.java"><code>DefaultRetryState</code></a>.
+Both of these classes can be configured using <code>SpringRetryConfigBuilder</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="_default_configuration"><a class="link" href="#_default_configuration">Default Configuration</a></h4>
+<div class="paragraph">
+<p>To provide a default configuration for all of your circuit breakers create a <code>Customize</code> bean that is passed a
+<code>SpringRetryCircuitBreakerFactory</code>.
+The <code>configureDefault</code> method can be used to provide a default configuration.</p>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; defaultCustomizer() {
+	return factory -&gt; factory.configureDefault(id -&gt; new SpringRetryConfigBuilder(id)
+    	.retryPolicy(new TimeoutRetryPolicy()).build());
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_specific_circuit_breaker_configuration"><a class="link" href="#_specific_circuit_breaker_configuration">Specific Circuit Breaker Configuration</a></h4>
+<div class="paragraph">
+<p>Similarly to providing a default configuration, you can create a <code>Customize</code> bean this is passed a
+<code>SpringRetryCircuitBreakerFactory</code>.</p>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; slowCustomizer() {
+	return factory -&gt; factory.configure(builder -&gt; builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>In addition to configuring the circuit breaker that is created you can also customize the circuit breaker after it has been created but before it is returned to the caller.
+To do this you can use the <code>addRetryTemplateCustomizers</code>
+method.
+This can be useful for adding event handlers to the <code>RetryTemplate</code>.</p>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public Customizer&lt;SpringRetryCircuitBreakerFactory&gt; slowCustomizer() {
+	return factory -&gt; factory.addRetryTemplateCustomizers(retryTemplate -&gt; retryTemplate.registerListener(new RetryListener() {
+
+		@Override
+		public &lt;T, E extends Throwable&gt; boolean open(RetryContext context, RetryCallback&lt;T, E&gt; callback) {
+			return false;
+		}
+
+		@Override
+		public &lt;T, E extends Throwable&gt; void close(RetryContext context, RetryCallback&lt;T, E&gt; callback, Throwable throwable) {
+
+		}
+
+		@Override
+		public &lt;T, E extends Throwable&gt; void onError(RetryContext context, RetryCallback&lt;T, E&gt; callback, Throwable throwable) {
+
+		}
+	}));
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
