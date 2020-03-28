@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Eric Bussieres
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
+@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.blocking.enabled",
 		matchIfMissing = true)
 public class Resilience4JAutoConfiguration {
 
