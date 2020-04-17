@@ -22,7 +22,6 @@
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.language>java</sonar.language>
 		<spring-cloud-commons.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-commons.version>
-		<spring-cloud-netflix.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-netflix.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
