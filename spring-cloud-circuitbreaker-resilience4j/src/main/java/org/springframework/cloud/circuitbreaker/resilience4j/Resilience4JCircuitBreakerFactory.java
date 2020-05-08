@@ -64,7 +64,7 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = registry;
 	}
 
-	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+	protected CircuitBreakerRegistry getCircuitBreakerRegistry() {
 		return circuitBreakerRegistry;
 	}
 
