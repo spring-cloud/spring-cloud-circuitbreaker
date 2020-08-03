@@ -19,3 +19,4 @@ _site/
 *.swp
 *.swo
 .flattened-pom.xml
+.sdkmanrc
