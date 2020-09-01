@@ -82,7 +82,7 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 [source,java]
 ----
 @Bean
-public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
+public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 	return factory -> {
 		factory.configure(builder -> builder
 		.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
