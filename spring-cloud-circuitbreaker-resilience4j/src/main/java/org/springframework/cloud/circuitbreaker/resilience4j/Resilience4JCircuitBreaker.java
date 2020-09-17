@@ -50,8 +50,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	public Resilience4JCircuitBreaker(String id,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-			TimeLimiterConfig timeLimiterConfig,
-			CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
 			ExecutorService executorService,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
@@ -66,13 +65,11 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
 		TimeLimiter timeLimiter = TimeLimiter.of(timeLimiterConfig);
 		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
-		Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter,
-				futureSupplier);
+		Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry
-				.circuitBreaker(id, circuitBreakerConfig);
-		circuitBreakerCustomizer
-				.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
+		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id,
+				circuitBreakerConfig);
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
 				.decorateCallable(defaultCircuitBreaker, restrictedCall);
 		return Try.of(callable::call).recover(fallback).get();

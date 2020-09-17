@@ -33,36 +33,29 @@ public class ReactiveResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runMono() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
-		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block())
-				.isEqualTo("foobar");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block()).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
-		assertThat(Mono.error(new RuntimeException("boom"))
-				.transform(it -> cb.run(it, t -> Mono.just("fallback"))).block())
-						.isEqualTo("fallback");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		assertThat(Mono.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Mono.just("fallback")))
+				.block()).isEqualTo("fallback");
 	}
 
 	@Test
 	public void runFlux() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
-		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it))
-				.collectList().block()).isEqualTo(Arrays.asList("foobar", "hello world"));
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it)).collectList().block())
+				.isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory()
-				.create("foo");
-		assertThat(Flux.error(new RuntimeException("boom"))
-				.transform(it -> cb.run(it, t -> Flux.just("fallback"))).collectList()
-				.block()).isEqualTo(Arrays.asList("fallback"));
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		assertThat(Flux.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Flux.just("fallback")))
+				.collectList().block()).isEqualTo(Arrays.asList("fallback"));
 	}
 
 }

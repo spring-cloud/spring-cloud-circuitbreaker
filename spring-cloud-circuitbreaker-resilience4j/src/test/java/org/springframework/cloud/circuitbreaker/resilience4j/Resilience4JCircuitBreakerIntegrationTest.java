@@ -58,8 +58,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = Resilience4JCircuitBreakerIntegrationTest.Application.class,
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4JCircuitBreakerIntegrationTest.Application.class,
 		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class Resilience4JCircuitBreakerIntegrationTest {
@@ -145,22 +144,16 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
-				factory.configure(
-						builder -> builder
-								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-								.timeLimiterConfig(TimeLimiterConfig.custom()
-										.timeoutDuration(Duration.ofSeconds(2)).build()),
+				factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()),
 						"slow");
 				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-						.timeLimiterConfig(TimeLimiterConfig.custom()
-								.timeoutDuration(Duration.ofSeconds(4)).build())
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
 						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).build());
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
-						.getEventPublisher().onError(slowErrorConsumer)
-						.onSuccess(slowSuccessConsumer), "slow");
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
-						.getEventPublisher().onError(normalErrorConsumer)
-						.onSuccess(normalSuccessConsumer), "normal");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+						.onError(slowErrorConsumer).onSuccess(slowSuccessConsumer), "slow");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+						.onError(normalErrorConsumer).onSuccess(normalSuccessConsumer), "normal");
 			};
 		}
 
@@ -173,21 +166,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(TestRestTemplate rest,
-					CircuitBreakerFactory cbFactory) {
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
 				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				return circuitBreakerSlow.run(
-						() -> rest.getForObject("/slow", String.class), t -> "fallback");
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(
-						() -> rest.getForObject("/normal", String.class),
+				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}
 
@@ -195,18 +185,14 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				return circuitBreakerSlow
 						.run(() -> rest
 								.exchange("/slowOnDemand", HttpMethod.GET,
-										createEntityWithOptionalDelayHeader(
-												delayInMilliseconds),
-										String.class)
+										createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
 								.getBody(), t -> "fallback");
 			}
 
-			private HttpEntity<String> createEntityWithOptionalDelayHeader(
-					int delayInMilliseconds) {
+			private HttpEntity<String> createEntityWithOptionalDelayHeader(int delayInMilliseconds) {
 				HttpHeaders headers = new HttpHeaders();
 				if (delayInMilliseconds > 0) {
-					headers.set("delayInMilliseconds",
-							Integer.toString(delayInMilliseconds));
+					headers.set("delayInMilliseconds", Integer.toString(delayInMilliseconds));
 				}
 				return new HttpEntity<>(null, headers);
 			}

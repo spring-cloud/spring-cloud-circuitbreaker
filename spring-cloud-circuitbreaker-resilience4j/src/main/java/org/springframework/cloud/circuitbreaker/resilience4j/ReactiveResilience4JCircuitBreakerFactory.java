@@ -41,8 +41,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
 
-	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry
-			.ofDefaults();
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
@@ -74,8 +73,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = registry;
 	}
 
-	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer,
-			String... ids) {
+	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
 		for (String id : ids) {
 			circuitBreakerCustomizers.put(id, customizer);
 		}

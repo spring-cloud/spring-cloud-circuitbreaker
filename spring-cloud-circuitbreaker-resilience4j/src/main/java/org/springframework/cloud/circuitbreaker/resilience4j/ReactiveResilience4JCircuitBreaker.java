@@ -55,18 +55,16 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry
-				.circuitBreaker(id, config.getCircuitBreakerConfig());
-		circuitBreakerCustomizer
-				.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-		Mono<T> toReturn = toRun
-				.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
+		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id,
+				config.getCircuitBreakerConfig());
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
+		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Mono timeout we need to tell the circuit breaker
 				// about the error
 				.doOnError(TimeoutException.class,
-						t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig()
-								.getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
+						t -> defaultCircuitBreaker.onError(
+								config.getTimeLimiterConfig().getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
 								t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -75,18 +73,16 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	}
 
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry
-				.circuitBreaker(id, config.getCircuitBreakerConfig());
-		circuitBreakerCustomizer
-				.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-		Flux<T> toReturn = toRun
-				.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
+		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id,
+				config.getCircuitBreakerConfig());
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
+		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
 				.timeout(config.getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Flux timeout we need to tell the circuit breaker
 				// about the error
 				.doOnError(TimeoutException.class,
-						t -> defaultCircuitBreaker.onError(config.getTimeLimiterConfig()
-								.getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
+						t -> defaultCircuitBreaker.onError(
+								config.getTimeLimiterConfig().getTimeoutDuration().toMillis(), TimeUnit.MILLISECONDS,
 								t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);

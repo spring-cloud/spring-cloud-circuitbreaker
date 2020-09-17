@@ -30,8 +30,7 @@ import org.springframework.retry.support.DefaultRetryState;
  *
  * @author Ryan Baxter
  */
-public class SpringRetryConfigBuilder
-		implements ConfigBuilder<SpringRetryConfigBuilder.SpringRetryConfig> {
+public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfigBuilder.SpringRetryConfig> {
 
 	private String id;
 
@@ -92,8 +91,7 @@ public class SpringRetryConfigBuilder
 	 * @param classifier The {@code Classifier} to set.
 	 * @return The builder.
 	 */
-	public SpringRetryConfigBuilder stateClassifier(
-			Classifier<Throwable, Boolean> classifier) {
+	public SpringRetryConfigBuilder stateClassifier(Classifier<Throwable, Boolean> classifier) {
 		this.stateClassifier = classifier;
 		return this;
 	}

@@ -44,8 +44,8 @@ public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	@Test
 	public void testWithoutMetrics() {
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.web(WebApplicationType.NONE).sources(TestApp.class).run()) {
+		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+				.sources(TestApp.class).run()) {
 			verify(circuitBreakerFactory, times(0)).getCircuitBreakerRegistry();
 		}
 	}

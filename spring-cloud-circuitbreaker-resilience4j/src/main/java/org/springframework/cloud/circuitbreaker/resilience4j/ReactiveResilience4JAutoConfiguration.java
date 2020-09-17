@@ -41,8 +41,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
-@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled",
-		matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled", matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Autowired(required = false)
@@ -57,8 +56,7 @@ public class ReactiveResilience4JAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-			"reactor.core.publisher.Flux",
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
 	@ConditionalOnBean({ MeterRegistry.class })
 	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
@@ -72,8 +70,7 @@ public class ReactiveResilience4JAutoConfiguration {
 		@PostConstruct
 		public void init() {
 			if (factory != null) {
-				TaggedCircuitBreakerMetrics
-						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
 						.bindTo(meterRegistry);
 			}
 		}

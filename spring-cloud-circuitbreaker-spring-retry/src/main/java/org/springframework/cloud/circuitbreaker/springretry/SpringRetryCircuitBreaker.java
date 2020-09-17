@@ -38,8 +38,7 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
 	private RetryTemplate retryTemplate;
 
-	public SpringRetryCircuitBreaker(String id,
-			SpringRetryConfigBuilder.SpringRetryConfig config,
+	public SpringRetryCircuitBreaker(String id, SpringRetryConfigBuilder.SpringRetryConfig config,
 			Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
 		this.id = id;
 		this.config = config;
@@ -53,12 +52,9 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 		retryTemplate.setBackOffPolicy(config.getBackOffPolicy());
 		retryTemplate.setRetryPolicy(config.getRetryPolicy());
 
-		retryTemplateCustomizer
-				.ifPresent(customizer -> customizer.customize(retryTemplate));
-		return retryTemplate.execute(context -> toRun.get(),
-				context -> fallback.apply(context.getLastThrowable()),
-				new DefaultRetryState(id, config.isForceRefreshState(),
-						config.getStateClassifier()));
+		retryTemplateCustomizer.ifPresent(customizer -> customizer.customize(retryTemplate));
+		return retryTemplate.execute(context -> toRun.get(), context -> fallback.apply(context.getLastThrowable()),
+				new DefaultRetryState(id, config.isForceRefreshState(), config.getStateClassifier()));
 	}
 
 }
