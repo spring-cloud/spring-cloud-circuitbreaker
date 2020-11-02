@@ -24,8 +24,8 @@ import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 /**
  * @author Ryan Baxter
  */
-public class Resilience4JConfigBuilder implements
-		ConfigBuilder<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> {
+public class Resilience4JConfigBuilder
+		implements ConfigBuilder<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> {
 
 	private String id;
 
@@ -42,8 +42,7 @@ public class Resilience4JConfigBuilder implements
 		return this;
 	}
 
-	public Resilience4JConfigBuilder circuitBreakerConfig(
-			CircuitBreakerConfig circuitBreakerConfig) {
+	public Resilience4JConfigBuilder circuitBreakerConfig(CircuitBreakerConfig circuitBreakerConfig) {
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		return this;
 	}

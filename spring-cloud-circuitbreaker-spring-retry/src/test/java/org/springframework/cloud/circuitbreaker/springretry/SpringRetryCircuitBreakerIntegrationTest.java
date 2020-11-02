@@ -53,8 +53,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
 public class SpringRetryCircuitBreakerIntegrationTest {
 
@@ -96,31 +95,27 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 		@Bean
 		public Customizer<SpringRetryCircuitBreakerFactory> factoryCustomizer() {
 			return factory -> {
-				factory.configureDefault(id -> new SpringRetryConfigBuilder(id)
-						.retryPolicy(new TimeoutRetryPolicy()).build());
-				factory.configure(
-						builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(),
-						"slow");
-				factory.addRetryTemplateCustomizers(retryTemplate -> retryTemplate
-						.registerListener(new RetryListener() {
+				factory.configureDefault(
+						id -> new SpringRetryConfigBuilder(id).retryPolicy(new TimeoutRetryPolicy()).build());
+				factory.configure(builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
+				factory.addRetryTemplateCustomizers(
+						retryTemplate -> retryTemplate.registerListener(new RetryListener() {
 
 							@Override
-							public <T, E extends Throwable> boolean open(
-									RetryContext context, RetryCallback<T, E> callback) {
+							public <T, E extends Throwable> boolean open(RetryContext context,
+									RetryCallback<T, E> callback) {
 								return false;
 							}
 
 							@Override
-							public <T, E extends Throwable> void close(
-									RetryContext context, RetryCallback<T, E> callback,
-									Throwable throwable) {
+							public <T, E extends Throwable> void close(RetryContext context,
+									RetryCallback<T, E> callback, Throwable throwable) {
 
 							}
 
 							@Override
-							public <T, E extends Throwable> void onError(
-									RetryContext context, RetryCallback<T, E> callback,
-									Throwable throwable) {
+							public <T, E extends Throwable> void onError(RetryContext context,
+									RetryCallback<T, E> callback, Throwable throwable) {
 
 							}
 						}));
@@ -136,8 +131,7 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 
 			private CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(TestRestTemplate rest,
-					CircuitBreakerFactory cbFactory) {
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
 				this.rest = spy(rest);
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
@@ -145,16 +139,13 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 
 			public String slow() {
 				for (int i = 0; i < 10; i++) {
-					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class),
-							t -> "fallback");
+					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 				}
-				return circuitBreakerSlow.run(
-						() -> rest.getForObject("/slow", String.class), t -> "fallback");
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(
-						() -> rest.getForObject("/normal", String.class),
+				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}
 

@@ -59,8 +59,7 @@ public class ReactiveResilience4JAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono",
-			"reactor.core.publisher.Flux",
+	@ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
 	@ConditionalOnBean({ MeterRegistry.class })
 	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
@@ -74,8 +73,7 @@ public class ReactiveResilience4JAutoConfiguration {
 		@PostConstruct
 		public void init() {
 			if (factory != null) {
-				TaggedCircuitBreakerMetrics
-						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
 						.bindTo(meterRegistry);
 			}
 		}

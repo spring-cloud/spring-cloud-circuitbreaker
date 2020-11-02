@@ -42,8 +42,7 @@ public class Resilience4JCircuitBreakerFactory extends
 			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
 
-	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry
-			.ofDefaults();
+	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -64,7 +63,7 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = registry;
 	}
 
-	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+	protected CircuitBreakerRegistry getCircuitBreakerRegistry() {
 		return circuitBreakerRegistry;
 	}
 
@@ -77,13 +76,11 @@ public class Resilience4JCircuitBreakerFactory extends
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(),
-				config.getTimeLimiterConfig(), circuitBreakerRegistry, executorService,
-				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
+				circuitBreakerRegistry, executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
-	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer,
-			String... ids) {
+	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
 		for (String id : ids) {
 			circuitBreakerCustomizers.put(id, customizer);
 		}

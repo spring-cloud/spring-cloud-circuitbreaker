@@ -4,6 +4,7 @@ Manual changes to this file will be lost when it is generated again.
 Edit the files in the src/main/asciidoc/ directory instead.
 ////
 
+
 :doctype: book
 :idprefix:
 :idseparator: -
@@ -65,10 +66,10 @@ The `configureDefault` method can be used to provide a default configuration.
 ----
 @Bean
 public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
-	return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
-			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-			.build());
+    return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+            .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+            .build());
 }
 ----
 ====
@@ -80,9 +81,9 @@ public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
 ----
 @Bean
 public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
-	return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
+    return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+            .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
 }
 ----
 ====
@@ -97,8 +98,8 @@ Similarly to providing a default configuration, you can create a `Customize` bea
 ----
 @Bean
 public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
-	return factory -> factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()), "slow");
+    return factory -> factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+            .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()), "slow");
 }
 ----
 ====
@@ -113,8 +114,8 @@ This can be useful for adding event handlers to Resilience4J circuit breakers.
 ----
 @Bean
 public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
-	return factory -> factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-	.onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
+    return factory -> factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+    .onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
 }
 ----
 ====
@@ -125,13 +126,13 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 [source,java]
 ----
 @Bean
-public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
-	return factory -> {
-		factory.configure(builder -> builder
-		.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
-		.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
-		factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-        	.onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
+public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
+    return factory -> {
+        factory.configure(builder -> builder
+        .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
+        .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
+        factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+            .onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
      };
 }
 ----
@@ -167,8 +168,8 @@ The `configureDefault` method can be used to provide a default configuration.
 ----
 @Bean
 public Customizer<SpringRetryCircuitBreakerFactory> defaultCustomizer() {
-	return factory -> factory.configureDefault(id -> new SpringRetryConfigBuilder(id)
-    	.retryPolicy(new TimeoutRetryPolicy()).build());
+    return factory -> factory.configureDefault(id -> new SpringRetryConfigBuilder(id)
+        .retryPolicy(new TimeoutRetryPolicy()).build());
 }
 ----
 ====
@@ -183,7 +184,7 @@ Similarly to providing a default configuration, you can create a `Customize` bea
 ----
 @Bean
 public Customizer<SpringRetryCircuitBreakerFactory> slowCustomizer() {
-	return factory -> factory.configure(builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
+    return factory -> factory.configure(builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
 }
 ----
 ====
@@ -198,23 +199,23 @@ This can be useful for adding event handlers to the `RetryTemplate`.
 ----
 @Bean
 public Customizer<SpringRetryCircuitBreakerFactory> slowCustomizer() {
-	return factory -> factory.addRetryTemplateCustomizers(retryTemplate -> retryTemplate.registerListener(new RetryListener() {
+    return factory -> factory.addRetryTemplateCustomizers(retryTemplate -> retryTemplate.registerListener(new RetryListener() {
 
-		@Override
-		public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
-			return false;
-		}
+        @Override
+        public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+            return false;
+        }
 
-		@Override
-		public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+        @Override
+        public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
 
-		}
+        }
 
-		@Override
-		public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+        @Override
+        public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
 
-		}
-	}));
+        }
+    }));
 }
 ----
 ====
@@ -282,6 +283,11 @@ https://www.springsource.com/developer/sts[Spring Tools Suite] or
 https://eclipse.org[Eclipse] when working with the code. We use the
 https://eclipse.org/m2e/[m2eclipse] eclipse plugin for maven support. Other IDEs and tools
 should also work without issue as long as they use Maven 3.3.3 or better.
+
+==== Activate the Spring Maven profile
+Spring Cloud projects require the 'spring' Maven profile to be activated to resolve
+the spring milestone and snapshot repositories. Use your preferred IDE to set this
+profile to be active, or you may experience build errors.
 
 ==== Importing into eclipse with m2eclipse
 We recommend the https://eclipse.org/m2e/[m2eclipse] eclipse plugin when working with
