@@ -41,7 +41,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
-@ConditionalOnProperty(name = "spring.cloud.circuitbreaker.resilience4j.enabled", matchIfMissing = true)
+@ConditionalOnProperty(
+		name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
+				"spring.cloud.circuitbreaker.resilience4j.reactive.enabled" },
+		matchIfMissing = true)
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Autowired(required = false)

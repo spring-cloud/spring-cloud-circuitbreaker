@@ -5,6 +5,18 @@
       "name": "spring.cloud.circuitbreaker.resilience4j.enabled",
       "description": "Enables Resilience4J auto-configuration.",
       "type": "java.lang.Boolean"
+    },
+	{
+	  "defaultValue": "true",
+	  "name": "spring.cloud.circuitbreaker.resilience4j.blocking.enabled",
+	  "description": "Enables blocking Resilience4J auto-configuration.",
+	  "type": "java.lang.Boolean"
+	},
+    {
+	  "defaultValue": "true",
+	  "name": "spring.cloud.circuitbreaker.resilience4j.reactive.enabled",
+	  "description": "Enables ReactiveResilience4J auto-configuration.",
+	  "type": "java.lang.Boolean"
     }
   ]
 }
