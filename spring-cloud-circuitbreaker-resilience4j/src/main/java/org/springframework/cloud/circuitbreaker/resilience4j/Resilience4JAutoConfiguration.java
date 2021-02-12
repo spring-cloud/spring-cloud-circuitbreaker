@@ -19,14 +19,11 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
-import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
-import io.micrometer.core.instrument.MeterRegistry;
-
+import io.github.resilience4j.bulkhead.BulkheadRegistry;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -37,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  * @author Eric Bussieres
+ * @author Andrii Bohutskyi
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
@@ -48,31 +46,13 @@ public class Resilience4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory() {
-		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory();
+	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+																			   ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
+																			   BulkheadRegistry bulkheadRegistry,
+																			   TimeLimiterRegistry timeLimiterRegistry) {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry,
+			threadPoolBulkheadRegistry, bulkheadRegistry, timeLimiterRegistry);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnBean({ MeterRegistry.class })
-	@ConditionalOnClass(name = { "io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
-	public static class MicrometerResilience4JCustomizerConfiguration {
-
-		@Autowired(required = false)
-		private Resilience4JCircuitBreakerFactory factory;
-
-		@Autowired
-		private MeterRegistry meterRegistry;
-
-		@PostConstruct
-		public void init() {
-			if (factory != null) {
-				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
-						.bindTo(meterRegistry);
-			}
-		}
-
-	}
-
 }
