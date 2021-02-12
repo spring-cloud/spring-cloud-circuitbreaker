@@ -21,7 +21,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.decorators.Decorators;
+import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  * @author Eric Bussieres
+ * @author Andrii Bohutskyi
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
@@ -48,10 +53,28 @@ public class Resilience4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory() {
-		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory();
+	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(
+			@Autowired(required = false) Resilience4jBulkheadProvider bulkheadProvider) {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(bulkheadProvider);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass({ Bulkhead.class, Decorators.class })
+	@ConditionalOnProperty("spring.cloud.bulkhead.resilience4j.enable")
+	public static class Resilience4jBulkheadConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<Resilience4jBulkheadProvider>> bulkheadCustomizers = new ArrayList<>();
+
+		@Bean
+		public Resilience4jBulkheadProvider bulkheadProvider() {
+			Resilience4jBulkheadProvider resilience4jBulkheadProvider = new Resilience4jBulkheadProvider();
+			bulkheadCustomizers.forEach(customizer -> customizer.customize(resilience4jBulkheadProvider));
+			return resilience4jBulkheadProvider;
+		}
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -62,6 +85,9 @@ public class Resilience4JAutoConfiguration {
 		@Autowired(required = false)
 		private Resilience4JCircuitBreakerFactory factory;
 
+		@Autowired(required = false)
+		private Resilience4jBulkheadProvider bulkheadProvider;
+
 		@Autowired
 		private MeterRegistry meterRegistry;
 
@@ -69,6 +95,12 @@ public class Resilience4JAutoConfiguration {
 		public void init() {
 			if (factory != null) {
 				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+						.bindTo(meterRegistry);
+			}
+			if (bulkheadProvider != null) {
+				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
+				TaggedThreadPoolBulkheadMetrics
+						.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
 						.bindTo(meterRegistry);
 			}
 		}

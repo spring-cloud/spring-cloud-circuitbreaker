@@ -38,6 +38,8 @@ import org.springframework.util.Assert;
 public class Resilience4JCircuitBreakerFactory extends
 		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
+	private Resilience4jBulkheadProvider bulkheadProvider;
+
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
 			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
@@ -47,6 +49,13 @@ public class Resilience4JCircuitBreakerFactory extends
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
+
+	public Resilience4JCircuitBreakerFactory() {
+	}
+
+	public Resilience4JCircuitBreakerFactory(Resilience4jBulkheadProvider bulkheadProvider) {
+		this.bulkheadProvider = bulkheadProvider;
+	}
 
 	@Override
 	protected Resilience4JConfigBuilder configBuilder(String id) {
@@ -77,7 +86,8 @@ public class Resilience4JCircuitBreakerFactory extends
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
 		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
-				circuitBreakerRegistry, executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+				circuitBreakerRegistry, executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
+				bulkheadProvider);
 	}
 
 	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
