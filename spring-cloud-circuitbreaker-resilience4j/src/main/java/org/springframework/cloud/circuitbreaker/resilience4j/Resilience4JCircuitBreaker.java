@@ -42,14 +42,29 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
-	private final CircuitBreakerRegistry circuitBreakerRegistry;
-	private final TimeLimiterRegistry timeLimiterRegistry;
+	private CircuitBreakerRegistry registry;
+
+	private TimeLimiterRegistry timeLimiterRegistry;
 
 	private TimeLimiterConfig timeLimiterConfig;
 
 	private ExecutorService executorService;
 
 	private Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer;
+
+	@Deprecated
+	public Resilience4JCircuitBreaker(String id,
+			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
+			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
+			ExecutorService executorService,
+			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
+		this.id = id;
+		this.circuitBreakerConfig = circuitBreakerConfig;
+		this.registry = circuitBreakerRegistry;
+		this.timeLimiterConfig = timeLimiterConfig;
+		this.executorService = executorService;
+		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
+	}
 
 	public Resilience4JCircuitBreaker(String id,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
@@ -58,7 +73,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.registry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;
@@ -67,11 +82,12 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig);
+		TimeLimiter timeLimiter = timeLimiterRegistry != null ? timeLimiterRegistry.timeLimiter(id, timeLimiterConfig)
+				: TimeLimiter.of(timeLimiterConfig);
 		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
 		Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = circuitBreakerRegistry.circuitBreaker(id,
+		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id,
 				circuitBreakerConfig);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker

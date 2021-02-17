@@ -19,9 +19,16 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -50,4 +57,25 @@ public class Resilience4JAutoConfiguration {
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
+
+	@ConditionalOnBean({ MeterRegistry.class })
+	@ConditionalOnClass(name = { "io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
+	public static class MicrometerResilience4JCustomizerConfiguration {
+
+		@Autowired(required = false)
+		private Resilience4JCircuitBreakerFactory factory;
+
+		@Autowired
+		private MeterRegistry meterRegistry;
+
+		@PostConstruct
+		public void init() {
+			if (factory != null) {
+				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
+						.bindTo(meterRegistry);
+			}
+		}
+
+	}
+
 }

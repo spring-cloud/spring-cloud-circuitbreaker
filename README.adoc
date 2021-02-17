@@ -141,7 +141,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 
 ==== Properties Configuration
 
-You can configure CircuitBreaker and TimeLimiter instances in Spring Boot’s `application.yml` config file. Property configuration has higher priority that Java `Customizer` configuration.
+You can configure CircuitBreaker and TimeLimiter instances in your application's configuration properties config file. Property configuration has higher priority than Java `Customizer` configuration.
 
 ====
 [source]
