@@ -141,7 +141,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 
 ==== Properties Configuration
 
-You can configure CircuitBreaker, Bulkhead, Thread pool bulkhead and TimeLimiter instances in Spring Boot’s `application.yml` config file. Property configuration has higher priority that Java `Customizer` configuration.
+You can configure CircuitBreaker and TimeLimiter instances in Spring Boot’s `application.yml` config file. Property configuration has higher priority that Java `Customizer` configuration.
 
 ====
 [source]
@@ -157,21 +157,6 @@ resilience4j.circuitbreaker:
             permittedNumberOfCallsInHalfOpenState: 3
             slidingWindowType: TIME_BASED
             recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
-
-resilience4j.bulkhead:
-    instances:
-        backendA:
-            maxConcurrentCalls: 10
-        backendB:
-            maxWaitDuration: 10ms
-            maxConcurrentCalls: 20
-
-resilience4j.thread-pool-bulkhead:
-  instances:
-    backendC:
-      maxThreadPoolSize: 1
-      coreThreadPoolSize: 1
-      queueCapacity: 1
 
 resilience4j.timelimiter:
     instances:

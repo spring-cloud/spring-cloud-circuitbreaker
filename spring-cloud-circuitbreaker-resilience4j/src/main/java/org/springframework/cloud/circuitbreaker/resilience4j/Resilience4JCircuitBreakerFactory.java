@@ -23,8 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
-import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -47,8 +45,6 @@ public class Resilience4JCircuitBreakerFactory extends
 					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
 
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
-	private final ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry;
-	private final BulkheadRegistry bulkheadRegistry;
 	private final TimeLimiterRegistry timeLimiterRegistry;
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -56,12 +52,8 @@ public class Resilience4JCircuitBreakerFactory extends
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-											 ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
-											 BulkheadRegistry bulkheadRegistry,
 											 TimeLimiterRegistry timeLimiterRegistry) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
-		this.bulkheadRegistry = bulkheadRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 	}
 
@@ -84,14 +76,6 @@ public class Resilience4JCircuitBreakerFactory extends
 		return circuitBreakerRegistry;
 	}
 
-	public ThreadPoolBulkheadRegistry getThreadPoolBulkheadRegistry() {
-		return threadPoolBulkheadRegistry;
-	}
-
-	public BulkheadRegistry getBulkheadRegistry() {
-		return bulkheadRegistry;
-	}
-
 	public TimeLimiterRegistry getTimeLimiterRegistry() {
 		return timeLimiterRegistry;
 	}
@@ -106,7 +90,7 @@ public class Resilience4JCircuitBreakerFactory extends
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
 		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
-				circuitBreakerRegistry, bulkheadRegistry, threadPoolBulkheadRegistry, timeLimiterRegistry,
+				circuitBreakerRegistry, timeLimiterRegistry,
 			executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
-import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.junit.Test;
@@ -34,7 +32,6 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void run() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 			TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
@@ -42,7 +39,6 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 			TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");

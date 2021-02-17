@@ -23,8 +23,6 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
-import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
@@ -45,8 +43,6 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	private io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
-	private final ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry;
-	private final BulkheadRegistry bulkheadRegistry;
 	private final TimeLimiterRegistry timeLimiterRegistry;
 
 	private TimeLimiterConfig timeLimiterConfig;
@@ -58,14 +54,11 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	public Resilience4JCircuitBreaker(String id,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-			BulkheadRegistry bulkheadRegistry, ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
-		this.bulkheadRegistry = bulkheadRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;

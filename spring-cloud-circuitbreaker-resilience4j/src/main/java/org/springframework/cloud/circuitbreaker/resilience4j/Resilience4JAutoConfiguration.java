@@ -19,8 +19,6 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
-import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +45,8 @@ public class Resilience4JAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
 	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-																			   ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
-																			   BulkheadRegistry bulkheadRegistry,
 																			   TimeLimiterRegistry timeLimiterRegistry) {
-		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry,
-			threadPoolBulkheadRegistry, bulkheadRegistry, timeLimiterRegistry);
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry, timeLimiterRegistry);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
