@@ -58,6 +58,7 @@ public class Resilience4JAutoConfiguration {
 		return factory;
 	}
 
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean({ MeterRegistry.class })
 	@ConditionalOnClass(name = { "io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
 	public static class MicrometerResilience4JCustomizerConfiguration {

@@ -73,8 +73,8 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
-	@Deprecated
 	public void configureCircuitBreakerRegistry(CircuitBreakerRegistry registry) {
+		this.circuitBreakerRegistry = registry;
 	}
 
 	public CircuitBreakerRegistry getCircuitBreakerRegistry() {
