@@ -57,7 +57,7 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-											 TimeLimiterRegistry timeLimiterRegistry) {
+			TimeLimiterRegistry timeLimiterRegistry) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 	}

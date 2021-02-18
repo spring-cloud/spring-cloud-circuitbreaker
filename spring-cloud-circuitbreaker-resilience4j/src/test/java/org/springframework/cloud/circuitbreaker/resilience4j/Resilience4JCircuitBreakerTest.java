@@ -32,14 +32,14 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void run() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults()).create("foo");
+				TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults()).create("foo");
+				TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");

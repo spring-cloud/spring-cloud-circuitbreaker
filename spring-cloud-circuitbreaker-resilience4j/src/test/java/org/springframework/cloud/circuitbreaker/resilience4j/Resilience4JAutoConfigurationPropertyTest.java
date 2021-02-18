@@ -41,15 +41,16 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class Resilience4JAutoConfigurationPropertyTest {
 
 	@Autowired
-    Resilience4JCircuitBreakerFactory factory;
+	Resilience4JCircuitBreakerFactory factory;
 
 	@Test
 	public void testCircuitBreakerPropertiesPopulated() {
 		CircuitBreakerRegistry circuitBreakerRegistry = factory.getCircuitBreakerRegistry();
 		assertThat(circuitBreakerRegistry).isNotNull();
 		assertThat(circuitBreakerRegistry.find("test_circuit")).isPresent();
-		assertThat(circuitBreakerRegistry.find("test_circuit").get().getCircuitBreakerConfig().getMinimumNumberOfCalls())
-			.isEqualTo(5);
+		assertThat(
+				circuitBreakerRegistry.find("test_circuit").get().getCircuitBreakerConfig().getMinimumNumberOfCalls())
+						.isEqualTo(5);
 	}
 
 	@Test
@@ -58,6 +59,7 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		assertThat(timeLimiterRegistry).isNotNull();
 		assertThat(timeLimiterRegistry.find("test_circuit")).isPresent();
 		assertThat(timeLimiterRegistry.find("test_circuit").get().getTimeLimiterConfig().getTimeoutDuration())
-			.isEqualTo(Duration.ofSeconds(18));
+				.isEqualTo(Duration.ofSeconds(18));
 	}
+
 }

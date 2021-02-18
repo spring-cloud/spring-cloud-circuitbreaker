@@ -43,7 +43,7 @@ import static org.mockito.Mockito.verify;
 public class Resilience4JAutoConfigurationWithoutMetricsTest {
 
 	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(new Resilience4JCircuitBreakerFactory(
-		CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults()));
+			CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults()));
 
 	@Test
 	public void testWithoutMetrics() {
