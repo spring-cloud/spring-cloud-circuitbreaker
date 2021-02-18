@@ -21,7 +21,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  * @author Eric Bussieres
+ * @author Andrii Bohutskyi
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
@@ -48,8 +51,9 @@ public class Resilience4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory() {
-		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory();
+	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+																			   TimeLimiterRegistry timeLimiterRegistry) {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry, timeLimiterRegistry);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
