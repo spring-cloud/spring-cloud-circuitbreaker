@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -30,7 +31,6 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -93,26 +93,32 @@ public class Resilience4jBulkheadProvider {
 
 	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
 			TimeLimiter timeLimiter) {
+		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, toRun);
+		Supplier<CompletionStage<T>> timeLimiterCall = timeLimiter
+				.decorateCompletionStage(Executors.newSingleThreadScheduledExecutor(), bulkheadCall);
+		Supplier<CompletionStage<T>> circuitBreakerCall = circuitBreaker.decorateCompletionStage(timeLimiterCall);
 		try {
-			return decorateBulkhead(id, toRun)
-					.withTimeLimiter(timeLimiter, Executors.newSingleThreadScheduledExecutor())
-					.withCircuitBreaker(circuitBreaker).get().toCompletableFuture().get();
+			return circuitBreakerCall.get().toCompletableFuture().get();
 		}
 		catch (Exception e) {
+			System.out.println("exception " + e.getMessage());
 			return fallback.apply(e);
 		}
 	}
 
-	private <T> Decorators.DecorateCompletionStage<T> decorateBulkhead(final String id, final Supplier<T> supplier) {
+	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Supplier<T> supplier) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 
-		if (threadPoolBulkheadRegistry.find(id).isPresent() && !bulkheadRegistry.find(id).isPresent()) {
-			return Decorators.ofSupplier(supplier).withThreadPoolBulkhead(
-					threadPoolBulkheadRegistry.bulkhead(id, configuration.getThreadPoolBulkheadConfig()));
-		} else {
+		if (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent()) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
-			return Decorators.ofCompletionStage(() -> CompletableFuture.supplyAsync(supplier)).withBulkhead(bulkhead);
+			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
+			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
+		}
+		else {
+			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
+					configuration.getThreadPoolBulkheadConfig());
+			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
 	}
 

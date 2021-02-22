@@ -26,37 +26,28 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
 
 /**
  * @author Andrii Bohutskyi
  */
 @RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "resilience4j-all-*.jar", "resilience4j-all-*.jar" })
+@ClassPathExclusions("resilience4j-bulkhead-*.jar")
 public class Resilience4JAutoConfigurationWithoutBulkheadTest {
-
-	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(new Resilience4JCircuitBreakerFactory());
 
 	@Test
 	public void testWithoutBulkhead() {
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.properties("spring.cloud.bulkhead.resilience4j.enable=true").web(WebApplicationType.NONE)
 				.sources(TestApp.class).run()) {
-			Resilience4JCircuitBreaker circuitBreaker = circuitBreakerFactory.create("testCircuitBreaker");
-			assertThat(circuitBreaker.run(() -> "normal")).isEqualTo("normal");
+			assertThat(context.containsBean("bulkheadProvider")).isFalse();
 		}
 	}
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
 	protected static class TestApp {
-
-		@Bean
-		Resilience4JCircuitBreakerFactory circuitBreakerFactory() {
-			return circuitBreakerFactory;
-		}
 
 	}
 

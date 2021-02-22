@@ -22,7 +22,6 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import io.github.resilience4j.bulkhead.Bulkhead;
-import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
@@ -61,7 +60,7 @@ public class Resilience4JAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({ Bulkhead.class, Decorators.class })
+	@ConditionalOnClass(Bulkhead.class)
 	@ConditionalOnProperty("spring.cloud.bulkhead.resilience4j.enable")
 	public static class Resilience4jBulkheadConfiguration {
 

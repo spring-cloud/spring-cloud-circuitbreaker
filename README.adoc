@@ -139,7 +139,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 ====
 
 ==== Bulkhead pattern supporting
-If `resilience4j-all` is on the classpath and `spring.cloud.bulkhead.resilience4j.enable=true`, Spring Cloud
+If `resilience4j-bulkhead` is on the classpath and `spring.cloud.bulkhead.resilience4j.enable=true`, Spring Cloud
 Circuit Breaker will wrap all methods with a Resilience4j Bulkhead.
 
 Spring Cloud Circuit Breaker Resilience4j provides two implementation of bulkhead pattern:
@@ -147,7 +147,8 @@ Spring Cloud Circuit Breaker Resilience4j provides two implementation of bulkhea
 * a `SemaphoreBulkhead` which uses Semaphores
 * a `FixedThreadPoolBulkhead` which uses a bounded queue and a fixed thread pool.
 
-By default, Spring Cloud Circuit Breaker Resilience4j uses `SemaphoreBulkhead`. For more information on implementation of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resilience4j Bulkhead].
+By default, Spring Cloud Circuit Breaker Resilience4j uses `FixedThreadPoolBulkhead`. For more information on implementation
+of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resilience4j Bulkhead].
 
 The `Customizer<Resilience4jBulkheadProvider>` can be used to provide a default `Bulkhead` and `ThreadPoolBulkhead` configuration.
 

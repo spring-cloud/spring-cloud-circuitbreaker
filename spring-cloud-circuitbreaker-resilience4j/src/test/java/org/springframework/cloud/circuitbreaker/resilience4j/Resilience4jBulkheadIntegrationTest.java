@@ -17,7 +17,6 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -107,7 +106,7 @@ public class Resilience4jBulkheadIntegrationTest {
 	}
 
 	@Test
-	public void testBulkheadTwoParallelSlowOneNotPermitted() throws ExecutionException, InterruptedException {
+	public void testBulkheadTwoParallelSlowOneNotPermitted() throws InterruptedException {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		executorService.submit(() -> service.slowBulkhead());
 		executorService.submit(() -> service.slowBulkhead());
@@ -119,8 +118,7 @@ public class Resilience4jBulkheadIntegrationTest {
 	}
 
 	@Test
-	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted()
-			throws ExecutionException, InterruptedException {
+	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted() throws InterruptedException {
 		ExecutorService executorService = Executors.newFixedThreadPool(3);
 		executorService.submit(() -> service.slowThreadPoolBulkhead());
 		executorService.submit(() -> service.slowThreadPoolBulkhead());
@@ -213,21 +211,20 @@ public class Resilience4jBulkheadIntegrationTest {
 				.mock(EventConsumer.class);
 
 		@Bean
-		public Customizer<Resilience4JCircuitBreakerFactory> slowThreadPoolCustomizer() {
-			return factory -> {
-				factory.configure(
-						builder -> builder.timeLimiterConfig(
-								TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(8)).build()),
-						"slowThreadPoolBulkhead");
-			};
+		Customizer<Resilience4jBulkheadProvider> slowBulkheadThreadPoolProviderCustomizer() {
+			return provider -> provider
+					.configure(
+							builder -> builder.threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom()
+									.coreThreadPoolSize(1).maxThreadPoolSize(1).queueCapacity(1).build()),
+							"slowThreadPoolBulkhead");
 		}
 
 		@Bean
-		public Customizer<Resilience4jBulkheadProvider> defaultThreadPoolBulkheadCustomizer() {
-			return provider -> provider.configureDefault(id -> new Resilience4jBulkheadConfigurationBuilder()
-					.threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom().coreThreadPoolSize(1)
-							.maxThreadPoolSize(1).queueCapacity(1).build())
-					.build());
+		public Customizer<Resilience4JCircuitBreakerFactory> slowThreadPoolCustomizer() {
+			return factory -> factory.configure(
+					builder -> builder.timeLimiterConfig(
+							TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(8)).build()),
+					"slowThreadPoolBulkhead");
 		}
 
 		@Bean
