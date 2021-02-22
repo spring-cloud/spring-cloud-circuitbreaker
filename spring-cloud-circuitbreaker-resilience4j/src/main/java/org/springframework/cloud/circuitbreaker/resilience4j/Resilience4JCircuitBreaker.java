@@ -40,6 +40,8 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final String id;
 
+	private Resilience4jBulkheadProvider bulkheadProvider;
+
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
 	private final CircuitBreakerRegistry registry;
@@ -71,7 +73,8 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
-			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
+			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
+			Resilience4jBulkheadProvider bulkheadProvider) {
 		this.id = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
@@ -79,6 +82,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
+		this.bulkheadProvider = bulkheadProvider;
 	}
 
 	@Override
@@ -90,9 +94,15 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(id,
 				circuitBreakerConfig);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-		Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
-				.decorateCallable(defaultCircuitBreaker, restrictedCall);
-		return Try.of(callable::call).recover(fallback).get();
+
+		if (bulkheadProvider != null) {
+			return bulkheadProvider.run(id, toRun, fallback, defaultCircuitBreaker, timeLimiter);
+		}
+		else {
+			Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
+					.decorateCallable(defaultCircuitBreaker, restrictedCall);
+			return Try.of(callable::call).recover(fallback).get();
+		}
 	}
 
 }

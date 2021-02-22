@@ -40,6 +40,8 @@ import org.springframework.util.Assert;
 public class Resilience4JCircuitBreakerFactory extends
 		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
+	private Resilience4jBulkheadProvider bulkheadProvider;
+
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
 			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
 					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
@@ -57,9 +59,10 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry) {
+			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.bulkheadProvider = bulkheadProvider;
 	}
 
 	@Override
@@ -78,11 +81,15 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public CircuitBreakerRegistry getCircuitBreakerRegistry() {
-		return circuitBreakerRegistry;
+		return this.circuitBreakerRegistry;
 	}
 
 	public TimeLimiterRegistry getTimeLimiterRegistry() {
-		return timeLimiterRegistry;
+		return this.timeLimiterRegistry;
+	}
+
+	public Resilience4jBulkheadProvider getBulkheadProvider() {
+		return this.bulkheadProvider;
 	}
 
 	public void configureExecutorService(ExecutorService executorService) {
@@ -96,7 +103,7 @@ public class Resilience4JCircuitBreakerFactory extends
 				.computeIfAbsent(id, defaultConfiguration);
 		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
 				circuitBreakerRegistry, timeLimiterRegistry, executorService,
-				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 	}
 
 	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
