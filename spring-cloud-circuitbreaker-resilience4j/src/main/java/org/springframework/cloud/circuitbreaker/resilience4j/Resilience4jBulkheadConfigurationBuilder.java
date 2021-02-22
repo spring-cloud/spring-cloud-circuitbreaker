@@ -33,7 +33,8 @@ public class Resilience4jBulkheadConfigurationBuilder {
 		return this;
 	}
 
-	public Resilience4jBulkheadConfigurationBuilder threadPoolBulkheadConfig(ThreadPoolBulkheadConfig threadPoolBulkheadConfig) {
+	public Resilience4jBulkheadConfigurationBuilder threadPoolBulkheadConfig(
+			ThreadPoolBulkheadConfig threadPoolBulkheadConfig) {
 		this.threadPoolBulkheadConfig = threadPoolBulkheadConfig;
 		return this;
 	}

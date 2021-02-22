@@ -65,8 +65,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4jBulkheadIntegrationTest.Application.class,
-		properties = { "spring.cloud.bulkhead.resilience4j.enable=true",
-				"management.endpoints.web.exposure.include=*" })
+		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class Resilience4jBulkheadIntegrationTest {
 

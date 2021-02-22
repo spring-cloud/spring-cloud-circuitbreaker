@@ -21,12 +21,14 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadRegistry;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
-import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,15 +67,17 @@ public class Resilience4JAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(Bulkhead.class)
-	@ConditionalOnProperty("spring.cloud.bulkhead.resilience4j.enable")
+	@ConditionalOnProperty(value = "spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled", matchIfMissing = true)
 	public static class Resilience4jBulkheadConfiguration {
 
 		@Autowired(required = false)
 		private List<Customizer<Resilience4jBulkheadProvider>> bulkheadCustomizers = new ArrayList<>();
 
 		@Bean
-		public Resilience4jBulkheadProvider bulkheadProvider() {
-			Resilience4jBulkheadProvider resilience4jBulkheadProvider = new Resilience4jBulkheadProvider();
+		public Resilience4jBulkheadProvider bulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
+				BulkheadRegistry bulkheadRegistry) {
+			Resilience4jBulkheadProvider resilience4jBulkheadProvider = new Resilience4jBulkheadProvider(
+					threadPoolBulkheadRegistry, bulkheadRegistry);
 			bulkheadCustomizers.forEach(customizer -> customizer.customize(resilience4jBulkheadProvider));
 			return resilience4jBulkheadProvider;
 		}

@@ -139,15 +139,15 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 ====
 
 ==== Bulkhead pattern supporting
-If `resilience4j-bulkhead` is on the classpath and `spring.cloud.bulkhead.resilience4j.enable=true`, Spring Cloud
-Circuit Breaker will wrap all methods with a Resilience4j Bulkhead.
+If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
+You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
 
-Spring Cloud Circuit Breaker Resilience4j provides two implementation of bulkhead pattern:
+Spring Cloud CircuitBreaker Resilience4j provides two implementation of bulkhead pattern:
 
 * a `SemaphoreBulkhead` which uses Semaphores
 * a `FixedThreadPoolBulkhead` which uses a bounded queue and a fixed thread pool.
 
-By default, Spring Cloud Circuit Breaker Resilience4j uses `FixedThreadPoolBulkhead`. For more information on implementation
+By default, Spring Cloud CircuitBreaker Resilience4j uses `FixedThreadPoolBulkhead`. For more information on implementation
 of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resilience4j Bulkhead].
 
 The `Customizer<Resilience4jBulkheadProvider>` can be used to provide a default `Bulkhead` and `ThreadPoolBulkhead` configuration.
@@ -215,6 +215,27 @@ public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer
 ----
 ====
 
+==== Bulkhead Properties Configuration
+
+You can configure ThreadPoolBulkhead and SemaphoreBulkhead instances in your application's configuration properties file.
+Property configuration has higher priority than Java `Customizer` configuration.
+
+====
+[source]
+----
+resilience4j.thread-pool-bulkhead:
+    instances:
+        backendA:
+            maxThreadPoolSize: 1
+            coreThreadPoolSize: 1
+resilience4j.bulkhead:
+    instances:
+        backendB:
+            maxConcurrentCalls: 10
+----
+====
+
+For more inforamtion on the Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
 ==== Collecting Metrics
 

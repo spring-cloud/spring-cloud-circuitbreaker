@@ -40,15 +40,21 @@ import org.springframework.cloud.client.circuitbreaker.Customizer;
  */
 public class Resilience4jBulkheadProvider {
 
+	private final ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry;
+
+	private final BulkheadRegistry bulkheadRegistry;
+
 	private final ConcurrentHashMap<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> configurations = new ConcurrentHashMap<>();
-
-	private final BulkheadRegistry bulkheadRegistry = BulkheadRegistry.ofDefaults();
-
-	private final ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry = ThreadPoolBulkheadRegistry.ofDefaults();
 
 	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
 			.bulkheadConfig(BulkheadConfig.ofDefaults()).threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.ofDefaults())
 			.build();
+
+	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
+			BulkheadRegistry bulkheadRegistry) {
+		this.bulkheadRegistry = bulkheadRegistry;
+		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
+	}
 
 	public void configureDefault(
 			Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {

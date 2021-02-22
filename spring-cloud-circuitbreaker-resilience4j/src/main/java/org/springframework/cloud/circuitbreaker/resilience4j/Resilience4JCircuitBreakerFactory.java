@@ -27,6 +27,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -58,12 +59,9 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry) {
+			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
-	}
-
-	public Resilience4JCircuitBreakerFactory(Resilience4jBulkheadProvider bulkheadProvider) {
 		this.bulkheadProvider = bulkheadProvider;
 	}
 
@@ -83,11 +81,15 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public CircuitBreakerRegistry getCircuitBreakerRegistry() {
-		return circuitBreakerRegistry;
+		return this.circuitBreakerRegistry;
 	}
 
 	public TimeLimiterRegistry getTimeLimiterRegistry() {
-		return timeLimiterRegistry;
+		return this.timeLimiterRegistry;
+	}
+
+	public Resilience4jBulkheadProvider getBulkheadProvider() {
+		return this.bulkheadProvider;
 	}
 
 	public void configureExecutorService(ExecutorService executorService) {

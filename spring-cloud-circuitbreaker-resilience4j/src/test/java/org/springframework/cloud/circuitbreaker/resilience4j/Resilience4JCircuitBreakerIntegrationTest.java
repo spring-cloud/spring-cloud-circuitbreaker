@@ -59,7 +59,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4JCircuitBreakerIntegrationTest.Application.class,
-		properties = { "management.endpoints.web.exposure.include=*" })
+		properties = { "management.endpoints.web.exposure.include=*",
+				"spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled=false" })
 @DirtiesContext
 public class Resilience4JCircuitBreakerIntegrationTest {
 

@@ -39,8 +39,7 @@ public class Resilience4JAutoConfigurationWithoutBulkheadTest {
 	@Test
 	public void testWithoutBulkhead() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.properties("spring.cloud.bulkhead.resilience4j.enable=true").web(WebApplicationType.NONE)
-				.sources(TestApp.class).run()) {
+				.web(WebApplicationType.NONE).sources(TestApp.class).run()) {
 			assertThat(context.containsBean("bulkheadProvider")).isFalse();
 		}
 	}
@@ -48,7 +47,6 @@ public class Resilience4JAutoConfigurationWithoutBulkheadTest {
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
 	protected static class TestApp {
-
 	}
 
 }
