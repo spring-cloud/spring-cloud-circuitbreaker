@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
+ * @author Andrii Bohutskyi
  */
 public class Resilience4JCircuitBreakerFactory extends
 		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
@@ -46,11 +47,20 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
+	private TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
+	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
+	}
+
+	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterRegistry timeLimiterRegistry) {
+		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.timeLimiterRegistry = timeLimiterRegistry;
 	}
 
 	public Resilience4JCircuitBreakerFactory(Resilience4jBulkheadProvider bulkheadProvider) {
@@ -72,8 +82,12 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = registry;
 	}
 
-	protected CircuitBreakerRegistry getCircuitBreakerRegistry() {
+	public CircuitBreakerRegistry getCircuitBreakerRegistry() {
 		return circuitBreakerRegistry;
+	}
+
+	public TimeLimiterRegistry getTimeLimiterRegistry() {
+		return timeLimiterRegistry;
 	}
 
 	public void configureExecutorService(ExecutorService executorService) {
@@ -86,8 +100,8 @@ public class Resilience4JCircuitBreakerFactory extends
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
 		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
-				circuitBreakerRegistry, executorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
-				bulkheadProvider);
+				circuitBreakerRegistry, timeLimiterRegistry, executorService,
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 	}
 
 	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {

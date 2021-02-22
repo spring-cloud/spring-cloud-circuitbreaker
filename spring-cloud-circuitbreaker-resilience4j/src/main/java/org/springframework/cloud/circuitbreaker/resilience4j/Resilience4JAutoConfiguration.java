@@ -21,9 +21,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -53,8 +55,10 @@ public class Resilience4JAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
 	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
 			@Autowired(required = false) Resilience4jBulkheadProvider bulkheadProvider) {
-		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(bulkheadProvider);
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry,
+				timeLimiterRegistry, bulkheadProvider);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
