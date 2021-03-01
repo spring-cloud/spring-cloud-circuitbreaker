@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,14 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import io.github.resilience4j.bulkhead.BulkheadConfig;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
+import io.github.resilience4j.bulkhead.event.BulkheadOnCallFinishedEvent;
+import io.github.resilience4j.bulkhead.event.BulkheadOnCallRejectedEvent;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
@@ -28,6 +33,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -55,15 +61,14 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
- * @author Ryan Baxter
+ * @author Andrii Bohutskyi
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = Resilience4JCircuitBreakerIntegrationTest.Application.class,
-		properties = { "management.endpoints.web.exposure.include=*",
-				"spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled=false" })
+		classes = Resilience4jBulkheadIntegrationTest.Application.class,
+		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
-public class Resilience4JCircuitBreakerIntegrationTest {
+public class Resilience4jBulkheadIntegrationTest {
 
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
@@ -79,9 +84,6 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 	@Autowired
 	Application.DemoControllerService service;
-
-	@Autowired
-	private TestRestTemplate rest;
 
 	@Test
 	public void testSlow() {
@@ -104,10 +106,29 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	}
 
 	@Test
-	public void testResilience4JMetricsAvailable() {
-		assertThat(service.normal()).isEqualTo("normal");
-		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
-				.contains("resilience4j.circuitbreaker.calls")).isTrue();
+	public void testBulkheadTwoParallelSlowOneNotPermitted() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		executorService.submit(() -> service.slowBulkhead());
+		executorService.submit(() -> service.slowBulkhead());
+		executorService.shutdown();
+		executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+		verify(Application.slowRejectedConsumer, times(1)).consumeEvent(any());
+		verify(Application.slowFinishedConsumer, times(1)).consumeEvent(any());
+	}
+
+	@Test
+	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted()
+			throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(3);
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
+		executorService.shutdown();
+		executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+		verify(Application.slowThreadPoolFinishedConsumer, times(2)).consumeEvent(any());
+		verify(Application.slowThreadPoolRejectedConsumer, times(1)).consumeEvent(any());
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -143,6 +164,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			return "normal";
 		}
 
+		@GetMapping("/slowBulkhead")
+		public String slowBulkhead() throws InterruptedException {
+			Thread.sleep(3000);
+			return "slowBulkhead";
+		}
+
+		@GetMapping("/slowThreadPoolBulkhead")
+		public String slowThreadPoolBulkhead() throws InterruptedException {
+			Thread.sleep(3000);
+			return "slowThreadPoolBulkhead";
+		}
+
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
@@ -163,6 +196,55 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 						.getEventPublisher().onError(normalErrorConsumer)
 						.onSuccess(normalSuccessConsumer), "normal");
 			};
+		}
+
+		static EventConsumer<BulkheadOnCallRejectedEvent> slowRejectedConsumer = Mockito
+				.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallFinishedEvent> slowFinishedConsumer = Mockito
+				.mock(EventConsumer.class);
+
+		@Bean
+		public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
+			return provider -> {
+				provider.configure(
+						builder -> builder.bulkheadConfig(
+								BulkheadConfig.custom().maxConcurrentCalls(1).build()),
+						"slowBulkhead");
+				provider.addBulkheadCustomizer(bulkhead -> bulkhead.getEventPublisher()
+						.onCallRejected(slowRejectedConsumer)
+						.onCallFinished(slowFinishedConsumer), "slowBulkhead");
+			};
+		}
+
+		static EventConsumer<BulkheadOnCallRejectedEvent> slowThreadPoolRejectedConsumer = Mockito
+				.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallFinishedEvent> slowThreadPoolFinishedConsumer = Mockito
+				.mock(EventConsumer.class);
+
+		@Bean
+		Customizer<Resilience4jBulkheadProvider> slowBulkheadThreadPoolProviderCustomizer() {
+			return provider -> provider.configure(
+					builder -> builder.threadPoolBulkheadConfig(
+							ThreadPoolBulkheadConfig.custom().coreThreadPoolSize(1)
+									.maxThreadPoolSize(1).queueCapacity(1).build()),
+					"slowThreadPoolBulkhead");
+		}
+
+		@Bean
+		public Customizer<Resilience4JCircuitBreakerFactory> slowThreadPoolCustomizer() {
+			return factory -> factory.configure(
+					builder -> builder.timeLimiterConfig(TimeLimiterConfig.custom()
+							.timeoutDuration(Duration.ofSeconds(8)).build()),
+					"slowThreadPoolBulkhead");
+		}
+
+		@Bean
+		public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer() {
+			return provider -> provider.addThreadPoolBulkheadCustomizer(
+					threadPoolBulkhead -> threadPoolBulkhead.getEventPublisher()
+							.onCallRejected(slowThreadPoolRejectedConsumer)
+							.onCallFinished(slowThreadPoolFinishedConsumer),
+					"slowThreadPoolBulkhead");
 		}
 
 		@Service
@@ -200,6 +282,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 												delayInMilliseconds),
 										String.class)
 								.getBody(), t -> "fallback");
+			}
+
+			public String slowBulkhead() {
+				return cbFactory.create("slowBulkhead").run(
+						() -> rest.getForObject("/slowBulkhead", String.class),
+						t -> "fallback");
+			}
+
+			public String slowThreadPoolBulkhead() {
+				return cbFactory.create("slowThreadPoolBulkhead").run(
+						() -> rest.getForObject("/slowThreadPoolBulkhead", String.class),
+						t -> "fallback");
 			}
 
 			private HttpEntity<String> createEntityWithOptionalDelayHeader(
