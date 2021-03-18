@@ -84,4 +84,35 @@ public class Resilience4JAutoConfigurationPropertyTest {
 				.getMaxConcurrentCalls()).isEqualTo(50);
 	}
 
+	@Test
+	public void testDefaultCircuitBreakerPropertiesPopulated() {
+		factory.create("default_circuitBreaker").run(() -> "result");
+		CircuitBreakerRegistry circuitBreakerRegistry = factory.getCircuitBreakerRegistry();
+		assertThat(circuitBreakerRegistry).isNotNull();
+		assertThat(circuitBreakerRegistry.find("default_circuitBreaker")).isPresent();
+		assertThat(circuitBreakerRegistry.find("default_circuitBreaker").get().getCircuitBreakerConfig()
+				.getMinimumNumberOfCalls()).isEqualTo(20);
+	}
+
+	@Test
+	public void testDefaultTimeLimiterPropertiesPopulated() {
+		factory.create("default_circuitBreaker").run(() -> "result");
+		TimeLimiterRegistry timeLimiterRegistry = factory.getTimeLimiterRegistry();
+		assertThat(timeLimiterRegistry).isNotNull();
+		assertThat(timeLimiterRegistry.find("default_circuitBreaker")).isPresent();
+		assertThat(timeLimiterRegistry.find("default_circuitBreaker").get().getTimeLimiterConfig().getTimeoutDuration())
+				.isEqualTo(Duration.ofMillis(150));
+	}
+
+	@Test
+	public void testDefaultThreadPoolBulkheadPropertiesPopulated() {
+		factory.create("default_circuitBreaker").run(() -> "result");
+		ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry = factory.getBulkheadProvider()
+				.getThreadPoolBulkheadRegistry();
+		assertThat(threadPoolBulkheadRegistry).isNotNull();
+		assertThat(threadPoolBulkheadRegistry.find("default_circuitBreaker")).isPresent();
+		assertThat(threadPoolBulkheadRegistry.find("default_circuitBreaker").get().getBulkheadConfig()
+				.getMaxThreadPoolSize()).isEqualTo(50);
+	}
+
 }

@@ -65,10 +65,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = Resilience4jBulkheadIntegrationTest.Application.class,
+		classes = Resilience4JBulkheadIntegrationTest.Application.class,
 		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
-public class Resilience4jBulkheadIntegrationTest {
+public class Resilience4JBulkheadIntegrationTest {
 
 	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
