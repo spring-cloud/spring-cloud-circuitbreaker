@@ -16,10 +16,11 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -30,6 +31,7 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
+import io.vavr.control.Try;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 
@@ -99,15 +101,9 @@ public class Resilience4jBulkheadProvider {
 	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
 			TimeLimiter timeLimiter) {
 		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, toRun);
-		Supplier<CompletionStage<T>> timeLimiterCall = timeLimiter
-				.decorateCompletionStage(Executors.newSingleThreadScheduledExecutor(), bulkheadCall);
-		Supplier<CompletionStage<T>> circuitBreakerCall = circuitBreaker.decorateCompletionStage(timeLimiterCall);
-		try {
-			return circuitBreakerCall.get().toCompletableFuture().get();
-		}
-		catch (Exception e) {
-			return fallback.apply(e);
-		}
+		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall, timeLimiter);
+		final Callable<T> circuitBreakerCall = circuitBreaker.decorateCallable(timeLimiterCall);
+		return Try.of(circuitBreakerCall::call).recover(fallback).get();
 	}
 
 	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Supplier<T> supplier) {
@@ -124,6 +120,11 @@ public class Resilience4jBulkheadProvider {
 					configuration.getThreadPoolBulkheadConfig());
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
+	}
+
+	private <T> Callable<T> decorateTimeLimiter(final Supplier<CompletionStage<T>> supplier, TimeLimiter timeLimiter) {
+		final Supplier<Future<T>> futureSupplier = () -> supplier.get().toCompletableFuture();
+		return timeLimiter.decorateFutureSupplier(futureSupplier);
 	}
 
 }
