@@ -24,9 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -42,9 +40,7 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private Resilience4jBulkheadProvider bulkheadProvider;
 
-	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
-			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
+	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration;
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
@@ -63,6 +59,9 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
+		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
 	}
 
 	@Override

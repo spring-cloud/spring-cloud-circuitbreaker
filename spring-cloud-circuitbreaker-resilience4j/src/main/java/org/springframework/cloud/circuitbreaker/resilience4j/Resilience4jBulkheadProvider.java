@@ -25,10 +25,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.github.resilience4j.bulkhead.Bulkhead;
-import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
-import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
@@ -46,14 +44,15 @@ public class Resilience4jBulkheadProvider {
 
 	private final ConcurrentHashMap<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> configurations = new ConcurrentHashMap<>();
 
-	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
-			.bulkheadConfig(BulkheadConfig.ofDefaults()).threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.ofDefaults())
-			.build();
+	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration;
 
 	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
 			BulkheadRegistry bulkheadRegistry) {
 		this.bulkheadRegistry = bulkheadRegistry;
 		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
+		defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
+				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
+				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig()).build();
 	}
 
 	public void configureDefault(
@@ -107,7 +106,6 @@ public class Resilience4jBulkheadProvider {
 			return circuitBreakerCall.get().toCompletableFuture().get();
 		}
 		catch (Exception e) {
-			System.out.println("exception " + e.getMessage());
 			return fallback.apply(e);
 		}
 	}
