@@ -64,8 +64,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Andrii Bohutskyi
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT,
-		classes = Resilience4JBulkheadIntegrationTest.Application.class,
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4JBulkheadIntegrationTest.Application.class,
 		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class Resilience4JBulkheadIntegrationTest {
@@ -118,8 +117,7 @@ public class Resilience4JBulkheadIntegrationTest {
 	}
 
 	@Test
-	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted()
-			throws InterruptedException {
+	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted() throws InterruptedException {
 		ExecutorService executorService = Executors.newFixedThreadPool(3);
 		executorService.submit(() -> service.slowThreadPoolBulkhead());
 		executorService.submit(() -> service.slowThreadPoolBulkhead());
@@ -179,40 +177,30 @@ public class Resilience4JBulkheadIntegrationTest {
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
-				factory.configure(
-						builder -> builder
-								.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-								.timeLimiterConfig(TimeLimiterConfig.custom()
-										.timeoutDuration(Duration.ofSeconds(2)).build()),
+				factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()),
 						"slow");
 				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-						.timeLimiterConfig(TimeLimiterConfig.custom()
-								.timeoutDuration(Duration.ofSeconds(4)).build())
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
 						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).build());
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
-						.getEventPublisher().onError(slowErrorConsumer)
-						.onSuccess(slowSuccessConsumer), "slow");
-				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker
-						.getEventPublisher().onError(normalErrorConsumer)
-						.onSuccess(normalSuccessConsumer), "normal");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+						.onError(slowErrorConsumer).onSuccess(slowSuccessConsumer), "slow");
+				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
+						.onError(normalErrorConsumer).onSuccess(normalSuccessConsumer), "normal");
 			};
 		}
 
-		static EventConsumer<BulkheadOnCallRejectedEvent> slowRejectedConsumer = Mockito
-				.mock(EventConsumer.class);
-		static EventConsumer<BulkheadOnCallFinishedEvent> slowFinishedConsumer = Mockito
-				.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallRejectedEvent> slowRejectedConsumer = Mockito.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallFinishedEvent> slowFinishedConsumer = Mockito.mock(EventConsumer.class);
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
 			return provider -> {
 				provider.configure(
-						builder -> builder.bulkheadConfig(
-								BulkheadConfig.custom().maxConcurrentCalls(1).build()),
+						builder -> builder.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(1).build()),
 						"slowBulkhead");
 				provider.addBulkheadCustomizer(bulkhead -> bulkhead.getEventPublisher()
-						.onCallRejected(slowRejectedConsumer)
-						.onCallFinished(slowFinishedConsumer), "slowBulkhead");
+						.onCallRejected(slowRejectedConsumer).onCallFinished(slowFinishedConsumer), "slowBulkhead");
 			};
 		}
 
@@ -223,28 +211,26 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		Customizer<Resilience4jBulkheadProvider> slowBulkheadThreadPoolProviderCustomizer() {
-			return provider -> provider.configure(
-					builder -> builder.threadPoolBulkheadConfig(
-							ThreadPoolBulkheadConfig.custom().coreThreadPoolSize(1)
-									.maxThreadPoolSize(1).queueCapacity(1).build()),
-					"slowThreadPoolBulkhead");
+			return provider -> provider
+					.configure(
+							builder -> builder.threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom()
+									.coreThreadPoolSize(1).maxThreadPoolSize(1).queueCapacity(1).build()),
+							"slowThreadPoolBulkhead");
 		}
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowThreadPoolCustomizer() {
 			return factory -> factory.configure(
-					builder -> builder.timeLimiterConfig(TimeLimiterConfig.custom()
-							.timeoutDuration(Duration.ofSeconds(8)).build()),
+					builder -> builder.timeLimiterConfig(
+							TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(8)).build()),
 					"slowThreadPoolBulkhead");
 		}
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer() {
-			return provider -> provider.addThreadPoolBulkheadCustomizer(
-					threadPoolBulkhead -> threadPoolBulkhead.getEventPublisher()
-							.onCallRejected(slowThreadPoolRejectedConsumer)
-							.onCallFinished(slowThreadPoolFinishedConsumer),
-					"slowThreadPoolBulkhead");
+			return provider -> provider.addThreadPoolBulkheadCustomizer(threadPoolBulkhead -> threadPoolBulkhead
+					.getEventPublisher().onCallRejected(slowThreadPoolRejectedConsumer)
+					.onCallFinished(slowThreadPoolFinishedConsumer), "slowThreadPoolBulkhead");
 		}
 
 		@Service
@@ -256,21 +242,18 @@ public class Resilience4JBulkheadIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(TestRestTemplate rest,
-					CircuitBreakerFactory cbFactory) {
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
 				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				return circuitBreakerSlow.run(
-						() -> rest.getForObject("/slow", String.class), t -> "fallback");
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(
-						() -> rest.getForObject("/normal", String.class),
+				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}
 
@@ -278,30 +261,24 @@ public class Resilience4JBulkheadIntegrationTest {
 				return circuitBreakerSlow
 						.run(() -> rest
 								.exchange("/slowOnDemand", HttpMethod.GET,
-										createEntityWithOptionalDelayHeader(
-												delayInMilliseconds),
-										String.class)
+										createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
 								.getBody(), t -> "fallback");
 			}
 
 			public String slowBulkhead() {
-				return cbFactory.create("slowBulkhead").run(
-						() -> rest.getForObject("/slowBulkhead", String.class),
+				return cbFactory.create("slowBulkhead").run(() -> rest.getForObject("/slowBulkhead", String.class),
 						t -> "fallback");
 			}
 
 			public String slowThreadPoolBulkhead() {
-				return cbFactory.create("slowThreadPoolBulkhead").run(
-						() -> rest.getForObject("/slowThreadPoolBulkhead", String.class),
-						t -> "fallback");
+				return cbFactory.create("slowThreadPoolBulkhead")
+						.run(() -> rest.getForObject("/slowThreadPoolBulkhead", String.class), t -> "fallback");
 			}
 
-			private HttpEntity<String> createEntityWithOptionalDelayHeader(
-					int delayInMilliseconds) {
+			private HttpEntity<String> createEntityWithOptionalDelayHeader(int delayInMilliseconds) {
 				HttpHeaders headers = new HttpHeaders();
 				if (delayInMilliseconds > 0) {
-					headers.set("delayInMilliseconds",
-							Integer.toString(delayInMilliseconds));
+					headers.set("delayInMilliseconds", Integer.toString(delayInMilliseconds));
 				}
 				return new HttpEntity<>(null, headers);
 			}
