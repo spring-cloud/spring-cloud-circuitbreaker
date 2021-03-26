@@ -52,6 +52,9 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
+		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
