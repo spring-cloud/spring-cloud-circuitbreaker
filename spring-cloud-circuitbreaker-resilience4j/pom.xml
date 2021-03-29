@@ -30,6 +30,12 @@
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-spring-boot2</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>resilience4j-bulkhead</artifactId>
+					<groupId>io.github.resilience4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
