@@ -40,6 +40,8 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final String id;
 
+	private final String groupName;
+
 	private Resilience4jBulkheadProvider bulkheadProvider;
 
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
@@ -61,6 +63,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			ExecutorService executorService,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
+		this.groupName = id;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
@@ -76,6 +79,25 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
 			Resilience4jBulkheadProvider bulkheadProvider) {
 		this.id = id;
+		this.groupName = id;
+		this.circuitBreakerConfig = circuitBreakerConfig;
+		this.registry = circuitBreakerRegistry;
+		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.timeLimiterConfig = timeLimiterConfig;
+		this.executorService = executorService;
+		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
+		this.bulkheadProvider = bulkheadProvider;
+	}
+
+	public Resilience4JCircuitBreaker(String id,
+									  String groupName,
+									  io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
+									  TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
+									  TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
+									  Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
+									  Resilience4jBulkheadProvider bulkheadProvider) {
+		this.id = id;
+		this.groupName = groupName;
 		this.circuitBreakerConfig = circuitBreakerConfig;
 		this.registry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
@@ -96,7 +118,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
 
 		if (bulkheadProvider != null) {
-			return bulkheadProvider.run(id, toRun, fallback, defaultCircuitBreaker, timeLimiter);
+			return bulkheadProvider.run(groupName, toRun, fallback, defaultCircuitBreaker, timeLimiter);
 		}
 		else {
 			Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker

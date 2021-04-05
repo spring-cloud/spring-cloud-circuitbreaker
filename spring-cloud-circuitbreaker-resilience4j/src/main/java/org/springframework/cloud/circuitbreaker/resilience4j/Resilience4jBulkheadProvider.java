@@ -98,9 +98,9 @@ public class Resilience4jBulkheadProvider {
 		return threadPoolBulkheadRegistry;
 	}
 
-	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
+	public <T> T run(String groupName, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
 			TimeLimiter timeLimiter) {
-		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, toRun);
+		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(groupName, toRun);
 		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall, timeLimiter);
 		final Callable<T> circuitBreakerCall = circuitBreaker.decorateCallable(timeLimiterCall);
 		return Try.of(circuitBreakerCall::call).recover(fallback).get();
