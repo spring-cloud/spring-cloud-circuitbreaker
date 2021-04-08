@@ -105,9 +105,9 @@ public class Resilience4jBulkheadProvider {
 		return threadPoolBulkheadRegistry;
 	}
 
-	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback,
-			CircuitBreaker circuitBreaker, TimeLimiter timeLimiter) {
-		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, toRun);
+	public <T> T run(String groupName, Supplier<T> toRun, Function<Throwable, T> fallback,
+			CircuitBreaker circuitBreaker, TimeLimiter timeLimiter, io.vavr.collection.Map<String, String> tags) {
+		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(groupName, tags, toRun);
 		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall,
 				timeLimiter);
 		final Callable<T> circuitBreakerCall = circuitBreaker
@@ -115,21 +115,20 @@ public class Resilience4jBulkheadProvider {
 		return Try.of(circuitBreakerCall::call).recover(fallback).get();
 	}
 
-	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id,
+	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final io.vavr.collection.Map<String, String> tags,
 			final Supplier<T> supplier) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 
 		if (bulkheadRegistry.find(id).isPresent()
 				&& !threadPoolBulkheadRegistry.find(id).isPresent()) {
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id,
-					configuration.getBulkheadConfig());
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
 		}
 		else {
 			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry
-					.bulkhead(id, configuration.getThreadPoolBulkheadConfig());
+					.bulkhead(id, configuration.getThreadPoolBulkheadConfig(), tags);
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
 	}
