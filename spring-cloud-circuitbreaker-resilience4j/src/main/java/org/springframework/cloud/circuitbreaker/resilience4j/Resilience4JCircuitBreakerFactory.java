@@ -19,6 +19,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -50,6 +51,8 @@ public class Resilience4JCircuitBreakerFactory extends
 	private TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
+
+	private ConcurrentHashMap<String, ExecutorService> executorServices = new ConcurrentHashMap<>();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
@@ -106,12 +109,15 @@ public class Resilience4JCircuitBreakerFactory extends
 	@Override
 	public Resilience4JCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
-				.computeIfAbsent(id, defaultConfiguration);
-		return new Resilience4JCircuitBreaker(id, config.getCircuitBreakerConfig(),
-				config.getTimeLimiterConfig(), circuitBreakerRegistry,
-				timeLimiterRegistry, executorService,
-				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+		return create(id, id, this.executorService);
+	}
+
+	@Override
+	public Resilience4JCircuitBreaker create(String id, String groupName) {
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
+		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName, group -> Executors.newCachedThreadPool());
+		return create(id, groupName, groupExecutorService);
 	}
 
 	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer,
@@ -121,4 +127,12 @@ public class Resilience4JCircuitBreakerFactory extends
 		}
 	}
 
+	private Resilience4JCircuitBreaker create(String id, String groupName, ExecutorService circuitBreakerExecutorService) {
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
+			.computeIfAbsent(id, defaultConfiguration);
+		return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
+			config.getTimeLimiterConfig(), circuitBreakerRegistry,
+			timeLimiterRegistry, circuitBreakerExecutorService,
+			Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+	}
 }

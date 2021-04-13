@@ -41,10 +41,27 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	@Test
+	public void runWithGroupName() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+
+	}
+
+	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(
 				CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
 				null).create("foo");
+		assertThat((String) cb.run(() -> {
+			throw new RuntimeException("boom");
+		}, t -> "fallback")).isEqualTo("fallback");
+	}
+
+	@Test
+	public void runWithFallbackAndGroupName() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -60,6 +77,14 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	@Test
+	public void runWithBulkheadProviderAndGroupName() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
+			ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo", "groupFoo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+	}
+
+	@Test
 	public void runWithFallbackBulkheadProvider() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(
 				CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
@@ -70,4 +95,13 @@ public class Resilience4JCircuitBreakerTest {
 		}, t -> "fallback")).isEqualTo("fallback");
 	}
 
+	@Test
+	public void runWithFallbackBulkheadProviderAndGroupName() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
+			ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo", "groupFoo");
+		assertThat((String) cb.run(() -> {
+			throw new RuntimeException("boom");
+		}, t -> "fallback")).isEqualTo("fallback");
+	}
 }
