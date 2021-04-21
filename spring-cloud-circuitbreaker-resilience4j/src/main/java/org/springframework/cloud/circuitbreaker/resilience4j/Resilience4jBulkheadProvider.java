@@ -99,25 +99,26 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
-			TimeLimiter timeLimiter) {
-		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, toRun);
+			TimeLimiter timeLimiter, io.vavr.collection.Map<String, String> tags) {
+		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, tags, toRun);
 		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall, timeLimiter);
 		final Callable<T> circuitBreakerCall = circuitBreaker.decorateCallable(timeLimiterCall);
 		return Try.of(circuitBreakerCall::call).recover(fallback).get();
 	}
 
-	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Supplier<T> supplier) {
+	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id,
+			final io.vavr.collection.Map<String, String> tags, final Supplier<T> supplier) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 
 		if (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent()) {
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
 		}
 		else {
 			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig());
+					configuration.getThreadPoolBulkheadConfig(), tags);
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
 	}
