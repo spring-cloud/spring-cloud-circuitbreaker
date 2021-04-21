@@ -109,13 +109,9 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				.contains("resilience4j.circuitbreaker.calls")).isTrue();
 
 		// CircuitBreaker and TimeLimiter should have 3 metrics: name, kind, group
-		assertThat(((List) rest
-				.getForObject("/actuator/metrics/resilience4j.circuitbreaker.calls",
-						Map.class)
+		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.circuitbreaker.calls", Map.class)
 				.get("availableTags"))).hasSize(3);
-		assertThat(((List) rest
-				.getForObject("/actuator/metrics/resilience4j.timelimiter.calls",
-						Map.class)
+		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.timelimiter.calls", Map.class)
 				.get("availableTags"))).hasSize(3);
 	}
 
