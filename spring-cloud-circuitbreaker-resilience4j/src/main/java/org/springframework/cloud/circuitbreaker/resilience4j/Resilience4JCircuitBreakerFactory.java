@@ -116,7 +116,8 @@ public class Resilience4JCircuitBreakerFactory extends
 	public Resilience4JCircuitBreaker create(String id, String groupName) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
-		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName, group -> Executors.newCachedThreadPool());
+		final ExecutorService groupExecutorService = executorServices
+				.computeIfAbsent(groupName, group -> Executors.newCachedThreadPool());
 		return create(id, groupName, groupExecutorService);
 	}
 
@@ -127,12 +128,15 @@ public class Resilience4JCircuitBreakerFactory extends
 		}
 	}
 
-	private Resilience4JCircuitBreaker create(String id, String groupName, ExecutorService circuitBreakerExecutorService) {
+	private Resilience4JCircuitBreaker create(String id, String groupName,
+			ExecutorService circuitBreakerExecutorService) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
-			.computeIfAbsent(id, defaultConfiguration);
-		return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
-			config.getTimeLimiterConfig(), circuitBreakerRegistry,
-			timeLimiterRegistry, circuitBreakerExecutorService,
-			Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+				.computeIfAbsent(id, defaultConfiguration);
+		return new Resilience4JCircuitBreaker(id, groupName,
+				config.getCircuitBreakerConfig(), config.getTimeLimiterConfig(),
+				circuitBreakerRegistry, timeLimiterRegistry,
+				circuitBreakerExecutorService,
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 	}
+
 }
