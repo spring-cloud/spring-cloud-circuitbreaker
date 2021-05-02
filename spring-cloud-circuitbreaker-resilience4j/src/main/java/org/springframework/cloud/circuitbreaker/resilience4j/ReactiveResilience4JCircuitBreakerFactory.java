@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
@@ -33,24 +34,41 @@ import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
+ * @author Thomas Vitale
  */
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
-	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration = id -> new Resilience4JConfigBuilder(
-			id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-					.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
+	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration;
 
 	private CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.ofDefaults();
 
+	private TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
+
+	@Deprecated
+	public ReactiveResilience4JCircuitBreakerFactory() {
+		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+				.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
+	}
+
+	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterRegistry timeLimiterRegistry) {
+		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+	}
 
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry,
+		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry, timeLimiterRegistry,
 				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
@@ -59,8 +77,12 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		return new Resilience4JConfigBuilder(id);
 	}
 
-	CircuitBreakerRegistry getCircuitBreakerRegistry() {
+	public CircuitBreakerRegistry getCircuitBreakerRegistry() {
 		return circuitBreakerRegistry;
+	}
+
+	public TimeLimiterRegistry getTimeLimiterRegistry() {
+		return timeLimiterRegistry;
 	}
 
 	@Override

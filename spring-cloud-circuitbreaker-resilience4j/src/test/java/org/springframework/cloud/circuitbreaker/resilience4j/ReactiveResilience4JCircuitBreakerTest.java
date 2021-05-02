@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.Arrays;
+import java.util.Collections;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,34 +31,39 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
+ * @author Thomas Vitale
  */
 public class ReactiveResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runMono() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
-		assertThat(Mono.just("foobar").transform(it -> cb.run(it)).block()).isEqualTo("foobar");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults()).create("foo");
+		assertThat(Mono.just("foobar").transform(cb::run).block()).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat(Mono.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Mono.just("fallback")))
 				.block()).isEqualTo("fallback");
 	}
 
 	@Test
 	public void runFlux() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
-		assertThat(Flux.just("foobar", "hello world").transform(it -> cb.run(it)).collectList().block())
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults()).create("foo");
+		assertThat(Flux.just("foobar", "hello world").transform(cb::run).collectList().block())
 				.isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory().create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults()).create("foo");
 		assertThat(Flux.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Flux.just("fallback")))
-				.collectList().block()).isEqualTo(Arrays.asList("fallback"));
+				.collectList().block()).isEqualTo(Collections.singletonList("fallback"));
 	}
 
 }
