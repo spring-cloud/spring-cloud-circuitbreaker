@@ -53,8 +53,8 @@ public class Resilience4jBulkheadProvider {
 		this.bulkheadRegistry = bulkheadRegistry;
 		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
 		defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
-				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
-				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig()).build();
+				.bulkheadConfig(this.bulkheadRegistry.bulkhead(id))
+				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.bulkhead(id)).build();
 	}
 
 	public void configureDefault(
