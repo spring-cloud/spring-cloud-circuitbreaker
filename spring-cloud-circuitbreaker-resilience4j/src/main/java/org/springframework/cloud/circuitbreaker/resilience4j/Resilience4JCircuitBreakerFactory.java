@@ -66,8 +66,8 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
-				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+				.circuitBreakerConfig(this.circuitBreakerRegistry.circuitBreaker(id))
+				.timeLimiterConfig(this.timeLimiterRegistry.timeLimiter(id)).build();
 	}
 
 	@Override
