@@ -46,7 +46,7 @@ Edit the files in the src/main/asciidoc/ directory instead.
 
 The Spring Cloud CircuitBreaker project contains implementations for Resilience4J and Spring Retry.
 The APIs implemented in Spring Cloud CircuitBreaker live in Spring Cloud Commons.  The usage documentation
-for these APIs are located in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-circuit-breake[Spring Cloud Commons documentation].
+for these APIs are located in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-circuit-breaker[Spring Cloud Commons documentation].
 
 === Configuring Resilience4J Circuit Breakers
 
