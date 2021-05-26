@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,13 +36,16 @@ import static org.mockito.Mockito.verify;
 
 /**
  * @author Ryan Baxter
+ * @author Thomas Vitale
  */
 @RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions({ "micrometer-core-*.jar", "resilience4j-micrometer-*.jar" })
 public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
-			new ReactiveResilience4JCircuitBreakerFactory());
+			new ReactiveResilience4JCircuitBreakerFactory(
+					CircuitBreakerRegistry.ofDefaults(),
+					TimeLimiterRegistry.ofDefaults()));
 
 	@Test
 	public void testWithoutMetrics() {
