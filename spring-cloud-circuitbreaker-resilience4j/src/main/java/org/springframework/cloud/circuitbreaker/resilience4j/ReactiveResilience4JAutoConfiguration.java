@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Ryan Baxter
  * @author Eric Bussieres
+ * @author Thomas Vitale
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
@@ -50,8 +53,10 @@ public class ReactiveResilience4JAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
-	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory() {
-		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory();
+	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory(
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry) {
+		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory(
+				circuitBreakerRegistry, timeLimiterRegistry);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
