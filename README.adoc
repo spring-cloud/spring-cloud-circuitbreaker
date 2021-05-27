@@ -144,6 +144,39 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 ----
 ====
 
+==== Circuit Breaker Properties Configuration
+
+You can configure `CircuitBreaker` and `TimeLimiter` instances in your application's configuration properties file.
+Property configuration has higher priority than Java `Customizer` configuration.
+
+====
+[source]
+----
+resilience4j.circuitbreaker:
+ instances:
+     backendA:
+         registerHealthIndicator: true
+         slidingWindowSize: 100
+     backendB:
+         registerHealthIndicator: true
+         slidingWindowSize: 10
+         permittedNumberOfCallsInHalfOpenState: 3
+         slidingWindowType: TIME_BASED
+         recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
+
+resilience4j.timelimiter:
+ instances:
+     backendA:
+         timeoutDuration: 2s
+         cancelRunningFuture: true
+     backendB:
+         timeoutDuration: 1s
+         cancelRunningFuture: false
+----
+====
+
+For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
+
 ==== Bulkhead pattern supporting
 If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
 You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
