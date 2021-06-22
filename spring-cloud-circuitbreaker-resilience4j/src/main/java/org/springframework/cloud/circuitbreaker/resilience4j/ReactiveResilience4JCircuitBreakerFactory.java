@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
 /**
  * @author Ryan Baxter
  * @author Thomas Vitale
+ * @author 荒
  */
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
@@ -66,9 +67,28 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		return this.create0(id, id);
+	}
+
+	@Override
+	public ReactiveCircuitBreaker create(String id, String groupName) {
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
+		return this.create0(id, groupName);
+	}
+
+	private ReactiveResilience4JCircuitBreaker create0(String id, String groupName) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry, timeLimiterRegistry,
+		CircuitBreakerConfig circuitBreakerConfig = this.circuitBreakerRegistry.getConfiguration(groupName)
+				.orElse(config.getCircuitBreakerConfig());
+		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(groupName)
+				.orElse(config.getTimeLimiterConfig());
+		config = new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(circuitBreakerConfig)
+				.timeLimiterConfig(timeLimiterConfig)
+				.build();
+		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry,
 				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
