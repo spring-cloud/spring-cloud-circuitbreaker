@@ -37,9 +37,6 @@ public class Resilience4JCircuitBreakerCompareAndGetter
 		, CircuitBreakerConfig circuitBreakerConfig, io.vavr.collection.Map<String, String> tags) {
 
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id);
-		if (circuitBreakerConfig == null) {
-			return circuitBreaker;
-		}
 
 		// compare and get
 		CircuitBreakerConfig realConfig = circuitBreaker.getCircuitBreakerConfig();

@@ -37,9 +37,6 @@ public class Resilience4JTimeLimiterCompareAndGetter
 	public TimeLimiter compareAndGet(String id, TimeLimiterRegistry timeLimiterRegistry, TimeLimiterConfig timeLimiterConfig, Map<String, String> tags) {
 
 		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id);
-		if (timeLimiterConfig == null) {
-			return timeLimiter;
-		}
 
 		// compare and get
 		TimeLimiterConfig realConfig = timeLimiter.getTimeLimiterConfig();

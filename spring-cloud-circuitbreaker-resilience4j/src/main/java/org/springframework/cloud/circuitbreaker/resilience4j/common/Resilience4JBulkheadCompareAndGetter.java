@@ -36,9 +36,6 @@ public class Resilience4JBulkheadCompareAndGetter
 	@Override
 	public Bulkhead compareAndGet(String id, BulkheadRegistry bulkheadRegistry, BulkheadConfig bulkheadConfig, Map<String, String> tags) {
 		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id);
-		if (bulkheadConfig == null) {
-			return bulkhead;
-		}
 
 		// compare and get
 		BulkheadConfig realConfig = bulkhead.getBulkheadConfig();

@@ -38,9 +38,6 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetter
 			, ThreadPoolBulkheadConfig bulkheadConfig, Map<String, String> tags) {
 
 		ThreadPoolBulkhead bulkhead = bulkheadRegistry.bulkhead(id);
-		if (bulkheadConfig == null) {
-			return bulkhead;
-		}
 
 		// compare and get
 		ThreadPoolBulkheadConfig realConfig = bulkhead.getBulkheadConfig();
