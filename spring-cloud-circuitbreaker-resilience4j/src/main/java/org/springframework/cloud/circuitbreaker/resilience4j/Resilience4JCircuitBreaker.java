@@ -16,22 +16,25 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.timelimiter.TimeLimiter;
-import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
-import io.vavr.control.Try;
-import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JCircuitBreakerCompareAndGetter;
-import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JTimeLimiterCompareAndGetter;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.cloud.client.circuitbreaker.Customizer;
-
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiter;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import io.vavr.control.Try;
+
+import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JCircuitBreakerCompareAndGetter;
+import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JTimeLimiterCompareAndGetter;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
+
+
 
 /**
  * @author Ryan Baxter
