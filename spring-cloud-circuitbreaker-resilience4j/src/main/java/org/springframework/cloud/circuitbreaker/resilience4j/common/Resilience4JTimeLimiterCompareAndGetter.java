@@ -22,8 +22,8 @@ import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.vavr.collection.Map;
 
 /**
- * implement for TimeLimiter
- * @author dangzhicairang 
+ * implement for TimeLimiter.
+ * @author dangzhicairang
  */
 public class Resilience4JTimeLimiterCompareAndGetter
 	implements CompareAndGetter<TimeLimiter, TimeLimiterRegistry, TimeLimiterConfig> {

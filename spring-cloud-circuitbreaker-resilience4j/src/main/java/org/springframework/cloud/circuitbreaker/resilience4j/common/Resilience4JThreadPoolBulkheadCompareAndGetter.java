@@ -22,7 +22,7 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.vavr.collection.Map;
 
 /**
- * implement for ThreadPoolBulkhead
+ * implement for ThreadPoolBulkhead.
  * @author dangzhicairang
  */
 public class Resilience4JThreadPoolBulkheadCompareAndGetter

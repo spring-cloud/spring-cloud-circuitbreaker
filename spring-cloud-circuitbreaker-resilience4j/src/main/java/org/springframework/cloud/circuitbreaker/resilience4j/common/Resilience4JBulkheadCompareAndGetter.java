@@ -22,7 +22,7 @@ import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.vavr.collection.Map;
 
 /**
- * implement for Bulkhead
+ * implement for Bulkhead.
  * @author dangzhicairang
  */
 public class Resilience4JBulkheadCompareAndGetter
