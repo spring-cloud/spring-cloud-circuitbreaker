@@ -21,6 +21,10 @@ import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.vavr.collection.Map;
 
+/**
+ * implement for Bulkhead
+ * @author dangzhicairang
+ */
 public class Resilience4JBulkheadCompareAndGetter
 	implements CompareAndGetter<Bulkhead, BulkheadRegistry, BulkheadConfig> {
 

@@ -38,6 +38,7 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuit
  * @param <E> the element like {@link CircuitBreaker}, etc.
  * @param <R> the Registry for E
  * @param <C> the Config for E
+ * @author dangzhicairang
  */
 public interface CompareAndGetter<E, R extends Registry<E, C>, C> {
 

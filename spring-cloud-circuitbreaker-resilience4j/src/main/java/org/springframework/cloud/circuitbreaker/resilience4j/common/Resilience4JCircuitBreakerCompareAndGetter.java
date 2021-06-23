@@ -20,6 +20,10 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
+/**
+ * implement for CircuitBreaker
+ * @author dangzhicairang
+ */
 public class Resilience4JCircuitBreakerCompareAndGetter
 	implements CompareAndGetter<CircuitBreaker, CircuitBreakerRegistry, CircuitBreakerConfig> {
 
