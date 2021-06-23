@@ -16,24 +16,22 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
+import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
-
+import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JBulkheadCompareAndGetter;
+import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JThreadPoolBulkheadCompareAndGetter;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+
+import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Andrii Bohutskyi
@@ -47,6 +45,11 @@ public class Resilience4jBulkheadProvider {
 	private final ConcurrentHashMap<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> configurations = new ConcurrentHashMap<>();
 
 	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration;
+
+	private final Resilience4JBulkheadCompareAndGetter resilience4JBulkheadCompareAndGetter = Resilience4JBulkheadCompareAndGetter.getInstance();
+
+	private final Resilience4JThreadPoolBulkheadCompareAndGetter resilience4JThreadPoolBulkheadCompareAndGetter = Resilience4JThreadPoolBulkheadCompareAndGetter.getInstance();
+
 
 	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
 			BulkheadRegistry bulkheadRegistry) {
@@ -75,7 +78,8 @@ public class Resilience4jBulkheadProvider {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 					.computeIfAbsent(id, defaultConfiguration);
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
+			Bulkhead bulkhead = resilience4JBulkheadCompareAndGetter
+				.compareAndGet(id, bulkheadRegistry, configuration.getBulkheadConfig(), HashMap.empty());
 			customizer.customize(bulkhead);
 		}
 	}
@@ -84,8 +88,9 @@ public class Resilience4jBulkheadProvider {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 					.computeIfAbsent(id, defaultConfiguration);
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig());
+			ThreadPoolBulkhead threadPoolBulkhead = resilience4JThreadPoolBulkheadCompareAndGetter.compareAndGet(
+				id, threadPoolBulkheadRegistry, configuration.getThreadPoolBulkheadConfig(), HashMap.empty()
+			);
 			customizer.customize(threadPoolBulkhead);
 		}
 	}
@@ -112,13 +117,15 @@ public class Resilience4jBulkheadProvider {
 				.computeIfAbsent(id, defaultConfiguration);
 
 		if (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent()) {
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
+			Bulkhead bulkhead = resilience4JBulkheadCompareAndGetter
+				.compareAndGet(id, bulkheadRegistry, configuration.getBulkheadConfig(), tags);
 			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
 		}
 		else {
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig(), tags);
+			ThreadPoolBulkhead threadPoolBulkhead = resilience4JThreadPoolBulkheadCompareAndGetter.compareAndGet(
+				id, threadPoolBulkheadRegistry, configuration.getThreadPoolBulkheadConfig(), tags
+			);
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
 	}
