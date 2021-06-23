@@ -16,6 +16,15 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import io.github.resilience4j.bulkhead.Bulkhead;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
@@ -24,14 +33,10 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
+
 import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JBulkheadCompareAndGetter;
 import org.springframework.cloud.circuitbreaker.resilience4j.common.Resilience4JThreadPoolBulkheadCompareAndGetter;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
-
-import java.util.concurrent.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Andrii Bohutskyi
