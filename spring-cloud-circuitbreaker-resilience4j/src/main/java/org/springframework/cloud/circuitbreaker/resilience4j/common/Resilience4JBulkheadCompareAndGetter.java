@@ -28,26 +28,24 @@ import io.vavr.collection.Map;
 public class Resilience4JBulkheadCompareAndGetter
 	implements CompareAndGetter<Bulkhead, BulkheadRegistry, BulkheadConfig> {
 
-	private static Resilience4JBulkheadCompareAndGetter instance;
+	private static Resilience4JBulkheadCompareAndGetter instance = new Resilience4JBulkheadCompareAndGetter();
 
 	public static Resilience4JBulkheadCompareAndGetter getInstance() {
-		if (instance == null) {
-			instance = new Resilience4JBulkheadCompareAndGetter();
-		}
 		return instance;
 	}
 
 	@Override
-	public Bulkhead compareAndGet(String id, BulkheadRegistry bulkheadRegistry, BulkheadConfig bulkheadConfig, Map<String, String> tags) {
-		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id);
+	public boolean compare(Bulkhead bulkhead, BulkheadConfig config) {
+		BulkheadConfig oldConfig = bulkhead.getBulkheadConfig();
+		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
+			&& oldConfig.isFairCallHandlingEnabled() == config.isFairCallHandlingEnabled()
+			&& oldConfig.getMaxConcurrentCalls() == config.getMaxConcurrentCalls()
+			&& oldConfig.getMaxWaitDuration().equals(config.getMaxWaitDuration());
+	}
 
-		// compare and get
-		BulkheadConfig realConfig = bulkhead.getBulkheadConfig();
-		if (!realConfig.toString().equals(bulkheadConfig.toString())) {
-			bulkheadRegistry.remove(id);
-			bulkhead = bulkheadRegistry.bulkhead(id, bulkheadConfig, tags);
-		}
+	@Override
+	public Bulkhead get(String id, BulkheadRegistry register, BulkheadConfig config, Map<String, String> tags) {
 
-		return bulkhead;
+		return register.bulkhead(id, config, tags);
 	}
 }

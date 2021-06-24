@@ -18,6 +18,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j.common;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.core.Registry;
+import io.vavr.collection.Map;
 
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 
@@ -33,7 +34,7 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuit
  * 		1] get the component from register as A
  * 	    2] compare A's config with config that be configured by
  * 	    		{@link Resilience4JCircuitBreakerFactory}
- * 	    3] if not match, register new one and return
+ * 	    3] if not match, remove old, register new one and return
  *
  * @param <E> the element like {@link CircuitBreaker}, etc.
  * @param <R> the Registry for E
@@ -42,5 +43,18 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuit
  */
 public interface CompareAndGetter<E, R extends Registry<E, C>, C> {
 
-	E compareAndGet(String id, R register, C config, io.vavr.collection.Map<String, String> tags);
+	default E compareAndGet(String id, R register, C config, io.vavr.collection.Map<String, String> tags) {
+		return register.find(id)
+			.filter(e -> compare(e, config))
+			.orElse(removeAndGet(id, register, config, tags));
+	}
+
+	boolean compare(E e, C config);
+
+	default E removeAndGet(String id, R register, C config, Map<String, String> tags) {
+		register.remove(id);
+		return get(id, register, config, tags);
+	}
+
+	E get(String id, R register, C config, io.vavr.collection.Map<String, String> tags);
 }

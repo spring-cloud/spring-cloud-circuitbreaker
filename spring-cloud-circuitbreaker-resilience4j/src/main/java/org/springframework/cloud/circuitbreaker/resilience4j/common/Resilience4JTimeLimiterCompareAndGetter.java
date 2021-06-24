@@ -28,27 +28,22 @@ import io.vavr.collection.Map;
 public class Resilience4JTimeLimiterCompareAndGetter
 	implements CompareAndGetter<TimeLimiter, TimeLimiterRegistry, TimeLimiterConfig> {
 
-	private static Resilience4JTimeLimiterCompareAndGetter instance;
+	private static Resilience4JTimeLimiterCompareAndGetter instance = new Resilience4JTimeLimiterCompareAndGetter();
 
 	public static Resilience4JTimeLimiterCompareAndGetter getInstance() {
-		if (instance == null) {
-			instance = new Resilience4JTimeLimiterCompareAndGetter();
-		}
 		return instance;
 	}
 
 	@Override
-	public TimeLimiter compareAndGet(String id, TimeLimiterRegistry timeLimiterRegistry, TimeLimiterConfig timeLimiterConfig, Map<String, String> tags) {
+	public boolean compare(TimeLimiter timeLimiter, TimeLimiterConfig config) {
+		TimeLimiterConfig oldConfig = timeLimiter.getTimeLimiterConfig();
+		return oldConfig.shouldCancelRunningFuture() == config.shouldCancelRunningFuture()
+			&& oldConfig.getTimeoutDuration().equals(config.getTimeoutDuration());
+	}
 
-		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id);
+	@Override
+	public TimeLimiter get(String id, TimeLimiterRegistry register, TimeLimiterConfig config, Map<String, String> tags) {
 
-		// compare and get
-		TimeLimiterConfig realConfig = timeLimiter.getTimeLimiterConfig();
-		if (!realConfig.toString().equals(timeLimiterConfig.toString())) {
-			timeLimiterRegistry.remove(id);
-			timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig, tags);
-		}
-
-		return timeLimiter;
+		return register.timeLimiter(id, config, tags);
 	}
 }

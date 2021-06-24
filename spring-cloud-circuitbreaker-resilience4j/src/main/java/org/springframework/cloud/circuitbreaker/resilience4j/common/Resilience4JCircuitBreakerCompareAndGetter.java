@@ -19,6 +19,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j.common;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.vavr.collection.Map;
 
 /**
  * implement for CircuitBreaker.
@@ -27,28 +28,38 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 public class Resilience4JCircuitBreakerCompareAndGetter
 	implements CompareAndGetter<CircuitBreaker, CircuitBreakerRegistry, CircuitBreakerConfig> {
 
-	private static Resilience4JCircuitBreakerCompareAndGetter instance;
+	private static Resilience4JCircuitBreakerCompareAndGetter instance = new Resilience4JCircuitBreakerCompareAndGetter();
 
 	public static Resilience4JCircuitBreakerCompareAndGetter getInstance() {
-		if (instance == null) {
-			instance = new Resilience4JCircuitBreakerCompareAndGetter();
-		}
 		return instance;
 	}
 
+	/**
+	 * ignore the compare if that property is a Function like recordResultPredicate ...
+	 * it mean if you modify these properties by Config
+	 * 		Classes, it also not take effect
+	 * @param circuitBreaker
+	 * @param config
+	 * @return
+	 */
 	@Override
-	public CircuitBreaker compareAndGet(String id, CircuitBreakerRegistry circuitBreakerRegistry
-		, CircuitBreakerConfig circuitBreakerConfig, io.vavr.collection.Map<String, String> tags) {
+	public boolean compare(CircuitBreaker circuitBreaker, CircuitBreakerConfig config) {
+		CircuitBreakerConfig oldConfig = circuitBreaker.getCircuitBreakerConfig();
+		return oldConfig.getFailureRateThreshold() == config.getFailureRateThreshold()
+			&& oldConfig.getMaxWaitDurationInHalfOpenState().equals(config.getMaxWaitDurationInHalfOpenState())
+			&& oldConfig.getMinimumNumberOfCalls() == config.getMinimumNumberOfCalls()
+			&& oldConfig.getPermittedNumberOfCallsInHalfOpenState() == config.getPermittedNumberOfCallsInHalfOpenState()
+			&& oldConfig.isAutomaticTransitionFromOpenToHalfOpenEnabled() == config.isAutomaticTransitionFromOpenToHalfOpenEnabled()
+			&& oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
+			&& oldConfig.getSlidingWindowSize() == config.getSlidingWindowSize()
+			&& oldConfig.getSlidingWindowType() == config.getSlidingWindowType()
+			&& oldConfig.getSlowCallDurationThreshold().equals(config.getSlowCallDurationThreshold())
+			&& oldConfig.getSlowCallRateThreshold() == config.getSlowCallRateThreshold();
+	}
 
-		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id);
+	@Override
+	public CircuitBreaker get(String id, CircuitBreakerRegistry register, CircuitBreakerConfig config, Map<String, String> tags) {
 
-		// compare and get
-		CircuitBreakerConfig realConfig = circuitBreaker.getCircuitBreakerConfig();
-		if (!realConfig.toString().equals(circuitBreakerConfig.toString())) {
-			circuitBreakerRegistry.remove(id);
-			circuitBreaker = circuitBreakerRegistry.circuitBreaker(id, circuitBreakerConfig, tags);
-		}
-
-		return circuitBreaker;
+		return register.circuitBreaker(id, config, tags);
 	}
 }
