@@ -38,8 +38,9 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetter
 	 * ignore compare the contextPropagators and rejectedExecutionHandler.
 	 * it mean if you modify these properties by Config Classes, it also
 	 * 		not take effect
-	 * @param threadPoolBulkhead
-	 * @param config
+	 * @param threadPoolBulkhead instance that exist in registry.
+	 * @param config the new ThreadPoolBulkheadConfig that be configured
+	 *      by config file.
 	 * @return
 	 */
 	@Override

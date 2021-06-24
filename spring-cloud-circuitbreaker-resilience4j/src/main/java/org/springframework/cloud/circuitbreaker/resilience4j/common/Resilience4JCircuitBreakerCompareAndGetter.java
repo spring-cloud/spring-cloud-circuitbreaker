@@ -35,11 +35,13 @@ public class Resilience4JCircuitBreakerCompareAndGetter
 	}
 
 	/**
-	 * ignore the compare if that property is a Function like recordResultPredicate ...
+	 * ignore the compare if that property is a Function like
+	 * 		recordResultPredicate ...
 	 * it mean if you modify these properties by Config
 	 * 		Classes, it also not take effect
-	 * @param circuitBreaker
-	 * @param config
+	 * @param circuitBreaker instance that exist in registry.
+	 * @param config the new CircuitBreakerConfig that be configured
+	 *      by config file.
 	 * @return
 	 */
 	@Override

@@ -18,7 +18,9 @@ package org.springframework.cloud.circuitbreaker.resilience4j.common;
 
 import java.time.Duration;
 
-import io.github.resilience4j.bulkhead.*;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.vavr.collection.HashMap;
 import org.junit.jupiter.api.Test;
 
