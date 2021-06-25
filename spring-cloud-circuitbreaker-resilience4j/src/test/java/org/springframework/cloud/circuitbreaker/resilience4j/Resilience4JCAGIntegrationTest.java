@@ -104,7 +104,7 @@ public class Resilience4JCAGIntegrationTest {
 
 		circuitBreakerFactory
 			.create("test_cag")
-			.run(supplier);
+			.run(supplier, e -> "fallback");
 
 		verify(cbStateConsumer, times(0)).consumeEvent(any());
 	}
@@ -173,7 +173,7 @@ public class Resilience4JCAGIntegrationTest {
 		@RequestMapping(value = "/test", method = RequestMethod.GET)
 		public String test() {
 
-			return circuitBreakerFactory.create("test_cag").run(() -> "test");
+			return circuitBreakerFactory.create("test_cag").run(() -> "test", e -> "fallback");
 		}
 	}
 
