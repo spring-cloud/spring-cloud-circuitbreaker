@@ -17,11 +17,16 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import io.github.resilience4j.bulkhead.BulkheadConfig;
@@ -46,6 +51,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -107,20 +113,30 @@ public class Resilience4JCAGIntegrationTest {
 	public void testBulkhead() throws InterruptedException {
 		TestService mock = mock(TestService.class);
 		given(mock.test()).willReturn("test");
-		Callable callable = () -> circuitBreakerFactory.create("test_cag").run(mock::test);
+		Callable callable = () -> circuitBreakerFactory.create("test_cag").run(mock::test, e -> "fallback");
 
+		List<Future<String>> result = new ArrayList<>();
 		int time = 4;
 		ExecutorService executorService = Executors.newFixedThreadPool(time);
 		IntStream.range(0, time).forEach(
-			i -> executorService.submit(callable)
+			i -> result.add(executorService.submit(callable))
 		);
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
+		List<String> collect = result.stream().map(t -> {
+			try {
+				return t.get();
+			}
+			catch (InterruptedException e) {
+			}
+			catch (ExecutionException e) {
+			}
+			return "";
+		}).collect(Collectors.toList());
+		long count = collect.stream().filter(t -> "fallback".equals(t)).count();
 
-		/**
-		 * always filed on CI ?
-		 */
-		// verify(bhStateConsumer, times(1)).consumeEvent(any());
+		assertThat(collect.size()).isEqualTo(4);
+		assertThat(count).isEqualTo(1);
 	}
 
 	@EnableAutoConfiguration
