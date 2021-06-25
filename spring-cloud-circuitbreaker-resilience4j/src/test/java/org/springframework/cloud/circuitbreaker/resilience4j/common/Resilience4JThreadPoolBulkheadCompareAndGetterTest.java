@@ -40,9 +40,9 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetterTest {
 				.custom()
 				.queueCapacity(2)
 				.coreThreadPoolSize(2)
-				.maxThreadPoolSize(4)
 				.writableStackTraceEnabled(false)
 				.keepAliveDuration(Duration.ZERO)
+				.maxThreadPoolSize(4)
 				.build();
 		ThreadPoolBulkheadRegistry registry =
 			ThreadPoolBulkheadRegistry.of(oldConfig);
@@ -53,9 +53,9 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetterTest {
 				.custom()
 				.queueCapacity(2)
 				.coreThreadPoolSize(2)
-				.maxThreadPoolSize(4)
 				.writableStackTraceEnabled(false)
-				.keepAliveDuration(Duration.ofSeconds(1))
+				.keepAliveDuration(Duration.ZERO)
+				.maxThreadPoolSize(2)
 				.build();
 		ThreadPoolBulkhead newIstance =
 			compareAndGetter.compareAndGet("test", registry, newConfig, HashMap.empty());

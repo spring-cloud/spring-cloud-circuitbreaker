@@ -39,12 +39,18 @@ public class Resilience4JBulkheadCompareAndGetter
 		BulkheadConfig oldConfig = bulkhead.getBulkheadConfig();
 		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
 			&& oldConfig.isFairCallHandlingEnabled() == config.isFairCallHandlingEnabled()
-			&& oldConfig.getMaxConcurrentCalls() == config.getMaxConcurrentCalls()
-			&& oldConfig.getMaxWaitDuration().equals(config.getMaxWaitDuration());
+			&& oldConfig.getMaxWaitDuration().equals(config.getMaxWaitDuration())
+			&& oldConfig.getMaxConcurrentCalls() == config.getMaxConcurrentCalls();
 	}
 
 	@Override
 	public Bulkhead get(String id, BulkheadRegistry register, BulkheadConfig config, Map<String, String> tags) {
+
+		return Bulkhead.of(id, config, tags);
+	}
+
+	@Override
+	public Bulkhead register(String id, BulkheadRegistry register, BulkheadConfig config, Map<String, String> tags) {
 
 		return register.bulkhead(id, config, tags);
 	}

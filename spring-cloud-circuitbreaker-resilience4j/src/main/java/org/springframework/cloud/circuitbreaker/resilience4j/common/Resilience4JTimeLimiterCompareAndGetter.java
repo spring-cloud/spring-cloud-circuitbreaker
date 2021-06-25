@@ -44,6 +44,12 @@ public class Resilience4JTimeLimiterCompareAndGetter
 	@Override
 	public TimeLimiter get(String id, TimeLimiterRegistry register, TimeLimiterConfig config, Map<String, String> tags) {
 
+		return TimeLimiter.of(id, config, tags);
+	}
+
+	@Override
+	public TimeLimiter register(String id, TimeLimiterRegistry register, TimeLimiterConfig config, Map<String, String> tags) {
+
 		return register.timeLimiter(id, config, tags);
 	}
 }

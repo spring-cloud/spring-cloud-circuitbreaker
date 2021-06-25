@@ -48,13 +48,19 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetter
 		ThreadPoolBulkheadConfig oldConfig = threadPoolBulkhead.getBulkheadConfig();
 		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
 			&& oldConfig.getCoreThreadPoolSize() == config.getCoreThreadPoolSize()
-			&& oldConfig.getMaxThreadPoolSize() == config.getMaxThreadPoolSize()
 			&& oldConfig.getQueueCapacity() == config.getQueueCapacity()
-			&& oldConfig.getKeepAliveDuration().equals(config.getKeepAliveDuration());
+			&& oldConfig.getKeepAliveDuration().equals(config.getKeepAliveDuration())
+			&& oldConfig.getMaxThreadPoolSize() == config.getMaxThreadPoolSize();
 	}
 
 	@Override
 	public ThreadPoolBulkhead get(String id, ThreadPoolBulkheadRegistry register, ThreadPoolBulkheadConfig config, Map<String, String> tags) {
+
+		return ThreadPoolBulkhead.of(id, config, tags);
+	}
+
+	@Override
+	public ThreadPoolBulkhead register(String id, ThreadPoolBulkheadRegistry register, ThreadPoolBulkheadConfig config, Map<String, String> tags) {
 
 		return register.bulkhead(id, config, tags);
 	}

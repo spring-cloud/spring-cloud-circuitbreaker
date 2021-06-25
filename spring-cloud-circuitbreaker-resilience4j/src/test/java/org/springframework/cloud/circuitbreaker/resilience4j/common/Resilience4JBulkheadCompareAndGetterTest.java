@@ -38,10 +38,10 @@ public class Resilience4JBulkheadCompareAndGetterTest {
 		BulkheadConfig oldConfig =
 			BulkheadConfig
 				.custom()
-				.maxConcurrentCalls(2)
 				.writableStackTraceEnabled(true)
 				.fairCallHandlingStrategyEnabled(true)
 				.maxWaitDuration(Duration.ZERO)
+				.maxConcurrentCalls(2)
 				.build();
 		BulkheadRegistry registry = BulkheadRegistry.of(oldConfig);
 		Bulkhead oldInstance = registry.bulkhead("test");
@@ -49,10 +49,10 @@ public class Resilience4JBulkheadCompareAndGetterTest {
 		BulkheadConfig newConfig =
 			BulkheadConfig
 				.custom()
-				.maxConcurrentCalls(2)
 				.writableStackTraceEnabled(true)
 				.fairCallHandlingStrategyEnabled(true)
-				.maxWaitDuration(Duration.ofSeconds(1))
+				.maxWaitDuration(Duration.ZERO)
+				.maxConcurrentCalls(4)
 				.build();
 		Bulkhead newInstance = compareAndGetter.compareAndGet("test", registry, newConfig, HashMap.empty());
 

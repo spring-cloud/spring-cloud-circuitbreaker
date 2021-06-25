@@ -49,18 +49,24 @@ public class Resilience4JCircuitBreakerCompareAndGetter
 		CircuitBreakerConfig oldConfig = circuitBreaker.getCircuitBreakerConfig();
 		return oldConfig.getFailureRateThreshold() == config.getFailureRateThreshold()
 			&& oldConfig.getMaxWaitDurationInHalfOpenState().equals(config.getMaxWaitDurationInHalfOpenState())
-			&& oldConfig.getMinimumNumberOfCalls() == config.getMinimumNumberOfCalls()
 			&& oldConfig.getPermittedNumberOfCallsInHalfOpenState() == config.getPermittedNumberOfCallsInHalfOpenState()
 			&& oldConfig.isAutomaticTransitionFromOpenToHalfOpenEnabled() == config.isAutomaticTransitionFromOpenToHalfOpenEnabled()
 			&& oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
 			&& oldConfig.getSlidingWindowSize() == config.getSlidingWindowSize()
 			&& oldConfig.getSlidingWindowType() == config.getSlidingWindowType()
 			&& oldConfig.getSlowCallDurationThreshold().equals(config.getSlowCallDurationThreshold())
-			&& oldConfig.getSlowCallRateThreshold() == config.getSlowCallRateThreshold();
+			&& oldConfig.getSlowCallRateThreshold() == config.getSlowCallRateThreshold()
+			&& oldConfig.getMinimumNumberOfCalls() == config.getMinimumNumberOfCalls();
 	}
 
 	@Override
 	public CircuitBreaker get(String id, CircuitBreakerRegistry register, CircuitBreakerConfig config, Map<String, String> tags) {
+
+		return CircuitBreaker.of(id, config, tags);
+	}
+
+	@Override
+	public CircuitBreaker register(String id, CircuitBreakerRegistry register, CircuitBreakerConfig config, Map<String, String> tags) {
 
 		return register.circuitBreaker(id, config, tags);
 	}

@@ -51,15 +51,19 @@ public interface CompareAndGetter<E, R extends Registry<E, C>, C> {
 				}
 				return removeAndGet(id, register, config, tags);
 			})
-			.orElse(get(id, register, config, tags));
+			.orElse(register(id, register, config, tags));
 	}
 
 	boolean compare(E e, C config);
 
 	default E removeAndGet(String id, R register, C config, Map<String, String> tags) {
-		register.remove(id);
-		return get(id, register, config, tags);
+
+		E newOne = get(id, register, config, tags);
+		register.replace(id, newOne);
+		return newOne;
 	}
 
 	E get(String id, R register, C config, io.vavr.collection.Map<String, String> tags);
+
+	E register(String id, R register, C config, io.vavr.collection.Map<String, String> tags);
 }

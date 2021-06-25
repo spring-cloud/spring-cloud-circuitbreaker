@@ -39,7 +39,6 @@ public class Resilience4JCircuitBreakerCompareAndGetterTest {
 		CircuitBreakerConfig oldConfig =
 			CircuitBreakerConfig
 				.custom()
-				.minimumNumberOfCalls(4)
 				.failureRateThreshold(50)
 				.automaticTransitionFromOpenToHalfOpenEnabled(true)
 				.maxWaitDurationInHalfOpenState(Duration.ofSeconds(3))
@@ -49,6 +48,7 @@ public class Resilience4JCircuitBreakerCompareAndGetterTest {
 				.writableStackTraceEnabled(false)
 				.waitDurationInOpenState(Duration.ofSeconds(3))
 				.slowCallRateThreshold(100)
+				.minimumNumberOfCalls(4)
 				.build();
 		CircuitBreakerRegistry circuitBreakerRegistry =
 			CircuitBreakerRegistry.of(oldConfig);
@@ -57,7 +57,6 @@ public class Resilience4JCircuitBreakerCompareAndGetterTest {
 		CircuitBreakerConfig newConfig =
 			CircuitBreakerConfig
 				.custom()
-				.minimumNumberOfCalls(4)
 				.failureRateThreshold(50)
 				.automaticTransitionFromOpenToHalfOpenEnabled(true)
 				.maxWaitDurationInHalfOpenState(Duration.ofSeconds(3))
@@ -66,7 +65,8 @@ public class Resilience4JCircuitBreakerCompareAndGetterTest {
 				.slidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED)
 				.writableStackTraceEnabled(false)
 				.waitDurationInOpenState(Duration.ofSeconds(3))
-				.slowCallRateThreshold(80)
+				.slowCallRateThreshold(100)
+				.minimumNumberOfCalls(6)
 				.build();
 		CircuitBreaker newInstance = compareAndGetter.compareAndGet(
 			"test", circuitBreakerRegistry, newConfig, HashMap.empty()
