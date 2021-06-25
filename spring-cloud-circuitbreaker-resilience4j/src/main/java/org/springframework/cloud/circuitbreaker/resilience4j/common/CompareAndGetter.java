@@ -31,10 +31,12 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuit
  * 		[computeIfAbsent]
  *
  * this interface provide method compareAndGet:
- * 		1] get the component from register as A
- * 	    2] compare A's config with config that be configured by
+ * 		1] find component from registry
+ * 	    2] compare it's config with config that be configured by
  * 	    		{@link Resilience4JCircuitBreakerFactory}
- * 	    3] if not match, remove old, register new one and return
+ * 	    3] if not match, replace and return new one
+ * 	    4] return if match
+ * 	    5] register new one if absent
  *
  * @param <E> the element like {@link CircuitBreaker}, etc.
  * @param <R> the Registry for E
@@ -49,14 +51,14 @@ public interface CompareAndGetter<E, R extends Registry<E, C>, C> {
 				if (compare(e, config)) {
 					return e;
 				}
-				return removeAndGet(id, register, config, tags);
+				return replaceAndGet(id, register, config, tags);
 			})
 			.orElse(register(id, register, config, tags));
 	}
 
 	boolean compare(E e, C config);
 
-	default E removeAndGet(String id, R register, C config, Map<String, String> tags) {
+	default E replaceAndGet(String id, R register, C config, Map<String, String> tags) {
 
 		E newOne = get(id, register, config, tags);
 		register.replace(id, newOne);
