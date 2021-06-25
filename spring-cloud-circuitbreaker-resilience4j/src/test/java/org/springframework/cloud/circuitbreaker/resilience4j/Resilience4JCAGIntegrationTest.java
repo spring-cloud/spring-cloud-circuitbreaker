@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
@@ -45,9 +45,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -73,9 +70,6 @@ public class Resilience4JCAGIntegrationTest {
 
 	@Mock
 	static EventConsumer<BulkheadOnCallRejectedEvent> bhStateConsumer;
-
-	@Autowired
-	TestRestTemplate testRestTemplate;
 
 	@Test
 	public void testCircuitBreaker() {
@@ -111,11 +105,15 @@ public class Resilience4JCAGIntegrationTest {
 
 	@Test
 	public void testBulkhead() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(4);
-		executorService.submit(() -> testRestTemplate.getForObject("/test", String.class));
-		executorService.submit(() -> testRestTemplate.getForObject("/test", String.class));
-		executorService.submit(() -> testRestTemplate.getForObject("/test", String.class));
-		executorService.submit(() -> testRestTemplate.getForObject("/test", String.class));
+		TestService mock = mock(TestService.class);
+		given(mock.test()).willReturn("test");
+		Callable callable = () -> circuitBreakerFactory.create("test_cag").run(mock::test);
+
+		int time = 4;
+		ExecutorService executorService = Executors.newFixedThreadPool(time);
+		IntStream.range(0, time).forEach(
+			i -> executorService.submit(callable)
+		);
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
 		verify(bhStateConsumer, times(1)).consumeEvent(any());
@@ -123,7 +121,6 @@ public class Resilience4JCAGIntegrationTest {
 
 	@EnableAutoConfiguration
 	@Configuration(proxyBeanMethods = false)
-	@RestController
 	static class Application {
 
 		@Autowired
@@ -168,12 +165,6 @@ public class Resilience4JCAGIntegrationTest {
 					, "test_cag"
 				);
 			};
-		}
-
-		@RequestMapping(value = "/test", method = RequestMethod.GET)
-		public String test() {
-
-			return circuitBreakerFactory.create("test_cag").run(() -> "test", e -> "fallback");
 		}
 	}
 
