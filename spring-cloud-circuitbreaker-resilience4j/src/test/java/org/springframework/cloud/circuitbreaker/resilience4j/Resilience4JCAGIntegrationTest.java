@@ -122,7 +122,7 @@ public class Resilience4JCAGIntegrationTest {
 			i -> result.add(executorService.submit(callable))
 		);
 		executorService.shutdown();
-		executorService.awaitTermination(10, TimeUnit.SECONDS);
+		executorService.awaitTermination(1, TimeUnit.MINUTES);
 		List<String> collect = result.stream().map(t -> {
 			try {
 				return t.get();
