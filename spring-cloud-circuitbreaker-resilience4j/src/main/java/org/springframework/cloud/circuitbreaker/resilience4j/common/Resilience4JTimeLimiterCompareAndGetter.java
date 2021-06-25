@@ -37,7 +37,8 @@ public class Resilience4JTimeLimiterCompareAndGetter
 	@Override
 	public boolean compare(TimeLimiter timeLimiter, TimeLimiterConfig config) {
 		TimeLimiterConfig oldConfig = timeLimiter.getTimeLimiterConfig();
-		return oldConfig.shouldCancelRunningFuture() == config.shouldCancelRunningFuture() && oldConfig.getTimeoutDuration().equals(config.getTimeoutDuration());
+		return oldConfig.shouldCancelRunningFuture() == config.shouldCancelRunningFuture()
+			&& oldConfig.getTimeoutDuration().equals(config.getTimeoutDuration());
 	}
 
 	@Override
