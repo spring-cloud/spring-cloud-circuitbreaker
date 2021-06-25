@@ -37,10 +37,10 @@ public class Resilience4JBulkheadCompareAndGetter
 	@Override
 	public boolean compare(Bulkhead bulkhead, BulkheadConfig config) {
 		BulkheadConfig oldConfig = bulkhead.getBulkheadConfig();
-		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
-			&& oldConfig.isFairCallHandlingEnabled() == config.isFairCallHandlingEnabled()
-			&& oldConfig.getMaxWaitDuration().equals(config.getMaxWaitDuration())
-			&& oldConfig.getMaxConcurrentCalls() == config.getMaxConcurrentCalls();
+		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled() &&
+			oldConfig.isFairCallHandlingEnabled() == config.isFairCallHandlingEnabled() &&
+			oldConfig.getMaxWaitDuration().equals(config.getMaxWaitDuration()) &&
+			oldConfig.getMaxConcurrentCalls() == config.getMaxConcurrentCalls();
 	}
 
 	@Override

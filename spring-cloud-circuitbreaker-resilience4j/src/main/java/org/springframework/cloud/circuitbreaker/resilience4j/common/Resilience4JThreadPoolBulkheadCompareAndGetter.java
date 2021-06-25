@@ -46,11 +46,12 @@ public class Resilience4JThreadPoolBulkheadCompareAndGetter
 	@Override
 	public boolean compare(ThreadPoolBulkhead threadPoolBulkhead, ThreadPoolBulkheadConfig config) {
 		ThreadPoolBulkheadConfig oldConfig = threadPoolBulkhead.getBulkheadConfig();
-		return oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
+		boolean compare = oldConfig.isWritableStackTraceEnabled() == config.isWritableStackTraceEnabled()
 			&& oldConfig.getCoreThreadPoolSize() == config.getCoreThreadPoolSize()
 			&& oldConfig.getQueueCapacity() == config.getQueueCapacity()
 			&& oldConfig.getKeepAliveDuration().equals(config.getKeepAliveDuration())
 			&& oldConfig.getMaxThreadPoolSize() == config.getMaxThreadPoolSize();
+		return compare;
 	}
 
 	@Override
