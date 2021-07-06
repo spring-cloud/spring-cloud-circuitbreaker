@@ -42,6 +42,12 @@ Edit the files in the src/main/asciidoc/ directory instead.
 
 *{spring-cloud-version}*
 
+## Usage Documentation
+
+The Spring Cloud CircuitBreaker project contains implementations for Resilience4J and Spring Retry.
+The APIs implemented in Spring Cloud CircuitBreaker live in Spring Cloud Commons.  The usage documentation
+for these APIs are located in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-circuit-breake[Spring Cloud Commons documentation].
+
 === Configuring Resilience4J Circuit Breakers
 
 ==== Starters
@@ -138,34 +144,133 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCusomtizer() {
 ----
 ====
 
+==== Circuit Breaker Properties Configuration
 
-==== Properties Configuration
-
-You can configure CircuitBreaker and TimeLimiter instances in your application's configuration properties file. Property configuration has higher priority than Java `Customizer` configuration.
+You can configure `CircuitBreaker` and `TimeLimiter` instances in your application's configuration properties file.
+Property configuration has higher priority than Java `Customizer` configuration.
 
 ====
 [source]
 ----
 resilience4j.circuitbreaker:
-    instances:
-        backendA:
-            registerHealthIndicator: true
-            slidingWindowSize: 100
-        backendB:
-            registerHealthIndicator: true
-            slidingWindowSize: 10
-            permittedNumberOfCallsInHalfOpenState: 3
-            slidingWindowType: TIME_BASED
-            recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
+ instances:
+     backendA:
+         registerHealthIndicator: true
+         slidingWindowSize: 100
+     backendB:
+         registerHealthIndicator: true
+         slidingWindowSize: 10
+         permittedNumberOfCallsInHalfOpenState: 3
+         slidingWindowType: TIME_BASED
+         recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
 
 resilience4j.timelimiter:
+ instances:
+     backendA:
+         timeoutDuration: 2s
+         cancelRunningFuture: true
+     backendB:
+         timeoutDuration: 1s
+         cancelRunningFuture: false
+----
+====
+
+For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
+
+==== Bulkhead pattern supporting
+If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
+You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
+
+Spring Cloud CircuitBreaker Resilience4j provides two implementation of bulkhead pattern:
+
+* a `SemaphoreBulkhead` which uses Semaphores
+* a `FixedThreadPoolBulkhead` which uses a bounded queue and a fixed thread pool.
+
+By default, Spring Cloud CircuitBreaker Resilience4j uses `FixedThreadPoolBulkhead`. For more information on implementation
+of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resilience4j Bulkhead].
+
+The `Customizer<Resilience4jBulkheadProvider>` can be used to provide a default `Bulkhead` and `ThreadPoolBulkhead` configuration.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4jBulkheadProvider> defaultBulkheadCustomizer() {
+    return provider -> provider.configureDefault(id -> new Resilience4jBulkheadConfigurationBuilder()
+        .bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(4).build())
+        .threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom().coreThreadPoolSize(1).maxThreadPoolSize(1).build())
+        .build()
+);
+}
+----
+====
+
+==== Specific Bulkhead Configuration
+
+Similarly to proving a default 'Bulkhead' or 'ThreadPoolBulkhead' configuration, you can create a `Customize` bean this
+is passed a `Resilience4jBulkheadProvider`.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
+    return provider -> provider.configure(builder -> builder
+        .bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(1).build())
+        .threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.ofDefaults()), "slowBulkhead");
+}
+----
+====
+
+In addition to configuring the Bulkhead that is created you can also customize the bulkhead and thread pool bulkhead after they
+have been created but before they are returned to caller. To do this you can use the `addBulkheadCustomizer` and `addThreadPoolBulkheadCustomizer`
+methods.
+
+===== Bulkhead Example
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4jBulkheadProvider> customizer() {
+    return provider -> provider.addBulkheadCustomizer(bulkhead -> bulkhead.getEventPublisher()
+        .onCallRejected(slowRejectedConsumer)
+        .onCallFinished(slowFinishedConsumer), "slowBulkhead");
+}
+----
+====
+
+===== Thread Pool Bulkhead Example
+
+====
+[source,java]
+----
+@Bean
+public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer() {
+    return provider -> provider.addThreadPoolBulkheadCustomizer(threadPoolBulkhead -> threadPoolBulkhead.getEventPublisher()
+        .onCallRejected(slowThreadPoolRejectedConsumer)
+        .onCallFinished(slowThreadPoolFinishedConsumer), "slowThreadPoolBulkhead");
+}
+----
+====
+
+==== Bulkhead Properties Configuration
+
+You can configure ThreadPoolBulkhead and SemaphoreBulkhead instances in your application's configuration properties file.
+Property configuration has higher priority than Java `Customizer` configuration.
+
+====
+[source]
+----
+resilience4j.thread-pool-bulkhead:
     instances:
         backendA:
-            timeoutDuration: 2s
-            cancelRunningFuture: true
+            maxThreadPoolSize: 1
+            coreThreadPoolSize: 1
+resilience4j.bulkhead:
+    instances:
         backendB:
-            timeoutDuration: 1s
-            cancelRunningFuture: false
+            maxConcurrentCalls: 10
 ----
 ====
 
