@@ -1,1 +1,1 @@
-spring-cloud-circuitbreaker.adoc
+include::spring-cloud-build.adoc[]
