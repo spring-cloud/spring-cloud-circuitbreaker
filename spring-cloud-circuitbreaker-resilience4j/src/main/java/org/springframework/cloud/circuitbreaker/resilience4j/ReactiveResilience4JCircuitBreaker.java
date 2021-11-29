@@ -96,6 +96,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		return toReturn;
 	}
 
+	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = circuitBreakerRegistry
 				.circuitBreaker(id, circuitBreakerConfig);
