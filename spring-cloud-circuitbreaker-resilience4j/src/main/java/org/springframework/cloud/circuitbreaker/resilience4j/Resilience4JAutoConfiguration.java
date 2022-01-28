@@ -27,6 +27,7 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -86,7 +87,9 @@ public class Resilience4JAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean({ MeterRegistry.class })
-	@ConditionalOnClass(name = { "io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics" })
+	@ConditionalOnClass(name = { "io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher" })
+	@ConditionalOnMissingBean({ TaggedCircuitBreakerMetricsPublisher.class })
 	public static class MicrometerResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
@@ -95,14 +98,20 @@ public class Resilience4JAutoConfiguration {
 		@Autowired(required = false)
 		private Resilience4jBulkheadProvider bulkheadProvider;
 
+		@Autowired(required = false)
+		private TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
+
 		@Autowired
 		private MeterRegistry meterRegistry;
 
 		@PostConstruct
 		public void init() {
 			if (factory != null) {
-				TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry())
-						.bindTo(meterRegistry);
+				if (taggedCircuitBreakerMetrics == null) {
+					taggedCircuitBreakerMetrics = TaggedCircuitBreakerMetrics
+							.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
+				}
+				taggedCircuitBreakerMetrics.bindTo(meterRegistry);
 			}
 			if (bulkheadProvider != null) {
 				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
