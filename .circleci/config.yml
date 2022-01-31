@@ -20,8 +20,8 @@ jobs:
             sudo update-alternatives --set javac /usr/lib/jvm/temurin-17-jdk-amd64/bin/javac
             java -version
       - checkout
-      - restore_cache:
-          key: sc-circuitbreaker-{{ .Branch }}
+      # - restore_cache:
+      #     key: sc-circuitbreaker-{{ .Branch }}
       - run:
           name: "Download dependencies"
           command: |
