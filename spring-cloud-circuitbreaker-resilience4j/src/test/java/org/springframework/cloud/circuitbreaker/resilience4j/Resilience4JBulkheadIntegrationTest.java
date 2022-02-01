@@ -30,6 +30,8 @@ import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
 import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -56,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -134,6 +137,8 @@ public class Resilience4JBulkheadIntegrationTest {
 	@RestController
 	protected static class Application {
 
+		private static final Log LOG = LogFactory.getLog(Application.class);
+
 		@GetMapping("/slow")
 		public String slow() throws InterruptedException {
 			Thread.sleep(3000);
@@ -149,6 +154,7 @@ public class Resilience4JBulkheadIntegrationTest {
 		public String slowOnDemand(@RequestHeader HttpHeaders headers) {
 			if (headers.containsKey("delayInMilliseconds")) {
 				String delayString = headers.getFirst("delayInMilliseconds");
+				LOG.info("delay header: " + delayString);
 				if (delayString != null) {
 					try {
 						Thread.sleep(Integer.parseInt(delayString));
@@ -157,6 +163,8 @@ public class Resilience4JBulkheadIntegrationTest {
 						e.printStackTrace();
 					}
 				}
+			} else {
+				LOG.info("No delay header present");
 			}
 
 			return "normal";
@@ -176,9 +184,33 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
+			doAnswer(invocation -> {
+				CircuitBreakerOnErrorEvent event = invocation.getArgument(0, CircuitBreakerOnErrorEvent.class);
+				LOG.info(event.getCircuitBreakerName() + " error: " + event.getEventType() + " duration: "
+						+ event.getElapsedDuration().getSeconds());
+				return null;
+			}).when(slowErrorConsumer).consumeEvent(any(CircuitBreakerOnErrorEvent.class));
+			doAnswer(invocation -> {
+				CircuitBreakerOnSuccessEvent event = invocation.getArgument(0, CircuitBreakerOnSuccessEvent.class);
+				LOG.info(event.getCircuitBreakerName() + " success: " + event.getEventType() + " duration: "
+						+ event.getElapsedDuration().getSeconds());
+				return null;
+			}).when(slowSuccessConsumer).consumeEvent(any(CircuitBreakerOnSuccessEvent.class));
+			doAnswer(invocation -> {
+				CircuitBreakerOnErrorEvent event = invocation.getArgument(0, CircuitBreakerOnErrorEvent.class);
+				LOG.info(event.getCircuitBreakerName() + " error: " + event.getEventType() + " duration: "
+						+ event.getElapsedDuration().getSeconds());
+				return null;
+			}).when(normalErrorConsumer).consumeEvent(any(CircuitBreakerOnErrorEvent.class));
+			doAnswer(invocation -> {
+				CircuitBreakerOnSuccessEvent event = invocation.getArgument(0, CircuitBreakerOnSuccessEvent.class);
+				LOG.info(event.getCircuitBreakerName() + " success: " + event.getEventType() + " duration: "
+						+ event.getElapsedDuration().getSeconds());
+				return null;
+			}).when(normalSuccessConsumer).consumeEvent(any(CircuitBreakerOnSuccessEvent.class));
 			return factory -> {
 				factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()),
+						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(3)).build()),
 						"slow");
 				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
 						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
@@ -195,6 +227,16 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
+			doAnswer(invocationOnMock -> {
+				BulkheadOnCallRejectedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallRejectedEvent.class);
+				LOG.info(event.getBulkheadName() + " rejected: " + event.getEventType());
+				return null;
+			}).when(slowRejectedConsumer).consumeEvent(any(BulkheadOnCallRejectedEvent.class));
+			doAnswer(invocationOnMock -> {
+				BulkheadOnCallFinishedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallFinishedEvent.class);
+				LOG.info(event.getBulkheadName() + " finished: " + event.getEventType());
+				return null;
+			}).when(slowFinishedConsumer).consumeEvent(any(BulkheadOnCallFinishedEvent.class));
 			return provider -> {
 				provider.configure(
 						builder -> builder.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(1).build()),
@@ -228,6 +270,16 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer() {
+			doAnswer(invocationOnMock -> {
+				BulkheadOnCallRejectedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallRejectedEvent.class);
+				LOG.info(event.getBulkheadName() + " threadpool rejected: " + event.getEventType());
+				return null;
+			}).when(slowThreadPoolRejectedConsumer).consumeEvent(any(BulkheadOnCallRejectedEvent.class));
+			doAnswer(invocationOnMock -> {
+				BulkheadOnCallFinishedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallFinishedEvent.class);
+				LOG.info(event.getBulkheadName() + " threadpool finished: " + event.getEventType());
+				return null;
+			}).when(slowThreadPoolFinishedConsumer).consumeEvent(any(BulkheadOnCallFinishedEvent.class));
 			return provider -> provider.addThreadPoolBulkheadCustomizer(threadPoolBulkhead -> threadPoolBulkhead
 					.getEventPublisher().onCallRejected(slowThreadPoolRejectedConsumer)
 					.onCallFinished(slowThreadPoolFinishedConsumer), "slowThreadPoolBulkhead");
@@ -258,6 +310,7 @@ public class Resilience4JBulkheadIntegrationTest {
 			}
 
 			public String slowOnDemand(int delayInMilliseconds) {
+				LOG.info("delay: " + delayInMilliseconds);
 				return circuitBreakerSlow
 						.run(() -> rest
 								.exchange("/slowOnDemand", HttpMethod.GET,
