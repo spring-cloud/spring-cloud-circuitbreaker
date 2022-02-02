@@ -163,7 +163,8 @@ public class Resilience4JBulkheadIntegrationTest {
 						e.printStackTrace();
 					}
 				}
-			} else {
+			}
+			else {
 				LOG.info("No delay header present");
 			}
 
