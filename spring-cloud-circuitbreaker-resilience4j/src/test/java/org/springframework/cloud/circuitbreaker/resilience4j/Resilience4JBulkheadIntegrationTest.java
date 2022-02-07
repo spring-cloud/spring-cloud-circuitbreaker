@@ -17,6 +17,8 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +89,9 @@ public class Resilience4JBulkheadIntegrationTest {
 	@Autowired
 	Application.DemoControllerService service;
 
+	@Autowired
+	private TestRestTemplate rest;
+
 	@Test
 	public void testSlow() {
 		assertThat(service.slow()).isEqualTo("fallback");
@@ -130,6 +135,17 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		verify(Application.slowThreadPoolFinishedConsumer, times(2)).consumeEvent(any());
 		verify(Application.slowThreadPoolRejectedConsumer, times(1)).consumeEvent(any());
+	}
+
+	@Test
+	public void testResilience4JMetricsAvailable() {
+		assertThat(service.normal()).isEqualTo("normal");
+		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
+				.contains("resilience4j.bulkhead.max.thread.pool.size")).isTrue();
+
+		assertThat(((List) rest
+				.getForObject("/actuator/metrics/resilience4j.bulkhead.max.thread.pool.size?tag=group:none", Map.class)
+				.get("availableTags"))).hasSize(1);
 	}
 
 	@Configuration(proxyBeanMethods = false)
