@@ -28,7 +28,10 @@ import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.config.MeterFilter;
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +51,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Andrii Bohutskyi
  */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(Resilience4JConfigurationProperties.class)
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
 		"spring.cloud.circuitbreaker.resilience4j.blocking.enabled" }, matchIfMissing = true)
 public class Resilience4JAutoConfiguration {
@@ -80,6 +85,31 @@ public class Resilience4JAutoConfiguration {
 					threadPoolBulkheadRegistry, bulkheadRegistry);
 			bulkheadCustomizers.forEach(customizer -> customizer.customize(resilience4jBulkheadProvider));
 			return resilience4jBulkheadProvider;
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnBean({ MeterRegistry.class })
+	public static class MicrometerResilience4JGroupCustomizerConfiguration {
+
+		private static final String RESILIENCE4J_METER_PREFIX = "resilience4j";
+
+		@Bean
+		@ConditionalOnProperty(value = "spring.cloud.circuitbreaker.resilience4j.enableGroupMeterFilter",
+				havingValue = "true", matchIfMissing = true)
+		MeterFilter resilience4JMeterFilter(Resilience4JConfigurationProperties properties) {
+			return new MeterFilter() {
+				@Override
+				public Meter.Id map(Meter.Id id) {
+					if (id.getName().startsWith(RESILIENCE4J_METER_PREFIX)
+							&& id.getTag(Resilience4JCircuitBreaker.CIRCUIT_BREAKER_GROUP_TAG) == null) {
+						return id.withTag(Tag.of(Resilience4JCircuitBreaker.CIRCUIT_BREAKER_GROUP_TAG,
+								properties.getDefaultGroupTag()));
+					}
+					return id;
+				}
+			};
 		}
 
 	}
