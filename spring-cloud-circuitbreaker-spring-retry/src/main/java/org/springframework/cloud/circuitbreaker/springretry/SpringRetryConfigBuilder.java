@@ -81,8 +81,8 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 	 * @param refersh True to refresh, false othrwise.
 	 * @return The builder.
 	 */
-	public SpringRetryConfigBuilder forceRefreshState(boolean refersh) {
-		this.forceRefreshState = forceRefreshState;
+	public SpringRetryConfigBuilder forceRefreshState(boolean refresh) {
+		this.forceRefreshState = refresh;
 		return this;
 	}
 
