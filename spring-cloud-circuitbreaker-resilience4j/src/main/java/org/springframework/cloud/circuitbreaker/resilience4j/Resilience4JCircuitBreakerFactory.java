@@ -25,7 +25,9 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -35,6 +37,7 @@ import org.springframework.util.Assert;
 /**
  * @author Ryan Baxter
  * @author Andrii Bohutskyi
+ * @author 荒
  */
 public class Resilience4JCircuitBreakerFactory extends
 		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
@@ -122,14 +125,32 @@ public class Resilience4JCircuitBreakerFactory extends
 		}
 	}
 
+	/**
+	 * Add support group/service config on CircuitBreaker.
+	 * <ul>
+	 * <li>method(id) config - on specific method or operation</li>
+	 * <li>Service(group) config - on specific application service or some operations</li>
+	 * <li>global default config</li>
+	 * </ul>
+	 * Descending priority from top to bottom.
+	 * <p/>
+	 * @param id operation or method name
+	 * @param groupName service group name
+	 * @return {@link Resilience4JCircuitBreaker}
+	 */
 	private Resilience4JCircuitBreaker create(String id, String groupName,
 			ExecutorService circuitBreakerExecutorService) {
-		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration defaultConfig = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
-				config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
-				circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
-				bulkheadProvider);
+		CircuitBreakerConfig circuitBreakerConfig = this.circuitBreakerRegistry.getConfiguration(id)
+				.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
+						.orElseGet(defaultConfig::getCircuitBreakerConfig));
+		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
+				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
+						.orElseGet(defaultConfig::getTimeLimiterConfig));
+		return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
+				circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerExecutorService,
+				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 	}
 
 }
