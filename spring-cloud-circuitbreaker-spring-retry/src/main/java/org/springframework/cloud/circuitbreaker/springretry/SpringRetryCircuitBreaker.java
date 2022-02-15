@@ -32,13 +32,13 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
 	private String id;
 
-	private SpringRetryConfigBuilder.SpringRetryConfig config;
+	private SpringRetryConfig config;
 
 	private Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
 
 	private RetryTemplate retryTemplate;
 
-	public SpringRetryCircuitBreaker(String id, SpringRetryConfigBuilder.SpringRetryConfig config,
+	public SpringRetryCircuitBreaker(String id, SpringRetryConfig config,
 			Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
 		this.id = id;
 		this.config = config;
