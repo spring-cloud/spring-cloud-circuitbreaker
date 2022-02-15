@@ -18,7 +18,6 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import org.springframework.classify.Classifier;
 import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;

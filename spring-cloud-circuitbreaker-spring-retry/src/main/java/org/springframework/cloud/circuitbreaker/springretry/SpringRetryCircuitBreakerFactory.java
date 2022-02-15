@@ -33,8 +33,7 @@ import org.springframework.util.Assert;
 public class SpringRetryCircuitBreakerFactory
 		extends CircuitBreakerFactory<SpringRetryConfig, SpringRetryConfigBuilder> {
 
-	private Function<String, SpringRetryConfig> defaultConfig = id -> new SpringRetryConfigBuilder(
-			id).build();
+	private Function<String, SpringRetryConfig> defaultConfig = id -> new SpringRetryConfigBuilder(id).build();
 
 	private Map<String, Customizer<RetryTemplate>> retryTemplateCustomizers = new HashMap<>();
 

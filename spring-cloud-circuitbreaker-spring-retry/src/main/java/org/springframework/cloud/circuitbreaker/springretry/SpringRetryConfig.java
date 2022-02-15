@@ -17,7 +17,6 @@
 package org.springframework.cloud.circuitbreaker.springretry;
 
 import org.springframework.classify.Classifier;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 
@@ -27,9 +26,6 @@ import org.springframework.retry.backoff.BackOffPolicy;
 public class SpringRetryConfig {
 
 	private String id;
-
-	// TODO do we need this?
-	private RetryContext retryContext;
 
 	private BackOffPolicy backOffPolicy;
 
@@ -69,14 +65,6 @@ public class SpringRetryConfig {
 
 	void setId(String id) {
 		this.id = id;
-	}
-
-	RetryContext getRetryContext() {
-		return retryContext;
-	}
-
-	void setRetryContext(RetryContext retryContext) {
-		this.retryContext = retryContext;
 	}
 
 	BackOffPolicy getBackOffPolicy() {
