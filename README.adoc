@@ -360,7 +360,8 @@ public Customizer<SpringRetryCircuitBreakerFactory> slowCustomizer() {
 
 == Building
 
-:jdkversion: 1.8
+
+:jdkversion: 17
 
 === Basic Compile and Test
 
