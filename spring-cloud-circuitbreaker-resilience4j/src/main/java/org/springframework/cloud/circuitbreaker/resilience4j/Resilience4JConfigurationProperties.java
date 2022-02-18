@@ -28,6 +28,8 @@ public class Resilience4JConfigurationProperties {
 
 	private String defaultGroupTag = "none";
 
+	private boolean enableSemaphoreDefaultBulkhead = false;
+
 	public boolean isEnableGroupMeterFilter() {
 		return enableGroupMeterFilter;
 	}
@@ -42,6 +44,14 @@ public class Resilience4JConfigurationProperties {
 
 	public void setDefaultGroupTag(String defaultGroupTag) {
 		this.defaultGroupTag = defaultGroupTag;
+	}
+
+	boolean isEnableSemaphoreDefaultBulkhead() {
+		return enableSemaphoreDefaultBulkhead;
+	}
+
+	void setEnableSemaphoreDefaultBulkhead(boolean enableSemaphoreDefaultBulkhead) {
+		this.enableSemaphoreDefaultBulkhead = enableSemaphoreDefaultBulkhead;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ public class Resilience4jBulkheadProvider {
 
 	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration;
 
+	private boolean semaphoreDefaultBulkhead = false;
+
 	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
 			BulkheadRegistry bulkheadRegistry) {
 		this.bulkheadRegistry = bulkheadRegistry;
@@ -55,6 +57,13 @@ public class Resilience4jBulkheadProvider {
 		defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
 				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
 				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig()).build();
+	}
+
+	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
+			BulkheadRegistry bulkheadRegistry,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
+		this(threadPoolBulkheadRegistry, bulkheadRegistry);
+		this.semaphoreDefaultBulkhead = resilience4JConfigurationProperties.isEnableSemaphoreDefaultBulkhead();
 	}
 
 	public void configureDefault(
@@ -111,7 +120,8 @@ public class Resilience4jBulkheadProvider {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 
-		if (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent()) {
+		if (semaphoreDefaultBulkhead
+				|| (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent())) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
