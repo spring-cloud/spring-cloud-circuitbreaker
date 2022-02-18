@@ -29,17 +29,24 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
+import static org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreaker.CIRCUIT_BREAKER_GROUP_TAG;
+
 /**
  * @author Ryan Baxter
  * @author Thomas Vitale
+ * @author 荒
  */
 public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreaker {
 
 	private final String id;
+
+	private final String groupName;
 
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
@@ -56,19 +63,23 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry,
 			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
-		this.id = id;
-		this.circuitBreakerConfig = config.getCircuitBreakerConfig();
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
-		this.timeLimiterConfig = config.getTimeLimiterConfig();
-		this.timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+		this(id, id, config, circuitBreakerRegistry, TimeLimiterRegistry.ofDefaults(), circuitBreakerCustomizer);
 	}
 
+	@Deprecated
 	public ReactiveResilience4JCircuitBreaker(String id,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
 			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
+		this(id, id, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer);
+	}
+
+	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
+			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
 		this.id = id;
+		this.groupName = groupName;
 		this.circuitBreakerConfig = config.getCircuitBreakerConfig();
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
@@ -78,17 +89,13 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = circuitBreakerRegistry
-				.circuitBreaker(id, circuitBreakerConfig);
-		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig);
-		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
-				.timeout(timeLimiter.getTimeLimiterConfig().getTimeoutDuration())
+		Tuple2<CircuitBreaker, TimeLimiter> tuple = buildCircuitBreakerAndTimeLimiter();
+		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()))
+				.timeout(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Mono timeout we need to tell the circuit breaker
 				// about the error
 				.doOnError(TimeoutException.class,
-						t -> defaultCircuitBreaker.onError(
-								timeLimiter.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
+						t -> tuple.getT1().onError(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration().toMillis(),
 								TimeUnit.MILLISECONDS, t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -98,22 +105,29 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
-		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = circuitBreakerRegistry
-				.circuitBreaker(id, circuitBreakerConfig);
-		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig);
-		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(defaultCircuitBreaker))
-				.timeout(timeLimiter.getTimeLimiterConfig().getTimeoutDuration())
+		Tuple2<CircuitBreaker, TimeLimiter> tuple = buildCircuitBreakerAndTimeLimiter();
+		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()))
+				.timeout(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration())
 				// Since we are using the Flux timeout we need to tell the circuit breaker
 				// about the error
 				.doOnError(TimeoutException.class,
-						t -> defaultCircuitBreaker.onError(
-								timeLimiter.getTimeLimiterConfig().getTimeoutDuration().toMillis(),
+						t -> tuple.getT1().onError(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration().toMillis(),
 								TimeUnit.MILLISECONDS, t));
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
+	}
+
+	private Tuple2<CircuitBreaker, TimeLimiter> buildCircuitBreakerAndTimeLimiter() {
+		final io.vavr.collection.Map<String, String> tags = io.vavr.collection.HashMap.of(CIRCUIT_BREAKER_GROUP_TAG,
+				this.groupName);
+		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id, circuitBreakerConfig, tags);
+		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(circuitBreaker));
+		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)
+				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
+						.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
+		return Tuples.of(circuitBreaker, timeLimiter);
 	}
 
 }

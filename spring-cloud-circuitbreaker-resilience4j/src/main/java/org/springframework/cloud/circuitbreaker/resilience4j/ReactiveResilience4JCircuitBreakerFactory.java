@@ -35,6 +35,7 @@ import org.springframework.util.Assert;
 /**
  * @author Ryan Baxter
  * @author Thomas Vitale
+ * @author 荒
  */
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
@@ -66,10 +67,38 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 	@Override
 	public ReactiveCircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
+		return this.create(id, id);
+	}
+
+	/**
+	 * Add support group/service config on Reactive CircuitBreaker.
+	 * <ul>
+	 * <li>method(id) config - on specific method or operation</li>
+	 * <li>Service(group) config - on specific application service or some operations</li>
+	 * <li>global default config</li>
+	 * </ul>
+	 * Descending priority from top to bottom.
+	 * <p/>
+	 * @param id operation or method name
+	 * @param groupName service group name
+	 * @return {@link ReactiveResilience4JCircuitBreaker}
+	 */
+	@Override
+	public ReactiveCircuitBreaker create(String id, String groupName) {
+		Assert.hasText(id, "A CircuitBreaker must have an id.");
+		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration defaultConfig = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		return new ReactiveResilience4JCircuitBreaker(id, config, circuitBreakerRegistry, timeLimiterRegistry,
-				Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+		CircuitBreakerConfig circuitBreakerConfig = this.circuitBreakerRegistry.getConfiguration(id)
+				.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
+						.orElseGet(defaultConfig::getCircuitBreakerConfig));
+		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
+				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
+						.orElseGet(defaultConfig::getTimeLimiterConfig));
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
+				.circuitBreakerConfig(circuitBreakerConfig).timeLimiterConfig(timeLimiterConfig).build();
+		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
+				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
 	}
 
 	@Override
