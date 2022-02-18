@@ -18,7 +18,6 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import org.springframework.classify.Classifier;
 import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
@@ -30,7 +29,7 @@ import org.springframework.retry.support.DefaultRetryState;
  *
  * @author Ryan Baxter
  */
-public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfigBuilder.SpringRetryConfig> {
+public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig> {
 
 	private String id;
 
@@ -105,71 +104,6 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 		config.setForceRefreshState(forceRefreshState);
 		config.setStateClassifier(stateClassifier);
 		return config;
-	}
-
-	public static class SpringRetryConfig {
-
-		private String id;
-
-		// TODO do we need this?
-		private RetryContext retryContext;
-
-		private BackOffPolicy backOffPolicy;
-
-		private RetryPolicy retryPolicy;
-
-		private boolean forceRefreshState;
-
-		private Classifier<Throwable, Boolean> stateClassifier;
-
-		boolean isForceRefreshState() {
-			return forceRefreshState;
-		}
-
-		void setForceRefreshState(boolean forceRefreshState) {
-			this.forceRefreshState = forceRefreshState;
-		}
-
-		Classifier<Throwable, Boolean> getStateClassifier() {
-			return stateClassifier;
-		}
-
-		void setStateClassifier(Classifier<Throwable, Boolean> stateClassifier) {
-			this.stateClassifier = stateClassifier;
-		}
-
-		RetryPolicy getRetryPolicy() {
-			return retryPolicy;
-		}
-
-		void setRetryPolicy(RetryPolicy retryPolicy) {
-			this.retryPolicy = retryPolicy;
-		}
-
-		String getId() {
-			return id;
-		}
-
-		void setId(String id) {
-			this.id = id;
-		}
-
-		RetryContext getRetryContext() {
-			return retryContext;
-		}
-
-		void setRetryContext(RetryContext retryContext) {
-			this.retryContext = retryContext;
-		}
-
-		BackOffPolicy getBackOffPolicy() {
-			return backOffPolicy;
-		}
-
-		void setBackOffPolicy(BackOffPolicy backOffPolicy) {
-			this.backOffPolicy = backOffPolicy;
-		}
-
 	}
 
 }
