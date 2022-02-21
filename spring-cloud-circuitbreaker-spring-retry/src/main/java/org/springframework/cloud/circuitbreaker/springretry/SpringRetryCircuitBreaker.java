@@ -30,13 +30,13 @@ import org.springframework.retry.support.RetryTemplate;
  */
 public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
-	private String id;
+	private final String id;
 
-	private SpringRetryConfig config;
+	private final SpringRetryConfig config;
 
-	private Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
+	private final Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
 
-	private RetryTemplate retryTemplate;
+	private final RetryTemplate retryTemplate;
 
 	public SpringRetryCircuitBreaker(String id, SpringRetryConfig config,
 			Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {

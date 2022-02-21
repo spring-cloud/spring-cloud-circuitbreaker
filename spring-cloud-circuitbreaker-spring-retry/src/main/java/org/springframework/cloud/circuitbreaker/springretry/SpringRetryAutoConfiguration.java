@@ -41,7 +41,7 @@ public class SpringRetryAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-	public CircuitBreakerFactory springRetryCircuitBreakerFactory() {
+	public CircuitBreakerFactory<?, ?> springRetryCircuitBreakerFactory() {
 		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;

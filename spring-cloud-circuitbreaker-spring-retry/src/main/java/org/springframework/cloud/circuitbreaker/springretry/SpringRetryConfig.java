@@ -39,40 +39,45 @@ public class SpringRetryConfig {
 		return forceRefreshState;
 	}
 
-	void setForceRefreshState(boolean forceRefreshState) {
+	SpringRetryConfig setForceRefreshState(boolean forceRefreshState) {
 		this.forceRefreshState = forceRefreshState;
+		return this;
 	}
 
 	Classifier<Throwable, Boolean> getStateClassifier() {
 		return stateClassifier;
 	}
 
-	void setStateClassifier(Classifier<Throwable, Boolean> stateClassifier) {
+	SpringRetryConfig setStateClassifier(Classifier<Throwable, Boolean> stateClassifier) {
 		this.stateClassifier = stateClassifier;
+		return this;
 	}
 
 	RetryPolicy getRetryPolicy() {
 		return retryPolicy;
 	}
 
-	void setRetryPolicy(RetryPolicy retryPolicy) {
+	SpringRetryConfig setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
+		return this;
 	}
 
 	String getId() {
 		return id;
 	}
 
-	void setId(String id) {
+	SpringRetryConfig setId(String id) {
 		this.id = id;
+		return this;
 	}
 
 	BackOffPolicy getBackOffPolicy() {
 		return backOffPolicy;
 	}
 
-	void setBackOffPolicy(BackOffPolicy backOffPolicy) {
+	SpringRetryConfig setBackOffPolicy(BackOffPolicy backOffPolicy) {
 		this.backOffPolicy = backOffPolicy;
+		return this;
 	}
 
 }

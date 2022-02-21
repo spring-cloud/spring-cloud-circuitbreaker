@@ -35,7 +35,7 @@ public class SpringRetryCircuitBreakerFactory
 
 	private Function<String, SpringRetryConfig> defaultConfig = id -> new SpringRetryConfigBuilder(id).build();
 
-	private Map<String, Customizer<RetryTemplate>> retryTemplateCustomizers = new HashMap<>();
+	private final Map<String, Customizer<RetryTemplate>> retryTemplateCustomizers = new HashMap<>();
 
 	@Override
 	protected SpringRetryConfigBuilder configBuilder(String id) {
