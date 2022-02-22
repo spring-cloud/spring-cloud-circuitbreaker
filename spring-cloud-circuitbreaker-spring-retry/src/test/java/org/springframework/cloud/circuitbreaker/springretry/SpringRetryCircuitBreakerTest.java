@@ -19,6 +19,7 @@ package org.springframework.cloud.circuitbreaker.springretry;
 import java.util.function.Supplier;
 
 import org.junit.Test;
+
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
