@@ -31,7 +31,7 @@ import org.springframework.retry.support.DefaultRetryState;
  */
 public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig> {
 
-	private String id;
+	private final String id;
 
 	private BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
@@ -39,12 +39,7 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 
 	private boolean forceRefreshState = false;
 
-	private Classifier<Throwable, Boolean> stateClassifier = new Classifier<Throwable, Boolean>() {
-		@Override
-		public Boolean classify(Throwable classifiable) {
-			return false;
-		}
-	};
+	private Classifier<Throwable, Boolean> stateClassifier = classifiable -> false;
 
 	/**
 	 * Constructor.
@@ -77,7 +72,7 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 
 	/**
 	 * Forces a refresh on the {@link DefaultRetryState} object.
-	 * @param refersh True to refresh, false othrwise.
+	 * @param refresh true to refresh, false otherwise.
 	 * @return The builder.
 	 */
 	public SpringRetryConfigBuilder forceRefreshState(boolean refresh) {
@@ -97,13 +92,8 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 
 	@Override
 	public SpringRetryConfig build() {
-		SpringRetryConfig config = new SpringRetryConfig();
-		config.setBackOffPolicy(this.backOffPolicy);
-		config.setId(id);
-		config.setRetryPolicy(retryPolicy);
-		config.setForceRefreshState(forceRefreshState);
-		config.setStateClassifier(stateClassifier);
-		return config;
+		return new SpringRetryConfig().setBackOffPolicy(backOffPolicy).setId(id).setRetryPolicy(retryPolicy)
+				.setForceRefreshState(forceRefreshState).setStateClassifier(stateClassifier);
 	}
 
 }
