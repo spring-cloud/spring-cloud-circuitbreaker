@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,9 +80,10 @@ public class Resilience4JAutoConfiguration {
 
 		@Bean
 		public Resilience4jBulkheadProvider bulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
-				BulkheadRegistry bulkheadRegistry) {
+				BulkheadRegistry bulkheadRegistry,
+				Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 			Resilience4jBulkheadProvider resilience4jBulkheadProvider = new Resilience4jBulkheadProvider(
-					threadPoolBulkheadRegistry, bulkheadRegistry);
+					threadPoolBulkheadRegistry, bulkheadRegistry, resilience4JConfigurationProperties);
 			bulkheadCustomizers.forEach(customizer -> customizer.customize(resilience4jBulkheadProvider));
 			return resilience4jBulkheadProvider;
 		}

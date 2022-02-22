@@ -193,7 +193,9 @@ Spring Cloud CircuitBreaker Resilience4j provides two implementation of bulkhead
 * a `SemaphoreBulkhead` which uses Semaphores
 * a `FixedThreadPoolBulkhead` which uses a bounded queue and a fixed thread pool.
 
-By default, Spring Cloud CircuitBreaker Resilience4j uses `FixedThreadPoolBulkhead`. For more information on implementation
+By default, Spring Cloud CircuitBreaker Resilience4j uses `FixedThreadPoolBulkhead`. To modify the default behavior to use `SemaphoreBulkhead` set the property `spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead` to `true`.
+
+For more information on implementation
 of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resilience4j Bulkhead].
 
 The `Customizer<Resilience4jBulkheadProvider>` can be used to provide a default `Bulkhead` and `ThreadPoolBulkhead` configuration.

@@ -92,12 +92,8 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 
 	@Override
 	public SpringRetryConfig build() {
-		return new SpringRetryConfig()
-			.setBackOffPolicy(backOffPolicy)
-			.setId(id)
-			.setRetryPolicy(retryPolicy)
-			.setForceRefreshState(forceRefreshState)
-			.setStateClassifier(stateClassifier);
+		return new SpringRetryConfig().setBackOffPolicy(backOffPolicy).setId(id).setRetryPolicy(retryPolicy)
+				.setForceRefreshState(forceRefreshState).setStateClassifier(stateClassifier);
 	}
 
 }
