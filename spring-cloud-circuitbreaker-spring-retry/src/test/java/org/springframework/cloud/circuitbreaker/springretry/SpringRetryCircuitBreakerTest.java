@@ -30,16 +30,16 @@ import static org.mockito.Mockito.verify;
 /**
  * @author Ryan Baxter
  */
-class SpringRetryCircuitBreakerTest {
+public class SpringRetryCircuitBreakerTest {
 
 	@Test
-	void testCreate() {
-		CircuitBreaker cb = new SpringRetryCircuitBreakerFactory().create("foo-id");
+	public void testCreate() {
+		CircuitBreaker cb = new SpringRetryCircuitBreakerFactory().create("foo");
 		assertThat(cb.run(() -> "foo")).isEqualTo("foo");
 	}
 
 	@Test
-	void testFallback() {
+	public void testFallback() {
 		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
 		Supplier<String> spyedSup = spy(new Supplier<String>() {
 			@Override
@@ -51,7 +51,7 @@ class SpringRetryCircuitBreakerTest {
 		for (int i = 0; i < 10; i++) {
 			cb.run(spyedSup, t -> "fallback");
 		}
-		assertThat(cb.run(spyedSup, t -> "fallback")).isEqualTo("fallback");
+		assertThat((String) cb.run(spyedSup, t -> "fallback")).isEqualTo("fallback");
 		// This will only be called 3 times because the SimpleRetryPolicy will trip the
 		// circuit after the 3rd attempt.
 		verify(spyedSup, times(3)).get();
