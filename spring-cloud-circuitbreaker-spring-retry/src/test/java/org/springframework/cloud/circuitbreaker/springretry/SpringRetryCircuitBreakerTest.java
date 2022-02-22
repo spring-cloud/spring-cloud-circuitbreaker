@@ -18,8 +18,7 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import java.util.function.Supplier;
 
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +52,8 @@ public class SpringRetryCircuitBreakerTest {
 		}
 		assertThat((String) cb.run(spyedSup, t -> "fallback")).isEqualTo("fallback");
 		// This will only be called 3 times because the SimpleRetryPolicy will trip the
-		// circuit after the 3rd attempt.
+		// circuit after the
+		// 3rd attempt.
 		verify(spyedSup, times(3)).get();
 	}
 
