@@ -46,11 +46,11 @@ public class Resilience4JConfigurationProperties {
 		this.defaultGroupTag = defaultGroupTag;
 	}
 
-	boolean isEnableSemaphoreDefaultBulkhead() {
+	public boolean isEnableSemaphoreDefaultBulkhead() {
 		return enableSemaphoreDefaultBulkhead;
 	}
 
-	void setEnableSemaphoreDefaultBulkhead(boolean enableSemaphoreDefaultBulkhead) {
+	public void setEnableSemaphoreDefaultBulkhead(boolean enableSemaphoreDefaultBulkhead) {
 		this.enableSemaphoreDefaultBulkhead = enableSemaphoreDefaultBulkhead;
 	}
 

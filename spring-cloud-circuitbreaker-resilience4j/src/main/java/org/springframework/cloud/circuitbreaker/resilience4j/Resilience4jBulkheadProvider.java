@@ -50,6 +50,7 @@ public class Resilience4jBulkheadProvider {
 
 	private boolean semaphoreDefaultBulkhead = false;
 
+	@Deprecated
 	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
 			BulkheadRegistry bulkheadRegistry) {
 		this.bulkheadRegistry = bulkheadRegistry;
