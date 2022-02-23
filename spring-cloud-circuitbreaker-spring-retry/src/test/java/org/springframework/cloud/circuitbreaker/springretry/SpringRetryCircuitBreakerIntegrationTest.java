@@ -37,7 +37,6 @@ import org.springframework.retry.RetryListener;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.stereotype.Service;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,7 +53,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
-@DirtiesContext
 class SpringRetryCircuitBreakerIntegrationTest {
 
 	@Autowired
