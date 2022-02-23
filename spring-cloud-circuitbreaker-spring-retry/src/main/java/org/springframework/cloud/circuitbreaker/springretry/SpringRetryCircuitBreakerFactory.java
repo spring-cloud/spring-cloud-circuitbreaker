@@ -18,7 +18,6 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -51,7 +50,7 @@ public class SpringRetryCircuitBreakerFactory
 	public CircuitBreaker create(String id) {
 		Assert.hasText(id, "A circuit breaker must have an id");
 		SpringRetryConfig config = getConfigurations().computeIfAbsent(id, defaultConfig);
-		return new SpringRetryCircuitBreaker(id, config, Optional.ofNullable(retryTemplateCustomizers.get(id)));
+		return new SpringRetryCircuitBreaker(id, config, retryTemplateCustomizers.get(id));
 	}
 
 	public void addRetryTemplateCustomizers(Customizer<RetryTemplate> customizer, String... ids) {

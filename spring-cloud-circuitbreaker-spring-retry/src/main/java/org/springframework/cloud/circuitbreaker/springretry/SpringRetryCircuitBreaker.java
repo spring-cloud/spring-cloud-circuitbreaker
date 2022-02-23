@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.springretry;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,12 +33,12 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
 	private final SpringRetryConfig config;
 
-	private final Optional<Customizer<RetryTemplate>> retryTemplateCustomizer;
+	private final Customizer<RetryTemplate> retryTemplateCustomizer;
 
 	private final RetryTemplate retryTemplate;
 
 	public SpringRetryCircuitBreaker(String id, SpringRetryConfig config,
-			Optional<Customizer<RetryTemplate>> retryTemplateCustomizer) {
+			Customizer<RetryTemplate> retryTemplateCustomizer) {
 		this.id = id;
 		this.config = config;
 		this.retryTemplateCustomizer = retryTemplateCustomizer;
@@ -52,7 +51,10 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 		retryTemplate.setBackOffPolicy(config.getBackOffPolicy());
 		retryTemplate.setRetryPolicy(config.getRetryPolicy());
 
-		retryTemplateCustomizer.ifPresent(customizer -> customizer.customize(retryTemplate));
+		if (retryTemplateCustomizer != null) {
+			retryTemplateCustomizer.customize(retryTemplate);
+		}
+
 		return retryTemplate.execute(context -> toRun.get(), context -> fallback.apply(context.getLastThrowable()),
 				new DefaultRetryState(id, config.isForceRefreshState(), config.getStateClassifier()));
 	}
