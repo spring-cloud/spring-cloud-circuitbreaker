@@ -18,8 +18,8 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import java.time.Duration;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -38,7 +38,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,22 +52,22 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Ryan Baxter
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
 @DirtiesContext
-public class SpringRetryCircuitBreakerIntegrationTest {
+class SpringRetryCircuitBreakerIntegrationTest {
 
 	@Autowired
-	Application.DemoControllerService service;
+	private Application.DemoControllerService service;
 
 	@Test
-	public void testSlow() {
+	void testSlow() {
 		assertThat(service.slow()).isEqualTo("fallback");
 		service.verifyTimesSlowInvoked();
 	}
 
 	@Test
-	public void testNormal() {
+	void testNormal() {
 		assertThat(service.normal()).isEqualTo("normal");
 	}
 
@@ -77,23 +77,23 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 	protected static class Application {
 
 		@GetMapping("/slow")
-		public String slow() throws InterruptedException {
+		String slow() throws InterruptedException {
 			Thread.sleep(3000);
 			return "slow";
 		}
 
 		@GetMapping("/normal")
-		public String normal() {
+		String normal() {
 			return "normal";
 		}
 
 		@Bean
-		public RestTemplateBuilder restTemplateBuilder() {
+		RestTemplateBuilder restTemplateBuilder() {
 			return new RestTemplateBuilder().setReadTimeout(Duration.ofSeconds(1));
 		}
 
 		@Bean
-		public Customizer<SpringRetryCircuitBreakerFactory> factoryCustomizer() {
+		Customizer<SpringRetryCircuitBreakerFactory> factoryCustomizer() {
 			return factory -> {
 				factory.configureDefault(
 						id -> new SpringRetryConfigBuilder(id).retryPolicy(new TimeoutRetryPolicy()).build());
@@ -123,13 +123,13 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 		}
 
 		@Service
-		public static class DemoControllerService {
+		private static class DemoControllerService {
 
-			private TestRestTemplate rest;
+			private final TestRestTemplate rest;
 
-			private CircuitBreakerFactory cbFactory;
+			private final CircuitBreakerFactory<?, ?> cbFactory;
 
-			private CircuitBreaker circuitBreakerSlow;
+			private final CircuitBreaker circuitBreakerSlow;
 
 			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
 				this.rest = spy(rest);
@@ -137,19 +137,19 @@ public class SpringRetryCircuitBreakerIntegrationTest {
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
-			public String slow() {
+			String slow() {
 				for (int i = 0; i < 10; i++) {
 					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 				}
 				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
-			public String normal() {
+			String normal() {
 				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
 			}
 
-			public void verifyTimesSlowInvoked() {
+			void verifyTimesSlowInvoked() {
 				verify(rest, times(1)).getForObject(eq("/slow"), eq(String.class));
 			}
 

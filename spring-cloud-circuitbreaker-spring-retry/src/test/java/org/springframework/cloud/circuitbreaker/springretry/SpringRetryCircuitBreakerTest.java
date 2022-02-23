@@ -18,7 +18,7 @@ package org.springframework.cloud.circuitbreaker.springretry;
 
 import java.util.function.Supplier;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 
@@ -30,16 +30,16 @@ import static org.mockito.Mockito.verify;
 /**
  * @author Ryan Baxter
  */
-public class SpringRetryCircuitBreakerTest {
+class SpringRetryCircuitBreakerTest {
 
 	@Test
-	public void testCreate() {
+	void testCreate() {
 		CircuitBreaker cb = new SpringRetryCircuitBreakerFactory().create("foo");
 		assertThat(cb.run(() -> "foo")).isEqualTo("foo");
 	}
 
 	@Test
-	public void testFallback() {
+	void testFallback() {
 		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
 		Supplier<String> spyedSup = spy(new Supplier<String>() {
 			@Override
@@ -51,10 +51,9 @@ public class SpringRetryCircuitBreakerTest {
 		for (int i = 0; i < 10; i++) {
 			cb.run(spyedSup, t -> "fallback");
 		}
-		assertThat((String) cb.run(spyedSup, t -> "fallback")).isEqualTo("fallback");
+		assertThat(cb.run(spyedSup, t -> "fallback")).isEqualTo("fallback");
 		// This will only be called 3 times because the SimpleRetryPolicy will trip the
-		// circuit after the
-		// 3rd attempt.
+		// circuit after the 3rd attempt.
 		verify(spyedSup, times(3)).get();
 	}
 
