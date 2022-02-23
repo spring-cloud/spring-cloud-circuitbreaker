@@ -129,7 +129,7 @@ class SpringRetryCircuitBreakerIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory<?, ?> cbFactory) {
 				this.rest = spy(rest);
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
