@@ -21,6 +21,9 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
@@ -55,6 +58,37 @@ class SpringRetryCircuitBreakerTest {
 		// This will only be called 3 times because the SimpleRetryPolicy will trip the
 		// circuit after the 3rd attempt.
 		verify(spyedSup, times(3)).get();
+	}
+
+	@Test
+	public void testRetryCustomizer() {
+		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
+		CustomListener listener = new CustomListener();
+		factory.addRetryTemplateCustomizers(rt -> rt.setListeners(new RetryListener[]{listener}), "with-customizer");
+
+		String result = factory.create("with-customizer").run(() -> "foo");
+		assertThat(result).isEqualTo("foo");
+		assertThat(listener.toCheck[0]).isEqualTo("check-me-please");
+	}
+
+	private static class CustomListener implements RetryListener {
+
+		private final String [] toCheck = new String[1];
+
+		@Override
+		public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+			return true;
+		}
+
+		@Override
+		public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+			toCheck[0] = "check-me-please";
+		}
+
+		@Override
+		public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+
+		}
 	}
 
 }
