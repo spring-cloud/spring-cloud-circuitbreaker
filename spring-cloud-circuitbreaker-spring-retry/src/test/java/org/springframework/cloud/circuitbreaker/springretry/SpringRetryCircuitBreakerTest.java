@@ -65,7 +65,7 @@ public class SpringRetryCircuitBreakerTest {
 	public void testRetryCustomizer() {
 		SpringRetryCircuitBreakerFactory factory = new SpringRetryCircuitBreakerFactory();
 		CustomListener listener = new CustomListener();
-		factory.addRetryTemplateCustomizers(rt -> rt.setListeners(new RetryListener[]{listener}), "with-customizer");
+		factory.addRetryTemplateCustomizers(rt -> rt.setListeners(new RetryListener[] { listener }), "with-customizer");
 
 		String result = factory.create("with-customizer").run(() -> "foo");
 		assertThat(result).isEqualTo("foo");
@@ -74,7 +74,7 @@ public class SpringRetryCircuitBreakerTest {
 
 	private static class CustomListener implements RetryListener {
 
-		private final String [] toCheck = new String[1];
+		private final String[] toCheck = new String[1];
 
 		@Override
 		public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
@@ -82,14 +82,17 @@ public class SpringRetryCircuitBreakerTest {
 		}
 
 		@Override
-		public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+		public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+				Throwable throwable) {
 			toCheck[0] = "check-me-please";
 		}
 
 		@Override
-		public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+		public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+				Throwable throwable) {
 
 		}
+
 	}
 
 }
