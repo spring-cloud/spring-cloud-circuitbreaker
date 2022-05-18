@@ -53,6 +53,8 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
+	private Resilience4JConfigurationProperties resilience4JConfigurationProperties = null;
+
 	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
@@ -61,13 +63,15 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
+			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
 				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+		this.resilience4JConfigurationProperties = resilience4JConfigurationProperties;
 	}
 
 	@Override
@@ -126,10 +130,11 @@ public class Resilience4JCircuitBreakerFactory extends
 			ExecutorService circuitBreakerExecutorService) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
+
 		return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
 				config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
-				circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
-				bulkheadProvider);
+				circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider,
+				resilience4JConfigurationProperties.isDisableThreadPool());
 	}
 
 }

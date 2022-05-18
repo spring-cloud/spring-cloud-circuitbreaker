@@ -35,8 +35,9 @@ import static org.mockito.Mockito.spy;
  */
 public class Resilience4JAutoConfigurationTests {
 
-	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(new Resilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(), null));
+	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
+			new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
+					null, new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void meterFilterEnabled() {

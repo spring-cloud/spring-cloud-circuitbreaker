@@ -20,6 +20,7 @@ import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -32,17 +33,33 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class Resilience4JCircuitBreakerTest {
 
+	Resilience4JConfigurationProperties properties = null;
+
+	@Before
+	public void before() {
+		properties = new Resilience4JConfigurationProperties();
+	}
+
 	@Test
 	public void run() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo");
+				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+
+	}
+
+	@Test
+	public void runWithoutThreadPool() {
+		properties.setDisableThreadPool(true);
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 
 	}
@@ -50,7 +67,7 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo");
+				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -59,7 +76,7 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void runWithFallbackAndGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -69,7 +86,8 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithBulkheadProvider() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
-						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo");
+						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults()),
+				properties).create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -77,8 +95,8 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithBulkheadProviderAndGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
-						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo",
-								"groupFoo");
+						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults()),
+				properties).create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -86,7 +104,8 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithFallbackBulkheadProvider() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
-						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo");
+						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults()),
+				properties).create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -96,8 +115,8 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithFallbackBulkheadProviderAndGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				TimeLimiterRegistry.ofDefaults(), new Resilience4jBulkheadProvider(
-						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults())).create("foo",
-								"groupFoo");
+						ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults()),
+				properties).create("foo", "groupFoo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
