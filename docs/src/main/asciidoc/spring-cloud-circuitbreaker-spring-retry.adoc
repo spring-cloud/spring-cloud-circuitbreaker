@@ -11,7 +11,7 @@ Both of these classes can be configured using `SpringRetryConfigBuilder`.
 
 ==== Default Configuration
 
-To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
+To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `SpringRetryCircuitBreakerFactory`.
 The `configureDefault` method can be used to provide a default configuration.
 
@@ -28,7 +28,7 @@ public Customizer<SpringRetryCircuitBreakerFactory> defaultCustomizer() {
 
 ==== Specific Circuit Breaker Configuration
 
-Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
+Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
 `SpringRetryCircuitBreakerFactory`.
 
 ====
