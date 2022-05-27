@@ -130,11 +130,17 @@ public class Resilience4JCircuitBreakerFactory extends
 			ExecutorService circuitBreakerExecutorService) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-
-		return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
-				config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
-				circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider,
-				resilience4JConfigurationProperties.isDisableThreadPool());
+		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
+			return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
+					config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry, null,
+					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+		}
+		else {
+			return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
+					config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
+					circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
+					bulkheadProvider);
+		}
 	}
 
 }

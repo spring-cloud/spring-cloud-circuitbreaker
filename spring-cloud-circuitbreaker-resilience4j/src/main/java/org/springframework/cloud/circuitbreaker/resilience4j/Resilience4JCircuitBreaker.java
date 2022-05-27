@@ -58,8 +58,6 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer;
 
-	private final boolean disableThreadPool;
-
 	@Deprecated
 	public Resilience4JCircuitBreaker(String id,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
@@ -74,7 +72,6 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		this.timeLimiterConfig = timeLimiterConfig;
 		this.executorService = executorService;
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
-		this.disableThreadPool = false;
 	}
 
 	@Deprecated
@@ -85,7 +82,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
 			Resilience4jBulkheadProvider bulkheadProvider) {
 		this(id, id, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
-				executorService, circuitBreakerCustomizer, bulkheadProvider, false);
+				executorService, circuitBreakerCustomizer, bulkheadProvider);
 	}
 
 	public Resilience4JCircuitBreaker(String id, String groupName,
@@ -93,7 +90,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-			Resilience4jBulkheadProvider bulkheadProvider, boolean disableThreadPool) {
+			Resilience4jBulkheadProvider bulkheadProvider) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = circuitBreakerConfig;
@@ -103,34 +100,32 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		this.executorService = executorService;
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 		this.bulkheadProvider = bulkheadProvider;
-		this.disableThreadPool = disableThreadPool;
 	}
 
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
 		final io.vavr.collection.Map<String, String> tags = io.vavr.collection.HashMap.of(CIRCUIT_BREAKER_GROUP_TAG,
 				this.groupName);
-		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig, tags);
-		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
 
-		Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(this.id,
 				this.circuitBreakerConfig, tags);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-
+		TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(id, timeLimiterConfig, tags);
 		if (bulkheadProvider != null) {
 			return bulkheadProvider.run(this.groupName, toRun, fallback, defaultCircuitBreaker, timeLimiter, tags);
 		}
 		else {
-			if (disableThreadPool) {
-				Supplier<T> decorator = io.github.resilience4j.circuitbreaker.CircuitBreaker
-						.decorateSupplier(defaultCircuitBreaker, toRun);
-				return Try.of(decorator::get).recover(fallback).get();
-			}
-			else {
+			if (executorService != null) {
+				Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
+				Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 				Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
 						.decorateCallable(defaultCircuitBreaker, restrictedCall);
 				return Try.of(callable::call).recover(fallback).get();
+			}
+			else {
+				Supplier<T> decorator = io.github.resilience4j.circuitbreaker.CircuitBreaker
+						.decorateSupplier(defaultCircuitBreaker, toRun);
+				return Try.of(decorator::get).recover(fallback).get();
 			}
 
 		}
