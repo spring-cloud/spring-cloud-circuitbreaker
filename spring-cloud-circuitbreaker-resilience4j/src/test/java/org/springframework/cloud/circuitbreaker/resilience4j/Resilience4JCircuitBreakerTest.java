@@ -48,9 +48,16 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	@Test
+	public void runWithOutProperties() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null).create("foo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+	}
+
+	@Test
 	public void runWithGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 
 	}
