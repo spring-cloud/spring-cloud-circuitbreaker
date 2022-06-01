@@ -63,19 +63,19 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			 TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
+		   TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-			.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
-			.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
 		this.resilience4JConfigurationProperties = null;
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider,
-			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
+		   TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider,
+		   Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
