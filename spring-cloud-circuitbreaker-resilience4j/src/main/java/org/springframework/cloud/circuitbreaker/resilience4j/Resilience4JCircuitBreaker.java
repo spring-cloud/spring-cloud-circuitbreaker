@@ -103,11 +103,11 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	}
 
 	public Resilience4JCircuitBreaker(String id, String groupName,
-		    io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-		    TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-		    TimeLimiterRegistry timeLimiterRegistry,
-		    Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-		    Resilience4jBulkheadProvider bulkheadProvider) {
+			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
+			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterRegistry timeLimiterRegistry,
+			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
+			Resilience4jBulkheadProvider bulkheadProvider) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = circuitBreakerConfig;
