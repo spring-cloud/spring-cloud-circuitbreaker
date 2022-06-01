@@ -53,13 +53,24 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
-	private Resilience4JConfigurationProperties resilience4JConfigurationProperties = null;
+	private Resilience4JConfigurationProperties resilience4JConfigurationProperties;
 
 	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
 				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+	}
+
+	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+			 TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
+		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.bulkheadProvider = bulkheadProvider;
+		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
+			.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+			.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+		this.resilience4JConfigurationProperties = null;
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
