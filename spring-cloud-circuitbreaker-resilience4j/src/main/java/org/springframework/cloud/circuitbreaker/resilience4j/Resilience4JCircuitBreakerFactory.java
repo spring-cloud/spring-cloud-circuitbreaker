@@ -132,7 +132,7 @@ public class Resilience4JCircuitBreakerFactory extends
 				.computeIfAbsent(id, defaultConfiguration);
 		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
 			return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
-					config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry, null,
+					config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
 					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 		}
 		else {
