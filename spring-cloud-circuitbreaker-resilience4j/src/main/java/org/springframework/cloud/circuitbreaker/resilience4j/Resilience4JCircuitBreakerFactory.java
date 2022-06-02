@@ -64,13 +64,7 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		this.timeLimiterRegistry = timeLimiterRegistry;
-		this.bulkheadProvider = bulkheadProvider;
-		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
-				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
-		this.resilience4JConfigurationProperties = null;
+		this(circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, new Resilience4JConfigurationProperties());
 	}
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
@@ -141,7 +135,7 @@ public class Resilience4JCircuitBreakerFactory extends
 			ExecutorService circuitBreakerExecutorService) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = getConfigurations()
 				.computeIfAbsent(id, defaultConfiguration);
-		if (resilience4JConfigurationProperties != null && resilience4JConfigurationProperties.isDisableThreadPool()) {
+		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
 			return new Resilience4JCircuitBreaker(id, groupName, config.getCircuitBreakerConfig(),
 					config.getTimeLimiterConfig(), circuitBreakerRegistry, timeLimiterRegistry,
 					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
