@@ -42,8 +42,9 @@ import static org.mockito.Mockito.verify;
 		"reactor-netty-*.jar", "spring-webflux-*.jar" })
 public class Resilience4JAutoConfigurationWithoutMetricsTest {
 
-	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(new Resilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(), null));
+	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
+			new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
+					null, new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithoutMetrics() {

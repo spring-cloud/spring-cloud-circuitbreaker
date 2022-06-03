@@ -234,6 +234,15 @@ resilience4j.timelimiter:
 
 For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
+==== Disable Thread Pool
+When using the circuit breaker, thread pool is created and tasks are executed in this threadpool. To execute the task on calling thread
+use the property below.
+
+`spring.cloud.circuitbreaker.resilience4j.disableThreadPool`
+
+Default value for this property is false which means tasks are executed on threadpool. Set this property value to true to disable thread pool.
+This property is not applicable to bulkhead patterns.
+
 ==== Bulkhead pattern supporting
 If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
 You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.

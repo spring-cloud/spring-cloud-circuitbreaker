@@ -56,6 +56,8 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
+	private Resilience4JConfigurationProperties resilience4JConfigurationProperties;
+
 	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
@@ -65,12 +67,19 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
+		this(circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, new Resilience4JConfigurationProperties());
+	}
+
+	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
 				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+		this.resilience4JConfigurationProperties = resilience4JConfigurationProperties;
 	}
 
 	@Override
@@ -148,9 +157,18 @@ public class Resilience4JCircuitBreakerFactory extends
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
 				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
 						.orElseGet(defaultConfig::getTimeLimiterConfig));
-		return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
-				circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerExecutorService,
-				Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
+			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig,
+					timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
+					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+		}
+		else {
+			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig,
+					timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
+					circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
+					bulkheadProvider);
+		}
+
 	}
 
 }

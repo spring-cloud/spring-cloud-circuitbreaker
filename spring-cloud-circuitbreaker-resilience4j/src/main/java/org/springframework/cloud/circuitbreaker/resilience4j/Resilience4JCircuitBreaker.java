@@ -103,6 +103,16 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		this.bulkheadProvider = bulkheadProvider;
 	}
 
+	public Resilience4JCircuitBreaker(String id, String groupName,
+			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
+			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
+			TimeLimiterRegistry timeLimiterRegistry,
+			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
+			Resilience4jBulkheadProvider bulkheadProvider) {
+		this(id, groupName, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry, null,
+				circuitBreakerCustomizer, bulkheadProvider);
+	}
+
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
 		final io.vavr.collection.Map<String, String> tags = io.vavr.collection.HashMap.of(CIRCUIT_BREAKER_GROUP_TAG,
@@ -110,20 +120,26 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)
 				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
 						.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
-		Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
-
-		Callable<T> restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(this.id,
 				this.circuitBreakerConfig, tags);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(defaultCircuitBreaker));
-
 		if (bulkheadProvider != null) {
 			return bulkheadProvider.run(this.groupName, toRun, fallback, defaultCircuitBreaker, timeLimiter, tags);
 		}
 		else {
-			Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
-					.decorateCallable(defaultCircuitBreaker, restrictedCall);
-			return Try.of(callable::call).recover(fallback).get();
+			if (executorService != null) {
+				Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
+				Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
+				Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
+						.decorateCallable(defaultCircuitBreaker, restrictedCall);
+				return Try.of(callable::call).recover(fallback).get();
+			}
+			else {
+				Supplier<T> decorator = io.github.resilience4j.circuitbreaker.CircuitBreaker
+						.decorateSupplier(defaultCircuitBreaker, toRun);
+				return Try.of(decorator::get).recover(fallback).get();
+			}
+
 		}
 	}
 
