@@ -30,6 +30,8 @@ public class Resilience4JConfigurationProperties {
 
 	private boolean enableSemaphoreDefaultBulkhead = false;
 
+	private boolean disableThreadPool = false;
+
 	public boolean isEnableGroupMeterFilter() {
 		return enableGroupMeterFilter;
 	}
@@ -52,6 +54,14 @@ public class Resilience4JConfigurationProperties {
 
 	public void setEnableSemaphoreDefaultBulkhead(boolean enableSemaphoreDefaultBulkhead) {
 		this.enableSemaphoreDefaultBulkhead = enableSemaphoreDefaultBulkhead;
+	}
+
+	public boolean isDisableThreadPool() {
+		return disableThreadPool;
+	}
+
+	public void setDisableThreadPool(boolean disableThreadPool) {
+		this.disableThreadPool = disableThreadPool;
 	}
 
 }

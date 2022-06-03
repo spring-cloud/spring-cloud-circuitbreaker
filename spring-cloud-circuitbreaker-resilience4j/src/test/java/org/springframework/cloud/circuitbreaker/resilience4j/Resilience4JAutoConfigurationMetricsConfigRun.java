@@ -46,7 +46,7 @@ public class Resilience4JAutoConfigurationMetricsConfigRun {
 
 	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
 			new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
-					mock(Resilience4jBulkheadProvider.class)));
+					mock(Resilience4jBulkheadProvider.class), new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithMetricsConfigReactive() {
