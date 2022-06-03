@@ -158,15 +158,14 @@ public class Resilience4JCircuitBreakerFactory extends
 				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
 						.orElseGet(defaultConfig::getTimeLimiterConfig));
 		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
-			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig,
-					timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
-					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
+					circuitBreakerRegistry, timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
+					bulkheadProvider);
 		}
 		else {
-			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig,
-					timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
-					circuitBreakerExecutorService, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
-					bulkheadProvider);
+			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
+					circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerExecutorService,
+					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 		}
 
 	}
