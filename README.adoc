@@ -63,7 +63,7 @@ You can disable the Resilience4J auto-configuration by setting
 
 ==== Default Configuration
 
-To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
+To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
 The `configureDefault` method can be used to provide a default configuration.
 
@@ -96,7 +96,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 
 ==== Specific Circuit Breaker Configuration
 
-Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
+Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
 `Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
 
 ====
@@ -234,15 +234,6 @@ resilience4j.timelimiter:
 
 For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
-==== Disable Thread Pool
-When using the circuit breaker, thread pool is created and tasks are executed in this threadpool. To execute the task on calling thread
-use the property below.
-
-`spring.cloud.circuitbreaker.resilience4j.disableThreadPool`
-
-Default value for this property is false which means tasks are executed on threadpool. Set this property value to true to disable thread pool.
-This property is not applicable to bulkhead patterns.
-
 ==== Bulkhead pattern supporting
 If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
 You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
@@ -275,7 +266,7 @@ public Customizer<Resilience4jBulkheadProvider> defaultBulkheadCustomizer() {
 
 ==== Specific Bulkhead Configuration
 
-Similarly to proving a default 'Bulkhead' or 'ThreadPoolBulkhead' configuration, you can create a `Customize` bean this
+Similarly to proving a default 'Bulkhead' or 'ThreadPoolBulkhead' configuration, you can create a `Customizer` bean this
 is passed a `Resilience4jBulkheadProvider`.
 
 ====
@@ -365,7 +356,7 @@ Both of these classes can be configured using `SpringRetryConfigBuilder`.
 
 ==== Default Configuration
 
-To provide a default configuration for all of your circuit breakers create a `Customize` bean that is passed a
+To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `SpringRetryCircuitBreakerFactory`.
 The `configureDefault` method can be used to provide a default configuration.
 
@@ -382,7 +373,7 @@ public Customizer<SpringRetryCircuitBreakerFactory> defaultCustomizer() {
 
 ==== Specific Circuit Breaker Configuration
 
-Similarly to providing a default configuration, you can create a `Customize` bean this is passed a
+Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
 `SpringRetryCircuitBreakerFactory`.
 
 ====
