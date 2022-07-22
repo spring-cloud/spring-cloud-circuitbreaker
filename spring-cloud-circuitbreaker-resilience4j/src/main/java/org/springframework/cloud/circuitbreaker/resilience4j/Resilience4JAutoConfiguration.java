@@ -32,6 +32,7 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,6 +156,25 @@ public class Resilience4JAutoConfiguration {
 				TaggedThreadPoolBulkheadMetrics
 						.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
 						.bindTo(meterRegistry);
+			}
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnBean(ObservationRegistry.class)
+	public static class ObservationRegistryCustomizerResilience4jCustomizer {
+
+		@Autowired
+		ObservationRegistry observationRegistry;
+
+		@Autowired(required = false)
+		private Resilience4JCircuitBreakerFactory factory;
+
+		@PostConstruct
+		public void init() {
+			if (this.factory != null) {
+				this.factory.setObservationRegistry(this.observationRegistry);
 			}
 		}
 

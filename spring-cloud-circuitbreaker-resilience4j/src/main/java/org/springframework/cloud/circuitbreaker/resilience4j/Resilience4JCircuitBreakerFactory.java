@@ -29,9 +29,11 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.cloud.client.circuitbreaker.observation.ObservedCircuitBreaker;
 import org.springframework.util.Assert;
 
 /**
@@ -57,6 +59,8 @@ public class Resilience4JCircuitBreakerFactory extends
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
 	private Resilience4JConfigurationProperties resilience4JConfigurationProperties;
+
+	private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
 	@Deprecated
 	public Resilience4JCircuitBreakerFactory() {
@@ -114,18 +118,28 @@ public class Resilience4JCircuitBreakerFactory extends
 	}
 
 	@Override
-	public Resilience4JCircuitBreaker create(String id) {
+	public org.springframework.cloud.client.circuitbreaker.CircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
-		return create(id, id, this.executorService);
+		Resilience4JCircuitBreaker resilience4JCircuitBreaker = create(id, id, this.executorService);
+		return tryObservedCircuitBreaker(resilience4JCircuitBreaker);
 	}
 
 	@Override
-	public Resilience4JCircuitBreaker create(String id, String groupName) {
+	public org.springframework.cloud.client.circuitbreaker.CircuitBreaker create(String id, String groupName) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
 		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName,
 				group -> Executors.newCachedThreadPool());
-		return create(id, groupName, groupExecutorService);
+		Resilience4JCircuitBreaker resilience4JCircuitBreaker = create(id, groupName, groupExecutorService);
+		return tryObservedCircuitBreaker(resilience4JCircuitBreaker);
+	}
+
+	private org.springframework.cloud.client.circuitbreaker.CircuitBreaker tryObservedCircuitBreaker(
+			Resilience4JCircuitBreaker resilience4JCircuitBreaker) {
+		if (this.observationRegistry.isNoop()) {
+			return resilience4JCircuitBreaker;
+		}
+		return new ObservedCircuitBreaker(resilience4JCircuitBreaker, this.observationRegistry);
 	}
 
 	public void addCircuitBreakerCustomizer(Customizer<CircuitBreaker> customizer, String... ids) {
@@ -168,6 +182,10 @@ public class Resilience4JCircuitBreakerFactory extends
 					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
 		}
 
+	}
+
+	public void setObservationRegistry(ObservationRegistry observationRegistry) {
+		this.observationRegistry = observationRegistry;
 	}
 
 }

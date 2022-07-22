@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,13 @@ import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnErrorEvent;
 import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
 import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.observation.tck.ObservationContextAssert;
+import org.assertj.core.api.BDDAssertions;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
@@ -41,12 +48,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,7 +89,15 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	Application.DemoControllerService service;
 
 	@Autowired
+	Application.MyObservationHandler myObservationHandler;
+
+	@Autowired
 	private TestRestTemplate rest;
+
+	@BeforeEach
+	void setup() {
+		myObservationHandler.contexts.clear();
+	}
 
 	@Test
 	public void testSlow() {
@@ -115,6 +132,29 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 				.get("availableTags"))).hasSize(3);
 	}
 
+	@Test
+	public void testObservationRegistry() throws InterruptedException {
+		// :( some other test from this class is putting an additional context after some time
+		Thread.sleep(100);
+		myObservationHandler.contexts.clear();
+
+		assertThat(service.withObservationRegistry()).isEqualTo("fallback");
+
+		// CircuitBreaker should have 3 observations: my.observation, for supplier and for
+		// function
+		// TODO: Convert to usage of test registry assert with the next micrometer release
+		List<Observation.Context> contexts = myObservationHandler.contexts;
+		assertThat(contexts).hasSize(3);
+		assertThat(contexts.get(0)).satisfies(context -> ObservationContextAssert.then(context)
+				.hasNameEqualTo("spring.cloud.circuitbreaker").hasContextualNameEqualTo("circuit-breaker")
+				.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "supplier"));
+		BDDAssertions.then(contexts.get(1)).satisfies(context -> ObservationContextAssert.then(context)
+				.hasNameEqualTo("spring.cloud.circuitbreaker").hasContextualNameEqualTo("circuit-breaker fallback")
+				.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "function"));
+		BDDAssertions.then(contexts.get(2))
+				.satisfies(context -> ObservationContextAssert.then(context).hasNameEqualTo("my.observation"));
+	}
+
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
@@ -124,6 +164,11 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		public String slow() throws InterruptedException {
 			Thread.sleep(3000);
 			return "slow";
+		}
+
+		@GetMapping("/exception")
+		public String exception() {
+			throw new IllegalStateException("BOOM!");
 		}
 
 		@GetMapping("/normal")
@@ -164,6 +209,23 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			};
 		}
 
+		@Component
+		public static class MyObservationHandler implements ObservationHandler<Observation.Context> {
+
+			List<Observation.Context> contexts = new ArrayList<>();
+
+			@Override
+			public void onStop(Observation.Context context) {
+				this.contexts.add(context);
+			}
+
+			@Override
+			public boolean supportsContext(Observation.Context context) {
+				return true;
+			}
+
+		}
+
 		@Service
 		public static class DemoControllerService {
 
@@ -173,10 +235,14 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
+			private final ObservationRegistry observationRegistry;
+
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory,
+					ObservationRegistry observationRegistry) {
 				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
+				this.observationRegistry = observationRegistry;
 			}
 
 			public String slow() {
@@ -186,6 +252,12 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			public String normal() {
 				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
 						t -> "fallback");
+			}
+
+			public String withObservationRegistry() {
+				return Observation.createNotStarted("my.observation", observationRegistry)
+						.observe(() -> cbFactory.create("exception").run(
+								() -> new RestTemplate().getForObject("/exception", String.class), t -> "fallback"));
 			}
 
 			public String slowOnDemand(int delayInMilliseconds) {

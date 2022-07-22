@@ -8,6 +8,7 @@
 		<artifactId>spring-cloud-dependencies-parent</artifactId>
 		<groupId>org.springframework.cloud</groupId>
 		<version>4.0.0-SNAPSHOT</version>
+		<relativePath/>
 	</parent>
 
 	<artifactId>spring-cloud-circuitbreaker-dependencies</artifactId>
