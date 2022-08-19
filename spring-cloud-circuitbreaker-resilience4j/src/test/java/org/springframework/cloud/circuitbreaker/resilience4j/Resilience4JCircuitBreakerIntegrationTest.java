@@ -134,7 +134,8 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 	@Test
 	public void testObservationRegistry() throws InterruptedException {
-		// :( some other test from this class is putting an additional context after some time
+		// :( some other test from this class is putting an additional context after some
+		// time
 		Thread.sleep(100);
 		myObservationHandler.contexts.clear();
 
