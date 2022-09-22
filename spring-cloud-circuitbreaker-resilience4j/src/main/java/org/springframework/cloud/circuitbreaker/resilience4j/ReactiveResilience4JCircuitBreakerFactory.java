@@ -48,13 +48,6 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
 
-	@Deprecated
-	public ReactiveResilience4JCircuitBreakerFactory() {
-		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-				.timeLimiterConfig(TimeLimiterConfig.ofDefaults()).build();
-	}
-
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;

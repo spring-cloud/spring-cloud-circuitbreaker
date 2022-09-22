@@ -58,22 +58,6 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private final Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer;
 
-	@Deprecated
-	public ReactiveResilience4JCircuitBreaker(String id,
-			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
-			CircuitBreakerRegistry circuitBreakerRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
-		this(id, id, config, circuitBreakerRegistry, TimeLimiterRegistry.ofDefaults(), circuitBreakerCustomizer);
-	}
-
-	@Deprecated
-	public ReactiveResilience4JCircuitBreaker(String id,
-			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
-			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
-		this(id, id, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer);
-	}
-
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,

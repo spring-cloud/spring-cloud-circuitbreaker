@@ -50,20 +50,14 @@ public class Resilience4jBulkheadProvider {
 
 	private boolean semaphoreDefaultBulkhead = false;
 
-	@Deprecated
 	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
-			BulkheadRegistry bulkheadRegistry) {
+			BulkheadRegistry bulkheadRegistry,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.bulkheadRegistry = bulkheadRegistry;
 		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
 		defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
 				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
 				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig()).build();
-	}
-
-	public Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry,
-			BulkheadRegistry bulkheadRegistry,
-			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
-		this(threadPoolBulkheadRegistry, bulkheadRegistry);
 		this.semaphoreDefaultBulkhead = resilience4JConfigurationProperties.isEnableSemaphoreDefaultBulkhead();
 	}
 

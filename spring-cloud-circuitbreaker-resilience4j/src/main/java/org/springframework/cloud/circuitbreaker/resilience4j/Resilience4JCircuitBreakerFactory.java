@@ -62,11 +62,6 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
-	@Deprecated
-	public Resilience4JCircuitBreakerFactory() {
-		this(CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(), null);
-	}
-
 	public Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, Resilience4jBulkheadProvider bulkheadProvider) {
 		this(circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, new Resilience4JConfigurationProperties());

@@ -59,33 +59,6 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer;
 
-	@Deprecated
-	public Resilience4JCircuitBreaker(String id,
-			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-			ExecutorService executorService,
-			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer) {
-		this.id = id;
-		this.groupName = id;
-		this.circuitBreakerConfig = circuitBreakerConfig;
-		this.registry = circuitBreakerRegistry;
-		this.timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
-		this.timeLimiterConfig = timeLimiterConfig;
-		this.executorService = executorService;
-		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
-	}
-
-	@Deprecated
-	public Resilience4JCircuitBreaker(String id,
-			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
-			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-			Resilience4jBulkheadProvider bulkheadProvider) {
-		this(id, id, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
-				executorService, circuitBreakerCustomizer, bulkheadProvider);
-	}
-
 	public Resilience4JCircuitBreaker(String id, String groupName,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
