@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -31,7 +32,6 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
-import io.vavr.control.Try;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 
@@ -103,15 +103,20 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
-			TimeLimiter timeLimiter, io.vavr.collection.Map<String, String> tags) {
+			TimeLimiter timeLimiter, Map<String, String> tags) {
 		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, tags, toRun);
 		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall, timeLimiter);
 		final Callable<T> circuitBreakerCall = circuitBreaker.decorateCallable(timeLimiterCall);
-		return Try.of(circuitBreakerCall::call).recover(fallback).get();
+		try {
+			return circuitBreakerCall.call();
+		}
+		catch (Throwable t) {
+			return fallback.apply(t);
+		}
 	}
 
-	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id,
-			final io.vavr.collection.Map<String, String> tags, final Supplier<T> supplier) {
+	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Map<String, String> tags,
+			final Supplier<T> supplier) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -104,8 +105,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	}
 
 	private Tuple2<CircuitBreaker, TimeLimiter> buildCircuitBreakerAndTimeLimiter() {
-		final io.vavr.collection.Map<String, String> tags = io.vavr.collection.HashMap.of(CIRCUIT_BREAKER_GROUP_TAG,
-				this.groupName);
+		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id, circuitBreakerConfig, tags);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(circuitBreaker));
 		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +28,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
-import io.vavr.control.Try;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -88,8 +88,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	@Override
 	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-		final io.vavr.collection.Map<String, String> tags = io.vavr.collection.HashMap.of(CIRCUIT_BREAKER_GROUP_TAG,
-				this.groupName);
+		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)
 				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
 						.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
@@ -105,12 +104,22 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 				Callable restrictedCall = TimeLimiter.decorateFutureSupplier(timeLimiter, futureSupplier);
 				Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
 						.decorateCallable(defaultCircuitBreaker, restrictedCall);
-				return Try.of(callable::call).recover(fallback).get();
+				try {
+					return callable.call();
+				}
+				catch (Throwable t) {
+					return fallback.apply(t);
+				}
 			}
 			else {
 				Supplier<T> decorator = io.github.resilience4j.circuitbreaker.CircuitBreaker
 						.decorateSupplier(defaultCircuitBreaker, toRun);
-				return Try.of(decorator::get).recover(fallback).get();
+				try {
+					return decorator.get();
+				}
+				catch (Throwable t) {
+					return fallback.apply(t);
+				}
 			}
 
 		}

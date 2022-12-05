@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.time.Duration;
+import java.util.Map;
 
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
@@ -90,10 +91,9 @@ public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 
 		verify(this.threadPoolBulkheadRegistry, times(0)).bulkhead(any(String.class),
-				any(ThreadPoolBulkheadConfig.class), any(io.vavr.collection.Map.class));
+				any(ThreadPoolBulkheadConfig.class), any(Map.class));
 
-		verify(this.bulkheadRegistry, times(1)).bulkhead(any(String.class), any(BulkheadConfig.class),
-				any(io.vavr.collection.Map.class));
+		verify(this.bulkheadRegistry, times(1)).bulkhead(any(String.class), any(BulkheadConfig.class), any(Map.class));
 	}
 
 	@Configuration(proxyBeanMethods = false)
