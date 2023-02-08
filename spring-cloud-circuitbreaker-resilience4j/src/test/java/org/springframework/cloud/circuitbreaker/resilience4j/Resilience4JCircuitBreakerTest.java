@@ -100,7 +100,29 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	@Test
+	public void runWithBulkheadProviderAndNoThreadPool() {
+		properties.setDisableThreadPool(true);
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(),
+				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
+						new Resilience4JConfigurationProperties()),
+				properties).create("foo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+	}
+
+	@Test
 	public void runWithBulkheadProviderAndGroupName() {
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(),
+				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
+						new Resilience4JConfigurationProperties()),
+				properties).create("foo", "groupFoo");
+		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
+	}
+
+	@Test
+	public void runWithBulkheadProviderAndGroupNameAndNoThreadPool() {
+		properties.setDisableThreadPool(true);
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
