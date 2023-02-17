@@ -128,9 +128,14 @@ public class Resilience4jBulkheadProvider {
 			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
 		}
 		else {
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig(), tags);
-			return threadPoolBulkhead.decorateSupplier(supplier);
+			try (ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
+					configuration.getThreadPoolBulkheadConfig(), tags)) {
+				return threadPoolBulkhead.decorateSupplier(supplier);
+			}
+			catch (final Exception ex) {
+				throw new RuntimeException("Not able to auto close ThreadPoolBulkhead in "
+						+ "Resilience4jBulkheadProvider#decorateBulkhead", ex);
+			}
 		}
 	}
 
