@@ -44,6 +44,25 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ----
 ====
 
+===== Customizing The ExecutorService
+If you would like to configure the `ExecutorService` which executes the circuit breaker you can do so using the `Resilience4JCircuitBreakerFactor`.
+
+For example if you would like to use a context aware `ExecutorService` you could do the following.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> {
+		ContextAwareScheduledThreadPoolExecutor executor = ContextAwareScheduledThreadPoolExecutor.newScheduledThreadPool().corePoolSize(5)
+			.build();
+		factory.configureExecutorService(executor);
+	};
+}
+----
+====
+
 ==== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
