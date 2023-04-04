@@ -123,8 +123,8 @@ public class Resilience4jBulkheadProvider {
 		if (semaphoreDefaultBulkhead
 				|| (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent())) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
-			CompletableFuture<T> asyncCall = CompletableFuture.supplyAsync(supplier);
-			return Bulkhead.decorateCompletionStage(bulkhead, () -> asyncCall);
+			Supplier<CompletionStage<T>> completionStageSupplier = () -> CompletableFuture.supplyAsync(supplier);
+			return Bulkhead.decorateCompletionStage(bulkhead, completionStageSupplier);
 		}
 		else {
 			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
