@@ -95,7 +95,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ====
 
 ===== Customizing The ExecutorService
-If you would like to configure the `ExecutorService` which executes the circuit breaker you can do so using the `Resilience4JCircuitBreakerFactor`.
+If you would like to configure the `ExecutorService` which executes the circuit breaker you can do so using the `Resilience4JCircuitBreakerFactory`.
 
 For example if you would like to use a context aware `ExecutorService` you could do the following.
 
