@@ -15,7 +15,7 @@ include::spring-cloud-circuitbreaker-spring-retry.adoc[]
 
 == Building
 
-include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/4.0.x/docs/src/main/asciidoc/building-jdk8.adoc[]
+include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/4.0.x/docs/src/main/asciidoc/building.adoc[]
 
 == Contributing
 

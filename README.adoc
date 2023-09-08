@@ -438,7 +438,6 @@ public Customizer<SpringRetryCircuitBreakerFactory> slowCustomizer() {
 
 == Building
 
-
 :jdkversion: 17
 
 === Basic Compile and Test
@@ -517,7 +516,6 @@ following command:
 
 The generated eclipse projects can be imported by selecting `import existing projects`
 from the `file` menu.
-
 
 
 == Contributing
