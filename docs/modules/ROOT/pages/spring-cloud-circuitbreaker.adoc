@@ -1,3 +1,4 @@
+[[spring-cloud-circuit-breaker]]
 = Spring Cloud Circuit Breaker
 include::_attributes.adoc[]
 
@@ -13,10 +14,12 @@ include::spring-cloud-circuitbreaker-resilience4j.adoc[]
 
 include::spring-cloud-circuitbreaker-spring-retry.adoc[]
 
+[[building]]
 == Building
 
 include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/building.adoc[]
 
+[[contributing]]
 == Contributing
 
 include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/contributing.adoc[]
