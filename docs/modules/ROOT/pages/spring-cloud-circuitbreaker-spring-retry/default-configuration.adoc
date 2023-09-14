@@ -1,0 +1,18 @@
+[[default-configuration]]
+= Default Configuration
+
+To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
+`SpringRetryCircuitBreakerFactory`.
+The `configureDefault` method can be used to provide a default configuration.
+
+====
+[source,java]
+----
+@Bean
+public Customizer<SpringRetryCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> factory.configureDefault(id -> new SpringRetryConfigBuilder(id)
+    	.retryPolicy(new TimeoutRetryPolicy()).build());
+}
+----
+====
+

@@ -1,0 +1,6 @@
+[[auto-configuration]]
+= Auto-Configuration
+
+You can disable the Resilience4J auto-configuration by setting
+`spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.
+
