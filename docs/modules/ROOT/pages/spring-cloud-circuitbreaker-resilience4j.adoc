@@ -1,8 +1,8 @@
 [[configuring-resilience4j-circuit-breakers]]
-=== Configuring Resilience4J Circuit Breakers
+= Configuring Resilience4J Circuit Breakers
 
 [[starters]]
-==== Starters
+== Starters
 
 There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
 
@@ -10,12 +10,12 @@ There are two starters for the Resilience4J implementations, one for reactive ap
 * `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
 
 [[auto-configuration]]
-==== Auto-Configuration
+== Auto-Configuration
 You can disable the Resilience4J auto-configuration by setting
 `spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.
 
 [[default-configuration]]
-==== Default Configuration
+== Default Configuration
 
 To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
@@ -35,7 +35,7 @@ public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
 ====
 
 [[reactive-example]]
-===== Reactive Example
+=== Reactive Example
 
 ====
 [source,java]
@@ -50,7 +50,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ====
 
 [[customizing-the-executorservice]]
-===== Customizing The ExecutorService
+=== Customizing The ExecutorService
 If you would like to configure the `ExecutorService` which executes the circuit breaker you can do so using the `Resilience4JCircuitBreakerFactory`.
 
 For example if you would like to use a context aware `ExecutorService` you could do the following.
@@ -70,7 +70,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 ====
 
 [[specific-circuit-breaker-configuration]]
-==== Specific Circuit Breaker Configuration
+== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
 `Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
@@ -103,7 +103,7 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 ====
 
 [[reactive-example]]
-===== Reactive Example
+=== Reactive Example
 
 ====
 [source,java]
@@ -122,7 +122,7 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 ====
 
 [[circuit-breaker-properties-configuration]]
-==== Circuit Breaker Properties Configuration
+== Circuit Breaker Properties Configuration
 
 You can configure `CircuitBreaker` and `TimeLimiter` configs or instances in your application's configuration properties file.
 Property configuration has higher priority than Java `Customizer` configuration.
@@ -142,7 +142,7 @@ Resilience4JCircuitBreakerFactory.create(String id, String groupName)
 ====
 
 [[global-default-properties-configuration]]
-===== Global Default Properties Configuration
+=== Global Default Properties Configuration
 ====
 [source]
 ----
@@ -161,7 +161,7 @@ resilience4j.timelimiter:
 ====
 
 [[configs-properties-configuration]]
-===== Configs Properties Configuration
+=== Configs Properties Configuration
 ====
 [source]
 ----
@@ -180,7 +180,7 @@ resilience4j.timelimiter:
 ====
 
 [[instances-properties-configuration]]
-===== Instances Properties Configuration
+=== Instances Properties Configuration
 ====
 [source]
 ----
@@ -216,7 +216,7 @@ resilience4j.timelimiter:
 For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
 [[bulkhead-pattern-supporting]]
-==== Bulkhead pattern supporting
+== Bulkhead pattern supporting
 If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
 You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
 
@@ -247,7 +247,7 @@ public Customizer<Resilience4jBulkheadProvider> defaultBulkheadCustomizer() {
 ====
 
 [[specific-bulkhead-configuration]]
-==== Specific Bulkhead Configuration
+== Specific Bulkhead Configuration
 
 Similarly to proving a default 'Bulkhead' or 'ThreadPoolBulkhead' configuration, you can create a `Customizer` bean this
 is passed a `Resilience4jBulkheadProvider`.
@@ -269,7 +269,7 @@ have been created but before they are returned to caller. To do this you can use
 methods.
 
 [[bulkhead-example]]
-===== Bulkhead Example
+=== Bulkhead Example
 
 ====
 [source,java]
@@ -284,7 +284,7 @@ public Customizer<Resilience4jBulkheadProvider> customizer() {
 ====
 
 [[thread-pool-bulkhead-example]]
-===== Thread Pool Bulkhead Example
+=== Thread Pool Bulkhead Example
 
 ====
 [source,java]
@@ -299,7 +299,7 @@ public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer
 ====
 
 [[bulkhead-properties-configuration]]
-==== Bulkhead Properties Configuration
+== Bulkhead Properties Configuration
 
 You can configure ThreadPoolBulkhead and SemaphoreBulkhead instances in your application's configuration properties file.
 Property configuration has higher priority than Java `Customizer` configuration.
@@ -322,7 +322,7 @@ resilience4j.bulkhead:
 For more inforamtion on the Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
 [[collecting-metrics]]
-==== Collecting Metrics
+== Collecting Metrics
 
 Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
 dependencies are on the classpath.  To enable metric collection you must include `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer`.  For more information on the metrics that

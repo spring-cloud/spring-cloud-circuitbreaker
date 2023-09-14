@@ -1,5 +1,5 @@
 [[configuring-spring-retry-circuit-breakers]]
-=== Configuring Spring Retry Circuit Breakers
+= Configuring Spring Retry Circuit Breakers
 
 Spring Retry provides declarative retry support for Spring applications.
 A subset of the project includes the ability to implement circuit breaker functionality.
@@ -11,7 +11,7 @@ https://github.com/spring-projects/spring-retry/blob/master/src/main/java/org/sp
 Both of these classes can be configured using `SpringRetryConfigBuilder`.
 
 [[default-configuration]]
-==== Default Configuration
+== Default Configuration
 
 To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `SpringRetryCircuitBreakerFactory`.
@@ -29,7 +29,7 @@ public Customizer<SpringRetryCircuitBreakerFactory> defaultCustomizer() {
 ====
 
 [[specific-circuit-breaker-configuration]]
-==== Specific Circuit Breaker Configuration
+== Specific Circuit Breaker Configuration
 
 Similarly to providing a default configuration, you can create a `Customizer` bean this is passed a
 `SpringRetryCircuitBreakerFactory`.
