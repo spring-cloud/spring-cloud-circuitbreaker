@@ -1,5 +1,6 @@
 [[auto-configuration]]
 = Auto-Configuration
+:page-section-summary-toc: 1
 
 You can disable the Resilience4J auto-configuration by setting
 `spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.

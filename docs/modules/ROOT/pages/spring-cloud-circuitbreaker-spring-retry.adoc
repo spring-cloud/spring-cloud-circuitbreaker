@@ -1,5 +1,6 @@
 [[configuring-spring-retry-circuit-breakers]]
 = Configuring Spring Retry Circuit Breakers
+:page-section-summary-toc: 1
 
 Spring Retry provides declarative retry support for Spring applications.
 A subset of the project includes the ability to implement circuit breaker functionality.

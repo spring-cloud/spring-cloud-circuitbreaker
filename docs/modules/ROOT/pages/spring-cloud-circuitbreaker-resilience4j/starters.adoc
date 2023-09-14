@@ -1,5 +1,6 @@
 [[starters]]
 = Starters
+:page-section-summary-toc: 1
 
 There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
 

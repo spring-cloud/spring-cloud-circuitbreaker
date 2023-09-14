@@ -1,5 +1,6 @@
 [[default-configuration]]
 = Default Configuration
+:page-section-summary-toc: 1
 
 To provide a default configuration for all of your circuit breakers create a `Customizer` bean that is passed a
 `SpringRetryCircuitBreakerFactory`.

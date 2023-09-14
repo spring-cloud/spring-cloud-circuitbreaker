@@ -1,5 +1,6 @@
 [[collecting-metrics]]
 = Collecting Metrics
+:page-section-summary-toc: 1
 
 Spring Cloud Circuit Breaker Resilience4j includes auto-configuration to setup metrics collection as long as the right
 dependencies are on the classpath.  To enable metric collection you must include `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer`.  For more information on the metrics that

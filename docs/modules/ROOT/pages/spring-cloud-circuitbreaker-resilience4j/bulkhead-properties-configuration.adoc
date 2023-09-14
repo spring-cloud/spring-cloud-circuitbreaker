@@ -1,5 +1,6 @@
 [[bulkhead-properties-configuration]]
 = Bulkhead Properties Configuration
+:page-section-summary-toc: 1
 
 You can configure ThreadPoolBulkhead and SemaphoreBulkhead instances in your application's configuration properties file.
 Property configuration has higher priority than Java `Customizer` configuration.
