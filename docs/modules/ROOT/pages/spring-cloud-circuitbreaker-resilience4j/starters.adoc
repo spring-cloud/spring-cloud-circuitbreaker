@@ -1,0 +1,16 @@
+[[starters]]
+= Starters
+:page-section-summary-toc: 1
+
+There are two starters for the Resilience4J implementations, one for reactive applications and one for non-reactive applications.
+
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j` - non-reactive applications
+* `org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j` - reactive applications
+
+[[auto-configuration]]
+== Auto-Configuration
+:page-section-summary-toc: 1
+
+You can disable the Resilience4J auto-configuration by setting
+`spring.cloud.circuitbreaker.resilience4j.enabled` to `false`.
+

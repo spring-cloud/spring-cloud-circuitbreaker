@@ -1,5 +1,6 @@
+[[spring-cloud-circuit-breaker]]
 = Spring Cloud Circuit Breaker
-include::_attributes.adoc[]
+:page-section-summary-toc: 1
 
 *{spring-cloud-version}*
 
@@ -9,14 +10,5 @@ The Spring Cloud CircuitBreaker project contains implementations for Resilience4
 The APIs implemented in Spring Cloud CircuitBreaker live in Spring Cloud Commons.  The usage documentation
 for these APIs are located in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-circuit-breaker[Spring Cloud Commons documentation].
 
-include::spring-cloud-circuitbreaker-resilience4j.adoc[]
 
-include::spring-cloud-circuitbreaker-spring-retry.adoc[]
 
-== Building
-
-include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/building.adoc[]
-
-== Contributing
-
-include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/contributing.adoc[]
