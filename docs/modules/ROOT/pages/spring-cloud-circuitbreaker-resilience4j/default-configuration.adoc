@@ -5,7 +5,6 @@ To provide a default configuration for all of your circuit breakers create a `Cu
 `Resilience4JCircuitBreakerFactory` or `ReactiveResilience4JCircuitBreakerFactory`.
 The `configureDefault` method can be used to provide a default configuration.
 
-====
 [source,java]
 ----
 @Bean
@@ -16,12 +15,10 @@ public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
 			.build());
 }
 ----
-====
 
 [[reactive-example]]
 == Reactive Example
 
-====
 [source,java]
 ----
 @Bean
@@ -31,7 +28,6 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build()).build());
 }
 ----
-====
 
 [[customizing-the-executorservice]]
 == Customizing The ExecutorService
@@ -39,7 +35,6 @@ If you would like to configure the `ExecutorService` which executes the circuit 
 
 For example if you would like to use a context aware `ExecutorService` you could do the following.
 
-====
 [source,java]
 ----
 @Bean
@@ -51,5 +46,4 @@ public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer()
 	};
 }
 ----
-====
 

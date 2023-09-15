@@ -3,21 +3,20 @@
 		 xmlns="http://maven.apache.org/POM/4.0.0"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
-		<artifactId>spring-cloud-circuitbreaker</artifactId>
 		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-circuitbreaker</artifactId>
 		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-circuitbreaker-docs</artifactId>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<name>Spring Cloud CircuitBreaker Docs</name>
-	<description>Spring Cloud Docs</description>
+	<description>Spring Cloud CircuitBreaker Docs</description>
 	<properties>
 		<docs.main>spring-cloud-circuitbreaker</docs.main>
 		<main.basedir>${basedir}/..</main.basedir>
 		<configprops.inclusionPattern>spring.cloud.circuit.*</configprops.inclusionPattern>
-		<upload-docs-zip.phase>deploy</upload-docs-zip.phase>
 		<!-- Don't upload docs jar to central / repo.spring.io -->
 		<maven-deploy-plugin-default.phase>none</maven-deploy-plugin-default.phase>
 	</properties>
@@ -42,6 +41,12 @@
 		<profile>
 			<id>docs</id>
 			<build>
+				<resources>
+					<resource>
+						<directory>src/main/antora/resources/antora-resources</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
 				<plugins>
 					<plugin>
 						<groupId>pl.project13.maven</groupId>
@@ -60,8 +65,12 @@
 						<artifactId>exec-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.asciidoctor</groupId>
-						<artifactId>asciidoctor-maven-plugin</artifactId>
+						<groupId>io.spring.maven.antora</groupId>
+						<artifactId>antora-component-version-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>io.spring.maven.antora</groupId>
+						<artifactId>antora-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

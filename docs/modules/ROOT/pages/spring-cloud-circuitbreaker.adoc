@@ -12,12 +12,3 @@ for these APIs are located in the https://docs.spring.io/spring-cloud-commons/do
 
 
 
-[[building]]
-== Building
-
-include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/building.adoc[]
-
-[[contributing]]
-== Contributing
-
-include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/modules/ROOT/partials/contributing.adoc[]

@@ -4,7 +4,6 @@
 Similarly to proving a default 'Bulkhead' or 'ThreadPoolBulkhead' configuration, you can create a `Customizer` bean this
 is passed a `Resilience4jBulkheadProvider`.
 
-====
 [source,java]
 ----
 @Bean
@@ -14,7 +13,6 @@ public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer()
         .threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.ofDefaults()), "slowBulkhead");
 }
 ----
-====
 
 In addition to configuring the Bulkhead that is created you can also customize the bulkhead and thread pool bulkhead after they
 have been created but before they are returned to caller. To do this you can use the `addBulkheadCustomizer` and `addThreadPoolBulkheadCustomizer`
@@ -23,7 +21,6 @@ methods.
 [[bulkhead-example]]
 == Bulkhead Example
 
-====
 [source,java]
 ----
 @Bean
@@ -33,12 +30,10 @@ public Customizer<Resilience4jBulkheadProvider> customizer() {
         .onCallFinished(slowFinishedConsumer), "slowBulkhead");
 }
 ----
-====
 
 [[thread-pool-bulkhead-example]]
 == Thread Pool Bulkhead Example
 
-====
 [source,java]
 ----
 @Bean
@@ -48,5 +43,4 @@ public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer
         .onCallFinished(slowThreadPoolFinishedConsumer), "slowThreadPoolBulkhead");
 }
 ----
-====
 

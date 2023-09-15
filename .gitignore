@@ -19,3 +19,9 @@ _site/
 *.swp
 *.swo
 .flattened-pom.xml
+
+node
+node_modules
+build
+package.json
+package-lock.json

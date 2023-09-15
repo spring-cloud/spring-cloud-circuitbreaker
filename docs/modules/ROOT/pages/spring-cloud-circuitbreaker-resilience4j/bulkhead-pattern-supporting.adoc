@@ -16,7 +16,6 @@ of Bulkhead patterns see the https://resilience4j.readme.io/docs/bulkhead[Resili
 
 The `Customizer<Resilience4jBulkheadProvider>` can be used to provide a default `Bulkhead` and `ThreadPoolBulkhead` configuration.
 
-====
 [source,java]
 ----
 @Bean
@@ -28,5 +27,4 @@ public Customizer<Resilience4jBulkheadProvider> defaultBulkheadCustomizer() {
 );
 }
 ----
-====
 

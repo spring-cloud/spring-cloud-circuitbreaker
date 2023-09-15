@@ -10,17 +10,14 @@ Descending priority from top to bottom.
 * Service(group) config - on specific application service or operations
 * Global default config
 
-====
 [source,java]
 ----
 ReactiveResilience4JCircuitBreakerFactory.create(String id, String groupName)
 Resilience4JCircuitBreakerFactory.create(String id, String groupName)
 ----
-====
 
 [[global-default-properties-configuration]]
 == Global Default Properties Configuration
-====
 [source]
 ----
 resilience4j.circuitbreaker:
@@ -35,11 +32,9 @@ resilience4j.timelimiter:
             timeoutDuration: 5s
             cancelRunningFuture: true
 ----
-====
 
 [[configs-properties-configuration]]
 == Configs Properties Configuration
-====
 [source]
 ----
 resilience4j.circuitbreaker:
@@ -54,11 +49,9 @@ resilience4j.timelimiter:
             timeoutDuration: 3s
             cancelRunningFuture: true
 ----
-====
 
 [[instances-properties-configuration]]
 == Instances Properties Configuration
-====
 [source]
 ----
 resilience4j.circuitbreaker:
@@ -82,7 +75,6 @@ resilience4j.timelimiter:
          timeoutDuration: 1s
          cancelRunningFuture: false
 ----
-====
 
 
 * `ReactiveResilience4JCircuitBreakerFactory.create("backendA")` or `Resilience4JCircuitBreakerFactory.create("backendA")` will apply `instances backendA properties`
