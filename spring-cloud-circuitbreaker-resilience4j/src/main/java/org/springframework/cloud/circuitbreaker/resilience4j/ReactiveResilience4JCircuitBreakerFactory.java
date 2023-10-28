@@ -46,15 +46,25 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 
 	private TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 
-	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
+	private final Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
+
+	private final Resilience4JConfigurationProperties resilience4JConfigurationProperties;
+
+	@Deprecated
+	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
+		TimeLimiterRegistry timeLimiterRegistry) {
+		this(circuitBreakerRegistry, timeLimiterRegistry, null);
+	}
 
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry) {
+			TimeLimiterRegistry timeLimiterRegistry,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
 				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+		this.resilience4JConfigurationProperties = resilience4JConfigurationProperties;
 	}
 
 	@Override
@@ -91,7 +101,14 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(circuitBreakerConfig).timeLimiterConfig(timeLimiterConfig).build();
 		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
-				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)));
+			timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter());
+	}
+
+	private boolean isDisableTimeLimiter() {
+		if (resilience4JConfigurationProperties != null) {
+			return resilience4JConfigurationProperties.isDisableTimeLimiter();
+		}
+		return false;
 	}
 
 	@Override

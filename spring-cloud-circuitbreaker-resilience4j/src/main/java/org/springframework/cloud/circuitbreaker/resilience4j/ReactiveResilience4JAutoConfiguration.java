@@ -54,9 +54,10 @@ public class ReactiveResilience4JAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry) {
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory(
-				circuitBreakerRegistry, timeLimiterRegistry);
+				circuitBreakerRegistry, timeLimiterRegistry, resilience4JConfigurationProperties);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}

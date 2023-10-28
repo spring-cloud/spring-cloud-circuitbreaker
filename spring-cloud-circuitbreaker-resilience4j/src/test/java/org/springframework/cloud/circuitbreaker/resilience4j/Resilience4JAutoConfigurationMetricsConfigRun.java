@@ -42,7 +42,7 @@ public class Resilience4JAutoConfigurationMetricsConfigRun {
 
 	static ReactiveResilience4JCircuitBreakerFactory reactiveCircuitBreakerFactory = spy(
 			new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-					TimeLimiterRegistry.ofDefaults()));
+					TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
 
 	static Resilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
 			new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(),
