@@ -37,6 +37,7 @@ import org.springframework.cloud.client.circuitbreaker.Customizer;
 
 /**
  * @author Andrii Bohutskyi
+ * @author Renette Ros
  */
 public class Resilience4jBulkheadProvider {
 
@@ -120,8 +121,7 @@ public class Resilience4jBulkheadProvider {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
 
-		if (semaphoreDefaultBulkhead
-				|| (bulkheadRegistry.find(id).isPresent() && !threadPoolBulkheadRegistry.find(id).isPresent())) {
+		if (useSemaphoreBulkhead(id)) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 			Supplier<CompletionStage<T>> completionStageSupplier = () -> CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, completionStageSupplier);
@@ -131,6 +131,27 @@ public class Resilience4jBulkheadProvider {
 					configuration.getThreadPoolBulkheadConfig(), tags);
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
+	}
+
+	public <T> Callable<T> decorateCallable(final String id, final Map<String, String> tags,
+			final Callable<T> callable) {
+		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
+				.computeIfAbsent(id, defaultConfiguration);
+
+		if (useSemaphoreBulkhead(id)) {
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
+			return Bulkhead.decorateCallable(bulkhead, callable);
+		}
+		else {
+			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
+					configuration.getThreadPoolBulkheadConfig(), tags);
+			return () -> threadPoolBulkhead.decorateCallable(callable).get().toCompletableFuture().get();
+		}
+	}
+
+	private boolean useSemaphoreBulkhead(String id) {
+		return semaphoreDefaultBulkhead
+				|| (bulkheadRegistry.find(id).isPresent() && threadPoolBulkheadRegistry.find(id).isEmpty());
 	}
 
 	private <T> Callable<T> decorateTimeLimiter(final Supplier<CompletionStage<T>> supplier, TimeLimiter timeLimiter) {
