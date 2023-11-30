@@ -32,6 +32,8 @@ public class Resilience4JConfigurationProperties {
 
 	private boolean disableThreadPool = false;
 
+	private boolean disableTimeLimiter = false;
+
 	public boolean isEnableGroupMeterFilter() {
 		return enableGroupMeterFilter;
 	}
@@ -64,4 +66,12 @@ public class Resilience4JConfigurationProperties {
 		this.disableThreadPool = disableThreadPool;
 	}
 
+
+	boolean isDisableTimeLimiter() {
+		return disableTimeLimiter;
+	}
+
+	void setDisableTimeLimiter(boolean disableTimeLimiter) {
+		this.disableTimeLimiter = disableTimeLimiter;
+	}
 }

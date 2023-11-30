@@ -154,8 +154,12 @@ public class Resilience4jBulkheadProvider {
 				|| (bulkheadRegistry.find(id).isPresent() && threadPoolBulkheadRegistry.find(id).isEmpty());
 	}
 
-	private <T> Callable<T> decorateTimeLimiter(final Supplier<CompletionStage<T>> supplier, TimeLimiter timeLimiter) {
+	private static <T> Callable<T> decorateTimeLimiter(final Supplier<? extends CompletionStage<T>> supplier, TimeLimiter timeLimiter) {
 		final Supplier<Future<T>> futureSupplier = () -> supplier.get().toCompletableFuture();
+		if (timeLimiter == null) {
+			/* execute without time-limiter */
+			return () -> futureSupplier.get().get();
+		}
 		return timeLimiter.decorateFutureSupplier(futureSupplier);
 	}
 

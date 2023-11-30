@@ -172,7 +172,8 @@ public class Resilience4JCircuitBreakerFactory extends
 		else {
 			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
 					circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerExecutorService,
-					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider);
+					Optional.ofNullable(circuitBreakerCustomizers.get(id)), bulkheadProvider,
+					this.resilience4JConfigurationProperties.isDisableTimeLimiter());
 		}
 
 	}

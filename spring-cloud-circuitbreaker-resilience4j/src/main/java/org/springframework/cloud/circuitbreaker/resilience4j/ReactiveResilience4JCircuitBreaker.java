@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -59,10 +60,21 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private final Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer;
 
+	private final boolean disableTimeLimiter;
+
+	@Deprecated
+	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
+		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+		CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+		Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
+		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, false);
+	}
+
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
+			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer,
+			boolean disableTimeLimiter) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = config.getCircuitBreakerConfig();
@@ -70,18 +82,24 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 		this.timeLimiterConfig = config.getTimeLimiterConfig();
 		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.disableTimeLimiter = disableTimeLimiter;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
-		Tuple2<CircuitBreaker, TimeLimiter> tuple = buildCircuitBreakerAndTimeLimiter();
-		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()))
-				.timeout(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration())
-				// Since we are using the Mono timeout we need to tell the circuit breaker
-				// about the error
-				.doOnError(TimeoutException.class,
-						t -> tuple.getT1().onError(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration().toMillis(),
-								TimeUnit.MILLISECONDS, t));
+		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
+		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()));
+		if (tuple.getT2().isPresent()) {
+			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
+			toReturn = toReturn
+					.timeout(timeoutDuration)
+					// Since we are using the Mono timeout we need to tell the circuit breaker
+					// about the error
+					.doOnError(TimeoutException.class,
+							t -> tuple.getT1()
+									.onError(timeoutDuration.toMillis(),
+											TimeUnit.MILLISECONDS, t));
+		}
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}
@@ -90,28 +108,37 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
-		Tuple2<CircuitBreaker, TimeLimiter> tuple = buildCircuitBreakerAndTimeLimiter();
-		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()))
-				.timeout(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration())
-				// Since we are using the Flux timeout we need to tell the circuit breaker
-				// about the error
-				.doOnError(TimeoutException.class,
-						t -> tuple.getT1().onError(tuple.getT2().getTimeLimiterConfig().getTimeoutDuration().toMillis(),
-								TimeUnit.MILLISECONDS, t));
+		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
+		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()));
+		if (tuple.getT2().isPresent()) {
+			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
+			toReturn = toReturn.timeout(timeoutDuration)
+					// Since we are using the Flux timeout we need to tell the circuit breaker
+					// about the error
+					.doOnError(TimeoutException.class,
+							t -> tuple.getT1()
+									.onError(timeoutDuration.toMillis(),
+											TimeUnit.MILLISECONDS, t));
+		}
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
 		}
 		return toReturn;
 	}
 
-	private Tuple2<CircuitBreaker, TimeLimiter> buildCircuitBreakerAndTimeLimiter() {
+	private Tuple2<CircuitBreaker, Optional<TimeLimiter>> buildCircuitBreakerAndTimeLimiter() {
 		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id, circuitBreakerConfig, tags);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(circuitBreaker));
+		if (disableTimeLimiter) {
+			/* do not provide/load time-limiter */
+			return Tuples.of(circuitBreaker, Optional.empty());
+		}
+		/* provide time-limiter */
 		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)
 				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
 						.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
-		return Tuples.of(circuitBreaker, timeLimiter);
+		return Tuples.of(circuitBreaker, Optional.of(timeLimiter));
 	}
 
 }

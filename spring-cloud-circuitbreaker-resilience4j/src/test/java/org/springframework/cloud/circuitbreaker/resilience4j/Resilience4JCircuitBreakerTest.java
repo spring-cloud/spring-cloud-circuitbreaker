@@ -16,14 +16,18 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.concurrent.TimeUnit;
+
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -155,4 +159,72 @@ public class Resilience4JCircuitBreakerTest {
 		}, t -> "fallback")).isEqualTo("fallback");
 	}
 
+	/**
+	 * Run circuit breaker with default time limiter and expects everything to run without errors.
+	 */
+	@Test
+	public void runWithDefaultTimeLimiter() {
+		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			timeLimiterRegistry, null, properties).create("foo");
+		assertThat(cb.run(() -> {
+			try {
+				/* sleep less than time limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
+					.toMillis() / 2L, 0L));
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		})).isEqualTo("foobar");
+	}
+
+	/**
+	 * Run circuit breaker with default time limiter and expects the time limit to get exceeded.
+	 */
+	@Test(expected = NoFallbackAvailableException.class)
+	public void runWithDefaultTimeLimiterTooSlow() {
+		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			timeLimiterRegistry, null, properties).create("foo");
+		cb.run(() -> {
+			try {
+				/* sleep longer than time limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
+					.toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new AssertionError("thread got interrupted -> sleep failed", e);
+			}
+			return null;
+		});
+		Assertions.fail("timeout did not happen as expected");
+	}
+
+	/**
+	 * Run circuit breaker with default time limiter and exceed time limit. Due to the disabled time limiter execution,
+	 * everything should finish without errors.
+	 */
+	@Test
+	public void runWithDisabledTimeLimiter() {
+		properties.setDisableTimeLimiter(true);
+		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			timeLimiterRegistry, null, properties).create("foo");
+		assertThat(cb.run(() -> {
+			try {
+				/* sleep longer than limit limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
+					.toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		})).isEqualTo("foobar");
+	}
 }
