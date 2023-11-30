@@ -44,7 +44,7 @@ public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
 			new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-					TimeLimiterRegistry.ofDefaults()));
+					TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithoutMetrics() {
