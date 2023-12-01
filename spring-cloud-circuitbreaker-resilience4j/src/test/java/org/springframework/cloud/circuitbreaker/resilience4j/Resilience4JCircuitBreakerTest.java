@@ -160,18 +160,19 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and expects everything to run without errors.
+	 * Run circuit breaker with default time limiter and expects everything to run without
+	 * errors.
 	 */
 	@Test
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties).create("foo");
 		assertThat(cb.run(() -> {
 			try {
 				/* sleep less than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
-					.toMillis() / 2L, 0L));
+				TimeUnit.MILLISECONDS.sleep(
+						Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -182,18 +183,19 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and expects the time limit to get exceeded.
+	 * Run circuit breaker with default time limiter and expects the time limit to get
+	 * exceeded.
 	 */
 	@Test(expected = NoFallbackAvailableException.class)
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties).create("foo");
 		cb.run(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
-					.toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS.sleep(
+						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -205,20 +207,20 @@ public class Resilience4JCircuitBreakerTest {
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and exceed time limit. Due to the disabled time limiter execution,
-	 * everything should finish without errors.
+	 * Run circuit breaker with default time limiter and exceed time limit. Due to the
+	 * disabled time limiter execution, everything should finish without errors.
 	 */
 	@Test
 	public void runWithDisabledTimeLimiter() {
 		properties.setDisableTimeLimiter(true);
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties).create("foo");
 		assertThat(cb.run(() -> {
 			try {
 				/* sleep longer than limit limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
-					.toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS.sleep(
+						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -227,4 +229,5 @@ public class Resilience4JCircuitBreakerTest {
 			return "foobar";
 		})).isEqualTo("foobar");
 	}
+
 }

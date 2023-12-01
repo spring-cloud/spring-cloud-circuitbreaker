@@ -71,65 +71,60 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and expects everything to run without errors.
+	 * Run circuit breaker with default time limiter and expects everything to run without
+	 * errors.
 	 */
 	@Test
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
+				timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
-					try {
-						/* sleep less than time limit allows us to */
-						TimeUnit.MILLISECONDS.sleep(Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
-							.toMillis() / 2L, 0L));
-					}
-					catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						throw new RuntimeException("thread got interrupted", e);
-					}
-					return "foobar";
-				})
-				.subscribeOn(Schedulers.single())
-				.transform(cb::run)
-				.block()
-		).isEqualTo("foobar");
+			try {
+				/* sleep less than time limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(
+						Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		}).subscribeOn(Schedulers.single()).transform(cb::run).block()).isEqualTo("foobar");
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and expects the time limit to get exceeded.
+	 * Run circuit breaker with default time limiter and expects the time limit to get
+	 * exceeded.
 	 */
 	@Test(expected = NoFallbackAvailableException.class)
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
+				timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
 
 		Mono.fromCallable(() -> {
-				try {
-					/* sleep longer than time limit allows us to */
-					TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
-				}
-				catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					throw new RuntimeException("thread got interrupted", e);
-				}
-				return "foobar";
-			})
-			.subscribeOn(Schedulers.single())
-			.transform(cb::run)
-			.doOnSuccess(s -> {
-				throw new AssertionError("timeout did not occur");
-			})
-			.block();
+			try {
+				/* sleep longer than time limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(
+						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		}).subscribeOn(Schedulers.single()).transform(cb::run).doOnSuccess(s -> {
+			throw new AssertionError("timeout did not occur");
+		}).block();
 
 		Assert.fail("execution did not cause exception");
 	}
 
 	/**
-	 * Run circuit breaker with default time limiter and exceed time limit. Due to the disabled time limiter execution,
-	 * everything should finish without errors.
+	 * Run circuit breaker with default time limiter and exceed time limit. Due to the
+	 * disabled time limiter execution, everything should finish without errors.
 	 */
 	@Test
 	public void runWithDisabledTimeLimiter() {
@@ -137,23 +132,20 @@ public class ReactiveResilience4JCircuitBreakerTest {
 		final Resilience4JConfigurationProperties resilience4JConfigurationProperties = new Resilience4JConfigurationProperties();
 		resilience4JConfigurationProperties.setDisableTimeLimiter(true);
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, resilience4JConfigurationProperties).create("foo");
+				timeLimiterRegistry, resilience4JConfigurationProperties).create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
-					try {
-						/* sleep longer than timit limit allows us to */
-						TimeUnit.MILLISECONDS.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration()
-							.toMillis(), 100L) * 2);
-					}
-					catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						throw new RuntimeException("thread got interrupted", e);
-					}
-					return "foobar";
-				})
-				.subscribeOn(Schedulers.single())
-				.transform(cb::run)
-				.block()
-		).isEqualTo("foobar");
+			try {
+				/* sleep longer than timit limit allows us to */
+				TimeUnit.MILLISECONDS.sleep(
+						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		}).subscribeOn(Schedulers.single()).transform(cb::run).block()).isEqualTo("foobar");
 	}
+
 }

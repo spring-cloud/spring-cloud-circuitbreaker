@@ -253,24 +253,6 @@ resilience4j.timelimiter:
 
 For more information on Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 
-===== Disabling the TimeLimiter
-
-By default, the `TimeLimiter` is enabled and every execution is backed by a time limit. This time limit is either defined explicitly or the default time limit (provided by `io.github.resilience4j.timelimiter.TimeLimiterConfig#ofDefaults`) is used.
-
-The `TimeLimiter` can be globally disabled by setting the property `spring.cloud.circuitbreaker.resilience4j.disable-time-limiter` to `true`.
-
-[source,yaml]
-----
-spring:
-	cloud:
-		circuitbreaker:
-			resilience4j:
-				disable-time-limiter: true
-----
-
-This type of option is only provided on a global scope within the `spring-cloud-circuitbreaker` and applies to the
-basic and to the reactive circuitbreaker implementation.
-
 ==== Bulkhead pattern supporting
 If `resilience4j-bulkhead` is on the classpath, Spring Cloud CircuitBreaker will wrap all methods with a Resilience4j Bulkhead.
 You can disable the Resilience4j Bulkhead by setting `spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled` to `false`.
