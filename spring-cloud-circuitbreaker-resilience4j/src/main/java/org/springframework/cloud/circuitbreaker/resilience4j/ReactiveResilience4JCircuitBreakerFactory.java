@@ -52,7 +52,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 
 	@Deprecated
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-		TimeLimiterRegistry timeLimiterRegistry) {
+			TimeLimiterRegistry timeLimiterRegistry) {
 		this(circuitBreakerRegistry, timeLimiterRegistry, null);
 	}
 
@@ -101,7 +101,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
 				.circuitBreakerConfig(circuitBreakerConfig).timeLimiterConfig(timeLimiterConfig).build();
 		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
-			timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter());
+				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter());
 	}
 
 	private boolean isDisableTimeLimiter() {
