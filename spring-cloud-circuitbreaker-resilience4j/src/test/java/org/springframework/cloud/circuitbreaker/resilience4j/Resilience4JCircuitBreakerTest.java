@@ -16,18 +16,20 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import java.util.concurrent.TimeUnit;
-
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import io.micrometer.core.instrument.util.NamedThreadFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -228,6 +230,50 @@ public class Resilience4JCircuitBreakerTest {
 			}
 			return "foobar";
 		})).isEqualTo("foobar");
+	}
+
+	/**
+	 * Run the test with grouping and specify thread pool.
+	 */
+	@Test
+	public void runWithCustomGroupThreadPool() {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), null);
+		String groupName = "groupFoo";
+
+		// configure GroupExecutorService
+		factory.configureGroupExecutorService(group -> new ContextThreadPoolExecutor(groupName));
+
+		CircuitBreaker cb = factory.create("foo", groupName);
+		assertThat(cb.run(() -> Thread.currentThread().getName())).startsWith(groupName);
+	}
+
+	/**
+	 * Run tests without grouping and specify thread pool.
+	 */
+	@Test
+	public void runWithCustomNormalThreadPool() {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+			TimeLimiterRegistry.ofDefaults(), null);
+		String threadPoolName = "demo-";
+
+		// configure ExecutorService
+		factory.configureExecutorService(new ContextThreadPoolExecutor(threadPoolName));
+
+		CircuitBreaker cb = factory.create("foo");
+		assertThat(cb.run(() -> Thread.currentThread().getName())).startsWith(threadPoolName);
+	}
+
+	static class ContextThreadPoolExecutor extends ThreadPoolExecutor {
+
+		/**
+		 * example ContextThreadPoolExecutor
+		 * @param threadPoolName fixed threadPoolName
+		 */
+		public ContextThreadPoolExecutor(String threadPoolName) {
+			super(2, 5, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1024));
+			this.setThreadFactory(new NamedThreadFactory(threadPoolName));
+		}
 	}
 
 }
