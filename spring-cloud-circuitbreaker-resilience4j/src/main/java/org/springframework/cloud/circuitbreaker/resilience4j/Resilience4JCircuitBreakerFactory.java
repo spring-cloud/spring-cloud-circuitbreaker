@@ -131,7 +131,8 @@ public class Resilience4JCircuitBreakerFactory extends
 	public org.springframework.cloud.client.circuitbreaker.CircuitBreaker create(String id, String groupName) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
-		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName, groupExecutorServiceFactory);
+		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName,
+				groupExecutorServiceFactory);
 		Resilience4JCircuitBreaker resilience4JCircuitBreaker = create(id, groupName, groupExecutorService);
 		return tryObservedCircuitBreaker(resilience4JCircuitBreaker);
 	}
