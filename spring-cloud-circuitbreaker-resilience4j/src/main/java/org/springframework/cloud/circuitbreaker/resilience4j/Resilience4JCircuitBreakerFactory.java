@@ -54,6 +54,8 @@ public class Resilience4JCircuitBreakerFactory extends
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
+	private Function<String, ExecutorService> groupExecutorServiceFactory = group -> Executors.newCachedThreadPool();
+
 	private ConcurrentHashMap<String, ExecutorService> executorServices = new ConcurrentHashMap<>();
 
 	private Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
@@ -110,6 +112,14 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.executorService = executorService;
 	}
 
+	/**
+	 * configure GroupExecutorService.
+	 * @param groupFactory GroupExecutorService Factory
+	 */
+	public void configureGroupExecutorService(Function<String, ExecutorService> groupFactory) {
+		this.groupExecutorServiceFactory = groupFactory;
+	}
+
 	@Override
 	public org.springframework.cloud.client.circuitbreaker.CircuitBreaker create(String id) {
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
@@ -122,7 +132,7 @@ public class Resilience4JCircuitBreakerFactory extends
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
 		final ExecutorService groupExecutorService = executorServices.computeIfAbsent(groupName,
-				group -> Executors.newCachedThreadPool());
+				groupExecutorServiceFactory);
 		Resilience4JCircuitBreaker resilience4JCircuitBreaker = create(id, groupName, groupExecutorService);
 		return tryObservedCircuitBreaker(resilience4JCircuitBreaker);
 	}
