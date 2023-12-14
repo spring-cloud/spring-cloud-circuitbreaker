@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +47,7 @@ import org.springframework.context.annotation.Configuration;
 		"io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator" })
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
 		"spring.cloud.circuitbreaker.resilience4j.reactive.enabled" }, matchIfMissing = true)
+@EnableConfigurationProperties(Resilience4JConfigurationProperties.class)
 public class ReactiveResilience4JAutoConfiguration {
 
 	@Autowired(required = false)
