@@ -27,6 +27,16 @@ public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 }
 ----
 
+If you need to propogate the security context to the Circuit Breaker you must configure the circuit breaker to use `DelegatingSecurityContextExecutorService`.
+
+[source,java]
+----
+@Bean
+public Customizer<Resilience4JCircuitBreakerFactory> groupExecutorServiceCustomizer() {
+	return factory -> factory.configureGroupExecutorService(group -> new DelegatingSecurityContextExecutorService(Executors.newVirtualThreadPerTaskExecutor()));
+}
+----
+
 [[reactive-example]]
 == Reactive Example
 
