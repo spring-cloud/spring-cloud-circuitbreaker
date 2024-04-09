@@ -1,0 +1,15 @@
+name: Deploy Docs Test
+on:
+  push:
+    branches-ignore: [ gh-pages ]
+    tags: '**'
+  repository_dispatch:
+    types: request-build-reference # legacy
+  #schedule:
+  #- cron: '0 10 * * *' # Once per day at 10am UTC
+  workflow_dispatch:
+
+jobs:
+  deploy-docs:
+    uses: spring-cloud/spring-cloud-build/.github/workflows/spring-cloud-deploy-docs.yml@main
+    secrets: inherit
