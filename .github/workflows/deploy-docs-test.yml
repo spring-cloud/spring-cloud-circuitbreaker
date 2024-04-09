@@ -1,0 +1,25 @@
+name: Deploy Docs Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-refname:
+        description: Enter git refname to build (e.g., 5.7.x).
+        required: false
+  push:
+    branches: docs-build
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    steps:
+       - name: Dump github context
+         run:   echo "$GITHUB_CONTEXT"
+         shell: bash
+         env:
+           GITHUB_CONTEXT: ${{ toJson(github) }}
+  deploy-doocs:
+    uses: spring-cloud/spring-cloud-build/.github/workflows/spring-cloud-deploy-docs.yml@docs-build
+    with:
+      build-refname: ${{ github.event.inputs.build-refname }}
+    secrets: inherit
