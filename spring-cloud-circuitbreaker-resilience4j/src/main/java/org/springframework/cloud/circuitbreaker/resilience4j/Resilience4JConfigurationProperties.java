@@ -66,11 +66,11 @@ public class Resilience4JConfigurationProperties {
 		this.disableThreadPool = disableThreadPool;
 	}
 
-	boolean isDisableTimeLimiter() {
+	public boolean isDisableTimeLimiter() {
 		return disableTimeLimiter;
 	}
 
-	void setDisableTimeLimiter(boolean disableTimeLimiter) {
+	public void setDisableTimeLimiter(boolean disableTimeLimiter) {
 		this.disableTimeLimiter = disableTimeLimiter;
 	}
 
