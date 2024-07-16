@@ -11,15 +11,15 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: maven
-      directory: /
-      schedule:
-        interval: daily
-      target-branch: main
-      ignore:
-        # only upgrade by minor or patch
-        - dependency-name: "*"
-          update-types:
-            - version-update:semver-major
+    directory: /
+    schedule:
+      interval: daily
+    target-branch: main
+    ignore:
+      # only upgrade by minor or patch
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
   - package-ecosystem: npm
     target-branch: docs-build
     directory: /
