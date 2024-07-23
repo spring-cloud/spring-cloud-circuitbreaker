@@ -141,21 +141,21 @@ public class Resilience4JAutoConfiguration {
 			if (factory != null) {
 				if (taggedCircuitBreakerMetrics == null) {
 					taggedCircuitBreakerMetrics = TaggedCircuitBreakerMetrics
-							.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
+						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
 				}
 				taggedCircuitBreakerMetrics.bindTo(meterRegistry);
 			}
 			if (bulkheadProvider != null) {
 				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
 				TaggedThreadPoolBulkheadMetrics
-						.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
-						.bindTo(meterRegistry);
+					.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
+					.bindTo(meterRegistry);
 			}
 			if (bulkheadProvider != null) {
 				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
 				TaggedThreadPoolBulkheadMetrics
-						.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
-						.bindTo(meterRegistry);
+					.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
+					.bindTo(meterRegistry);
 			}
 		}
 

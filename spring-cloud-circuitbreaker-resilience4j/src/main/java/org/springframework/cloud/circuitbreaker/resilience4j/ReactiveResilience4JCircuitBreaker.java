@@ -91,11 +91,11 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		if (tuple.getT2().isPresent()) {
 			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
 			toReturn = toReturn.timeout(timeoutDuration)
-					// Since we are using the Mono timeout we need to tell the circuit
-					// breaker
-					// about the error
-					.doOnError(TimeoutException.class,
-							t -> tuple.getT1().onError(timeoutDuration.toMillis(), TimeUnit.MILLISECONDS, t));
+				// Since we are using the Mono timeout we need to tell the circuit
+				// breaker
+				// about the error
+				.doOnError(TimeoutException.class,
+						t -> tuple.getT1().onError(timeoutDuration.toMillis(), TimeUnit.MILLISECONDS, t));
 		}
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -110,11 +110,11 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		if (tuple.getT2().isPresent()) {
 			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
 			toReturn = toReturn.timeout(timeoutDuration)
-					// Since we are using the Flux timeout we need to tell the circuit
-					// breaker
-					// about the error
-					.doOnError(TimeoutException.class,
-							t -> tuple.getT1().onError(timeoutDuration.toMillis(), TimeUnit.MILLISECONDS, t));
+				// Since we are using the Flux timeout we need to tell the circuit
+				// breaker
+				// about the error
+				.doOnError(TimeoutException.class,
+						t -> tuple.getT1().onError(timeoutDuration.toMillis(), TimeUnit.MILLISECONDS, t));
 		}
 		if (fallback != null) {
 			toReturn = toReturn.onErrorResume(fallback);
@@ -132,8 +132,8 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		}
 		/* provide time-limiter */
 		TimeLimiter timeLimiter = this.timeLimiterRegistry.find(this.id)
-				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
-						.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
+			.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
+				.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, tags)));
 		return Tuples.of(circuitBreaker, Optional.of(timeLimiter));
 	}
 

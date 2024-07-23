@@ -110,8 +110,12 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		StepVerifier.create(service.normal()).expectNext("normal").expectComplete().verify();
 		verify(normalErrorConsumer, times(0)).consumeEvent(any());
 		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
-		StepVerifier.withVirtualTime(() -> service.slow()).expectSubscription().expectNoEvent(Duration.ofSeconds(2))
-				.expectNext("fallback").expectComplete().verify();
+		StepVerifier.withVirtualTime(() -> service.slow())
+			.expectSubscription()
+			.expectNoEvent(Duration.ofSeconds(2))
+			.expectNext("fallback")
+			.expectComplete()
+			.verify();
 		verify(slowErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 		StepVerifier.create(service.normalFlux()).expectNext("normalflux").verifyComplete();
@@ -120,10 +124,15 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		StepVerifier.create(service.slowFlux()).expectNext("fluxfallback").verifyComplete();
 		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
-		assertThat(
-				((List) webClient.get().uri("/actuator/metrics").exchange().expectStatus().isOk().expectBody(Map.class)
-						.returnResult().getResponseBody().get("names")).contains("resilience4j.circuitbreaker.calls"))
-								.isTrue();
+		assertThat(((List) webClient.get()
+			.uri("/actuator/metrics")
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody(Map.class)
+			.returnResult()
+			.getResponseBody()
+			.get("names")).contains("resilience4j.circuitbreaker.calls")).isTrue();
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -156,20 +165,24 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 			return factory -> {
 				factory.configureDefault(
 						id -> new Resilience4JConfigBuilder(id).circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-								.timeLimiterConfig(
-										TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
-								.build());
+							.timeLimiterConfig(
+									TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
+							.build());
 				factory.configure(builder -> builder
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
-						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build())
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()), "slow", "slowflux");
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(slowErrorConsumer).onSuccess(slowSuccessConsumer), "slow");
+					.onError(slowErrorConsumer)
+					.onSuccess(slowSuccessConsumer), "slow");
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(normalErrorConsumer).onSuccess(normalSuccessConsumer), "normal");
+					.onError(normalErrorConsumer)
+					.onSuccess(normalSuccessConsumer), "normal");
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(slowFluxErrorConsumer).onSuccess(slowFluxSuccessConsumer), "slowflux");
+					.onError(slowFluxErrorConsumer)
+					.onSuccess(slowFluxSuccessConsumer), "slowflux");
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(normalFluxErrorConsumer).onSuccess(normalFluxSuccessConsumer), "normalflux");
+					.onError(normalFluxErrorConsumer)
+					.onSuccess(normalFluxSuccessConsumer), "normalflux");
 			};
 		}
 
@@ -188,37 +201,60 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 			}
 
 			public Mono<String> slow() {
-				return WebClient.builder().baseUrl("http://localhost:" + port).build().get().uri("/slow").retrieve()
-						.bodyToMono(String.class).transform(it -> circuitBreakerSlow.run(it, t -> {
-							t.printStackTrace();
-							return Mono.just("fallback");
-						}));
+				return WebClient.builder()
+					.baseUrl("http://localhost:" + port)
+					.build()
+					.get()
+					.uri("/slow")
+					.retrieve()
+					.bodyToMono(String.class)
+					.transform(it -> circuitBreakerSlow.run(it, t -> {
+						t.printStackTrace();
+						return Mono.just("fallback");
+					}));
 			}
 
 			public Mono<String> normal() {
-				return WebClient.builder().baseUrl("http://localhost:" + port).build().get().uri("/normal").retrieve()
-						.bodyToMono(String.class).transform(it -> cbFactory.create("normal").run(it, t -> {
-							t.printStackTrace();
-							return Mono.just("fallback");
-						}));
+				return WebClient.builder()
+					.baseUrl("http://localhost:" + port)
+					.build()
+					.get()
+					.uri("/normal")
+					.retrieve()
+					.bodyToMono(String.class)
+					.transform(it -> cbFactory.create("normal").run(it, t -> {
+						t.printStackTrace();
+						return Mono.just("fallback");
+					}));
 			}
 
 			public Flux<String> slowFlux() {
-				return WebClient.builder().baseUrl("http://localhost:" + port).build().get().uri("/slowflux").retrieve()
-						.bodyToFlux(new ParameterizedTypeReference<String>() {
-						}).transform(it -> cbFactory.create("slowflux").run(it, t -> {
-							t.printStackTrace();
-							return Flux.just("fluxfallback");
-						}));
+				return WebClient.builder()
+					.baseUrl("http://localhost:" + port)
+					.build()
+					.get()
+					.uri("/slowflux")
+					.retrieve()
+					.bodyToFlux(new ParameterizedTypeReference<String>() {
+					})
+					.transform(it -> cbFactory.create("slowflux").run(it, t -> {
+						t.printStackTrace();
+						return Flux.just("fluxfallback");
+					}));
 			}
 
 			public Flux<String> normalFlux() {
-				return WebClient.builder().baseUrl("http://localhost:" + port).build().get().uri("/normalflux")
-						.retrieve().bodyToFlux(String.class)
-						.transform(it -> cbFactory.create("normalflux").run(it, t -> {
-							t.printStackTrace();
-							return Flux.just("fluxfallback");
-						}));
+				return WebClient.builder()
+					.baseUrl("http://localhost:" + port)
+					.build()
+					.get()
+					.uri("/normalflux")
+					.retrieve()
+					.bodyToFlux(String.class)
+					.transform(it -> cbFactory.create("normalflux").run(it, t -> {
+						t.printStackTrace();
+						return Flux.just("fluxfallback");
+					}));
 			}
 
 			public void setPort(int port) {

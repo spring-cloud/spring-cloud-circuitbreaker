@@ -57,8 +57,9 @@ public class Resilience4jBulkheadProvider {
 		this.bulkheadRegistry = bulkheadRegistry;
 		this.threadPoolBulkheadRegistry = threadPoolBulkheadRegistry;
 		defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
-				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
-				.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig()).build();
+			.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
+			.threadPoolBulkheadConfig(this.threadPoolBulkheadRegistry.getDefaultConfig())
+			.build();
 		this.semaphoreDefaultBulkhead = resilience4JConfigurationProperties.isEnableSemaphoreDefaultBulkhead();
 	}
 
@@ -79,7 +80,7 @@ public class Resilience4jBulkheadProvider {
 	public void addBulkheadCustomizer(Customizer<Bulkhead> customizer, String... ids) {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-					.computeIfAbsent(id, defaultConfiguration);
+				.computeIfAbsent(id, defaultConfiguration);
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
 			customizer.customize(bulkhead);
 		}
@@ -88,7 +89,7 @@ public class Resilience4jBulkheadProvider {
 	public void addThreadPoolBulkheadCustomizer(Customizer<ThreadPoolBulkhead> customizer, String... ids) {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-					.computeIfAbsent(id, defaultConfiguration);
+				.computeIfAbsent(id, defaultConfiguration);
 			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
 					configuration.getThreadPoolBulkheadConfig());
 			customizer.customize(threadPoolBulkhead);
@@ -119,7 +120,7 @@ public class Resilience4jBulkheadProvider {
 	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Map<String, String> tags,
 			final Supplier<T> supplier) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-				.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, defaultConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
@@ -136,7 +137,7 @@ public class Resilience4jBulkheadProvider {
 	public <T> Callable<T> decorateCallable(final String id, final Map<String, String> tags,
 			final Callable<T> callable) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-				.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, defaultConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);

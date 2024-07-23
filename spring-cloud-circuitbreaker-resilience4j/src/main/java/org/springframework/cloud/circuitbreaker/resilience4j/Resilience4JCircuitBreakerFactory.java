@@ -76,8 +76,9 @@ public class Resilience4JCircuitBreakerFactory extends
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.bulkheadProvider = bulkheadProvider;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
-				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+			.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+			.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig())
+			.build();
 		this.resilience4JConfigurationProperties = resilience4JConfigurationProperties;
 	}
 
@@ -167,13 +168,13 @@ public class Resilience4JCircuitBreakerFactory extends
 	private Resilience4JCircuitBreaker create(String id, String groupName,
 			ExecutorService circuitBreakerExecutorService) {
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration defaultConfig = getConfigurations()
-				.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, defaultConfiguration);
 		CircuitBreakerConfig circuitBreakerConfig = this.circuitBreakerRegistry.getConfiguration(id)
-				.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
-						.orElseGet(defaultConfig::getCircuitBreakerConfig));
+			.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
+				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
-				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
-						.orElseGet(defaultConfig::getTimeLimiterConfig));
+			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
+				.orElseGet(defaultConfig::getTimeLimiterConfig));
 		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
 			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
 					circuitBreakerRegistry, timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)),

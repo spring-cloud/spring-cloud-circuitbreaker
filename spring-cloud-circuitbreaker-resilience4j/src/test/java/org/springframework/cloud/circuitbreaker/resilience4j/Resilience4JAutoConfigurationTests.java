@@ -42,7 +42,8 @@ public class Resilience4JAutoConfigurationTests {
 	@Test
 	public void meterFilterEnabled() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.sources(Resilience4JAutoConfigurationTests.TestApp.class).run()) {
+			.sources(Resilience4JAutoConfigurationTests.TestApp.class)
+			.run()) {
 			assertThat(context.getBean("resilience4JMeterFilter")).isNotNull();
 		}
 	}
@@ -50,8 +51,9 @@ public class Resilience4JAutoConfigurationTests {
 	@Test
 	public void meterFilterDisabled() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.sources(Resilience4JAutoConfigurationTests.TestApp.class)
-				.properties("spring.cloud.circuitbreaker.resilience4j.enableGroupMeterFilter=false").run()) {
+			.sources(Resilience4JAutoConfigurationTests.TestApp.class)
+			.properties("spring.cloud.circuitbreaker.resilience4j.enableGroupMeterFilter=false")
+			.run()) {
 			assertThat(context.containsBean("resilience4JMeterFilter")).isFalse();
 		}
 	}

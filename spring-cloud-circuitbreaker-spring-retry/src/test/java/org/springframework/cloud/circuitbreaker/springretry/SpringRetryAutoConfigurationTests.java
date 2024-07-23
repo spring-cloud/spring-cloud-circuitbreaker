@@ -44,14 +44,14 @@ class SpringRetryAutoConfigurationTests {
 	class NoCustomizers {
 
 		private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class));
 
 		@Test
 		void testNoCustomizers() {
 
 			contextRunner.run(context -> {
 				String[] arr = context
-						.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
+					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
 				Assertions.assertEquals(0, arr.length, "Default auto-configuration must not have any customizers");
 
 				@SuppressWarnings("rawtypes")
@@ -67,15 +67,15 @@ class SpringRetryAutoConfigurationTests {
 	class WithEmptyCustomizers {
 
 		private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class))
-				.withConfiguration(AutoConfigurations.of(ListWithEmptyCustomizers.class));
+			.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(ListWithEmptyCustomizers.class));
 
 		@Test
 		void testWithCustomizers() {
 
 			contextRunner.run(context -> {
 				String[] arr = context
-						.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
+					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
 				Assertions.assertEquals(1, arr.length);
 				Assertions.assertArrayEquals(arr, new String[] { "customizers" });
 
@@ -103,15 +103,15 @@ class SpringRetryAutoConfigurationTests {
 	class WithCustomizers {
 
 		private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class))
-				.withConfiguration(AutoConfigurations.of(WithCustomizers.MyConfig.class));
+			.withConfiguration(AutoConfigurations.of(SpringRetryAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(WithCustomizers.MyConfig.class));
 
 		@Test
 		void testCustomizer(CapturedOutput output) {
 
 			contextRunner.run(context -> {
 				String[] arr = context
-						.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
+					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
 				Assertions.assertEquals(1, arr.length);
 				Assertions.assertArrayEquals(arr, new String[] { "customizers" });
 

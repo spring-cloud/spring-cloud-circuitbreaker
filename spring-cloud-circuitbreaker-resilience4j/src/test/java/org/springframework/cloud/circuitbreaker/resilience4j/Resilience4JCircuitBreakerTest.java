@@ -50,21 +50,24 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void run() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo");
+				TimeLimiterRegistry.ofDefaults(), null, properties)
+			.create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithOutProperties() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo");
+				TimeLimiterRegistry.ofDefaults(), null)
+			.create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runWithGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null)
+			.create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 
 	}
@@ -73,7 +76,8 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithoutThreadPool() {
 		properties.setDisableThreadPool(true);
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null, properties)
+			.create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 
 	}
@@ -81,7 +85,8 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void runWithFallback() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo");
+				TimeLimiterRegistry.ofDefaults(), null, properties)
+			.create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -90,7 +95,8 @@ public class Resilience4JCircuitBreakerTest {
 	@Test
 	public void runWithFallbackAndGroupName() {
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), null, properties).create("foo", "groupFoo");
+				TimeLimiterRegistry.ofDefaults(), null, properties)
+			.create("foo", "groupFoo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -102,7 +108,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo");
+				properties)
+			.create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -113,7 +120,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo");
+				properties)
+			.create("foo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -123,7 +131,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo", "groupFoo");
+				properties)
+			.create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -134,7 +143,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo", "groupFoo");
+				properties)
+			.create("foo", "groupFoo");
 		assertThat(cb.run(() -> "foobar")).isEqualTo("foobar");
 	}
 
@@ -144,7 +154,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo");
+				properties)
+			.create("foo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -156,7 +167,8 @@ public class Resilience4JCircuitBreakerTest {
 				TimeLimiterRegistry.ofDefaults(),
 				new Resilience4jBulkheadProvider(ThreadPoolBulkheadRegistry.ofDefaults(), BulkheadRegistry.ofDefaults(),
 						new Resilience4JConfigurationProperties()),
-				properties).create("foo", "groupFoo");
+				properties)
+			.create("foo", "groupFoo");
 		assertThat((String) cb.run(() -> {
 			throw new RuntimeException("boom");
 		}, t -> "fallback")).isEqualTo("fallback");
@@ -170,12 +182,13 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties)
+			.create("foo");
 		assertThat(cb.run(() -> {
 			try {
 				/* sleep less than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
+				TimeUnit.MILLISECONDS
+					.sleep(Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -193,12 +206,13 @@ public class Resilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties)
+			.create("foo");
 		cb.run(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS
+					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -218,12 +232,13 @@ public class Resilience4JCircuitBreakerTest {
 		properties.setDisableTimeLimiter(true);
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, null, properties).create("foo");
+				timeLimiterRegistry, null, properties)
+			.create("foo");
 		assertThat(cb.run(() -> {
 			try {
 				/* sleep longer than limit limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS
+					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

@@ -93,27 +93,27 @@ class SpringRetryCircuitBreakerIntegrationTest {
 				factory.configureDefault(
 						id -> new SpringRetryConfigBuilder(id).retryPolicy(new TimeoutRetryPolicy()).build());
 				factory.configure(builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
-				factory.addRetryTemplateCustomizers(
-						retryTemplate -> retryTemplate.registerListener(new RetryListener() {
+				factory
+					.addRetryTemplateCustomizers(retryTemplate -> retryTemplate.registerListener(new RetryListener() {
 
-							@Override
-							public <T, E extends Throwable> boolean open(RetryContext context,
-									RetryCallback<T, E> callback) {
-								return false;
-							}
+						@Override
+						public <T, E extends Throwable> boolean open(RetryContext context,
+								RetryCallback<T, E> callback) {
+							return false;
+						}
 
-							@Override
-							public <T, E extends Throwable> void close(RetryContext context,
-									RetryCallback<T, E> callback, Throwable throwable) {
+						@Override
+						public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+								Throwable throwable) {
 
-							}
+						}
 
-							@Override
-							public <T, E extends Throwable> void onError(RetryContext context,
-									RetryCallback<T, E> callback, Throwable throwable) {
+						@Override
+						public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+								Throwable throwable) {
 
-							}
-						}));
+						}
+					}));
 			};
 		}
 
@@ -140,8 +140,8 @@ class SpringRetryCircuitBreakerIntegrationTest {
 			}
 
 			String normal() {
-				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
-						t -> "fallback");
+				return cbFactory.create("normal")
+					.run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 
 			void verifyTimesSlowInvoked() {

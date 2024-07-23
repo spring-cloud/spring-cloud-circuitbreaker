@@ -86,7 +86,7 @@ public class ReactiveResilience4JAutoConfiguration {
 			if (factory != null) {
 				if (taggedCircuitBreakerMetrics == null) {
 					taggedCircuitBreakerMetrics = TaggedCircuitBreakerMetrics
-							.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
+						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
 				}
 				taggedCircuitBreakerMetrics.bindTo(meterRegistry);
 			}

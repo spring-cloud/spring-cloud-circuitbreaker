@@ -56,7 +56,7 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		assertThat(circuitBreakerRegistry.find("test_circuit")).isPresent();
 		assertThat(
 				circuitBreakerRegistry.find("test_circuit").get().getCircuitBreakerConfig().getMinimumNumberOfCalls())
-						.isEqualTo(5);
+			.isEqualTo(5);
 	}
 
 	@Test
@@ -65,17 +65,17 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		assertThat(timeLimiterRegistry).isNotNull();
 		assertThat(timeLimiterRegistry.find("test_circuit")).isPresent();
 		assertThat(timeLimiterRegistry.find("test_circuit").get().getTimeLimiterConfig().getTimeoutDuration())
-				.isEqualTo(Duration.ofSeconds(18));
+			.isEqualTo(Duration.ofSeconds(18));
 	}
 
 	@Test
 	public void testThreadPoolBulkheadPropertiesPopulated() {
 		ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry = factory.getBulkheadProvider()
-				.getThreadPoolBulkheadRegistry();
+			.getThreadPoolBulkheadRegistry();
 		assertThat(threadPoolBulkheadRegistry).isNotNull();
 		assertThat(threadPoolBulkheadRegistry.find("test_circuit")).isPresent();
 		assertThat(threadPoolBulkheadRegistry.find("test_circuit").get().getBulkheadConfig().getMaxThreadPoolSize())
-				.isEqualTo(100);
+			.isEqualTo(100);
 	}
 
 	@Test
@@ -84,7 +84,7 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		assertThat(bulkheadRegistry).isNotNull();
 		assertThat(bulkheadRegistry.find("test_circuit")).isPresent();
 		assertThat(bulkheadRegistry.find("test_circuit").get().getBulkheadConfig().getMaxConcurrentCalls())
-				.isEqualTo(50);
+			.isEqualTo(50);
 	}
 
 	@Test
@@ -93,8 +93,10 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		CircuitBreakerRegistry circuitBreakerRegistry = factory.getCircuitBreakerRegistry();
 		assertThat(circuitBreakerRegistry).isNotNull();
 		assertThat(circuitBreakerRegistry.find("default_circuitBreaker")).isPresent();
-		assertThat(circuitBreakerRegistry.find("default_circuitBreaker").get().getCircuitBreakerConfig()
-				.getMinimumNumberOfCalls()).isEqualTo(20);
+		assertThat(circuitBreakerRegistry.find("default_circuitBreaker")
+			.get()
+			.getCircuitBreakerConfig()
+			.getMinimumNumberOfCalls()).isEqualTo(20);
 	}
 
 	@Test
@@ -104,18 +106,20 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		assertThat(timeLimiterRegistry).isNotNull();
 		assertThat(timeLimiterRegistry.find("default_circuitBreaker")).isPresent();
 		assertThat(timeLimiterRegistry.find("default_circuitBreaker").get().getTimeLimiterConfig().getTimeoutDuration())
-				.isEqualTo(Duration.ofMillis(150));
+			.isEqualTo(Duration.ofMillis(150));
 	}
 
 	@Test
 	public void testDefaultThreadPoolBulkheadPropertiesPopulated() {
 		factory.create("default_circuitBreaker").run(() -> "result");
 		ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry = factory.getBulkheadProvider()
-				.getThreadPoolBulkheadRegistry();
+			.getThreadPoolBulkheadRegistry();
 		assertThat(threadPoolBulkheadRegistry).isNotNull();
 		assertThat(threadPoolBulkheadRegistry.find("default_circuitBreaker")).isPresent();
-		assertThat(threadPoolBulkheadRegistry.find("default_circuitBreaker").get().getBulkheadConfig()
-				.getMaxThreadPoolSize()).isEqualTo(50);
+		assertThat(threadPoolBulkheadRegistry.find("default_circuitBreaker")
+			.get()
+			.getBulkheadConfig()
+			.getMaxThreadPoolSize()).isEqualTo(50);
 	}
 
 	@Test

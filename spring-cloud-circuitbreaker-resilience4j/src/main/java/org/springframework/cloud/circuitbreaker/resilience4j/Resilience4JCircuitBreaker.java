@@ -117,17 +117,17 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 				Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
 				/* conditionally wrap in time-limiter */
 				Callable<T> timeLimitedCall = timeLimiter
-						.map(tl -> TimeLimiter.decorateFutureSupplier(tl, futureSupplier))
-						.orElse(() -> futureSupplier.get().get());
+					.map(tl -> TimeLimiter.decorateFutureSupplier(tl, futureSupplier))
+					.orElse(() -> futureSupplier.get().get());
 				Callable<T> bulkheadCall = bulkheadProvider.decorateCallable(this.groupName, tags, timeLimitedCall);
 				Callable<T> circuitBreakerCall = io.github.resilience4j.circuitbreaker.CircuitBreaker
-						.decorateCallable(defaultCircuitBreaker, bulkheadCall);
+					.decorateCallable(defaultCircuitBreaker, bulkheadCall);
 				return getAndApplyFallback(circuitBreakerCall, fallback);
 			}
 			else {
 				Callable<T> bulkheadCall = bulkheadProvider.decorateCallable(this.groupName, tags, toRun::get);
 				Callable<T> circuitBreakerCall = io.github.resilience4j.circuitbreaker.CircuitBreaker
-						.decorateCallable(defaultCircuitBreaker, bulkheadCall);
+					.decorateCallable(defaultCircuitBreaker, bulkheadCall);
 				return getAndApplyFallback(circuitBreakerCall, fallback);
 			}
 		}
@@ -136,15 +136,15 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 				Supplier<Future<T>> futureSupplier = () -> executorService.submit(toRun::get);
 				/* conditionally wrap in time-limiter */
 				Callable<T> restrictedCall = timeLimiter
-						.map(tl -> TimeLimiter.decorateFutureSupplier(tl, futureSupplier))
-						.orElse(() -> futureSupplier.get().get());
+					.map(tl -> TimeLimiter.decorateFutureSupplier(tl, futureSupplier))
+					.orElse(() -> futureSupplier.get().get());
 				Callable<T> callable = io.github.resilience4j.circuitbreaker.CircuitBreaker
-						.decorateCallable(defaultCircuitBreaker, restrictedCall);
+					.decorateCallable(defaultCircuitBreaker, restrictedCall);
 				return getAndApplyFallback(callable, fallback);
 			}
 			else {
 				Supplier<T> decorator = io.github.resilience4j.circuitbreaker.CircuitBreaker
-						.decorateSupplier(defaultCircuitBreaker, toRun);
+					.decorateSupplier(defaultCircuitBreaker, toRun);
 				return getAndApplyFallback(decorator, fallback);
 			}
 		}
@@ -173,8 +173,8 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			return Optional.empty();
 		}
 		return Optional.of(this.timeLimiterRegistry.find(this.id)
-				.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName).orElseGet(
-						() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, this.tags))));
+			.orElseGet(() -> this.timeLimiterRegistry.find(this.groupName)
+				.orElseGet(() -> this.timeLimiterRegistry.timeLimiter(this.id, this.timeLimiterConfig, this.tags))));
 	}
 
 }

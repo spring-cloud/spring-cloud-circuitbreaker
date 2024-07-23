@@ -123,13 +123,13 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	public void testResilience4JMetricsAvailable() {
 		assertThat(service.normal()).isEqualTo("normal");
 		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
-				.contains("resilience4j.circuitbreaker.calls")).isTrue();
+			.contains("resilience4j.circuitbreaker.calls")).isTrue();
 
 		// CircuitBreaker and TimeLimiter should have 3 metrics: name, kind, group
 		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.circuitbreaker.calls", Map.class)
-				.get("availableTags"))).hasSize(3);
+			.get("availableTags"))).hasSize(3);
 		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.timelimiter.calls", Map.class)
-				.get("availableTags"))).hasSize(3);
+			.get("availableTags"))).hasSize(3);
 	}
 
 	@Test
@@ -147,13 +147,16 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		List<Observation.Context> contexts = myObservationHandler.contexts;
 		assertThat(contexts).hasSize(3);
 		assertThat(contexts.get(0)).satisfies(context -> ObservationContextAssert.then(context)
-				.hasNameEqualTo("spring.cloud.circuitbreaker").hasContextualNameEqualTo("circuit-breaker")
-				.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "supplier"));
-		BDDAssertions.then(contexts.get(1)).satisfies(context -> ObservationContextAssert.then(context)
-				.hasNameEqualTo("spring.cloud.circuitbreaker").hasContextualNameEqualTo("circuit-breaker fallback")
+			.hasNameEqualTo("spring.cloud.circuitbreaker")
+			.hasContextualNameEqualTo("circuit-breaker")
+			.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "supplier"));
+		BDDAssertions.then(contexts.get(1))
+			.satisfies(context -> ObservationContextAssert.then(context)
+				.hasNameEqualTo("spring.cloud.circuitbreaker")
+				.hasContextualNameEqualTo("circuit-breaker fallback")
 				.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "function"));
 		BDDAssertions.then(contexts.get(2))
-				.satisfies(context -> ObservationContextAssert.then(context).hasNameEqualTo("my.observation"));
+			.satisfies(context -> ObservationContextAssert.then(context).hasNameEqualTo("my.observation"));
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -198,15 +201,18 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
 				factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()),
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(2)).build()),
 						"slow");
 				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
-						.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).build());
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
+					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+					.build());
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(slowErrorConsumer).onSuccess(slowSuccessConsumer), "slow");
+					.onError(slowErrorConsumer)
+					.onSuccess(slowSuccessConsumer), "slow");
 				factory.addCircuitBreakerCustomizer(circuitBreaker -> circuitBreaker.getEventPublisher()
-						.onError(normalErrorConsumer).onSuccess(normalSuccessConsumer), "normal");
+					.onError(normalErrorConsumer)
+					.onSuccess(normalSuccessConsumer), "normal");
 			};
 		}
 
@@ -251,22 +257,22 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 			}
 
 			public String normal() {
-				return cbFactory.create("normal").run(() -> rest.getForObject("/normal", String.class),
-						t -> "fallback");
+				return cbFactory.create("normal")
+					.run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 
 			public String withObservationRegistry() {
 				return Observation.createNotStarted("my.observation", observationRegistry)
-						.observe(() -> cbFactory.create("exception").run(
-								() -> new RestTemplate().getForObject("/exception", String.class), t -> "fallback"));
+					.observe(() -> cbFactory.create("exception")
+						.run(() -> new RestTemplate().getForObject("/exception", String.class), t -> "fallback"));
 			}
 
 			public String slowOnDemand(int delayInMilliseconds) {
 				return circuitBreakerSlow
-						.run(() -> rest
-								.exchange("/slowOnDemand", HttpMethod.GET,
-										createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
-								.getBody(), t -> "fallback");
+					.run(() -> rest
+						.exchange("/slowOnDemand", HttpMethod.GET,
+								createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
+						.getBody(), t -> "fallback");
 			}
 
 			private HttpEntity<String> createEntityWithOptionalDelayHeader(int delayInMilliseconds) {

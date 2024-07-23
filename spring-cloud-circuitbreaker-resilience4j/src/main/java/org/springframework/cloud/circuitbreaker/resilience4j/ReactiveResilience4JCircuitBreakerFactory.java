@@ -62,8 +62,9 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
-				.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig()).build();
+			.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
+			.timeLimiterConfig(this.timeLimiterRegistry.getDefaultConfig())
+			.build();
 		this.resilience4JConfigurationProperties = resilience4JConfigurationProperties;
 	}
 
@@ -91,15 +92,17 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		Assert.hasText(id, "A CircuitBreaker must have an id.");
 		Assert.hasText(groupName, "A CircuitBreaker must have a group name.");
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration defaultConfig = getConfigurations()
-				.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, defaultConfiguration);
 		CircuitBreakerConfig circuitBreakerConfig = this.circuitBreakerRegistry.getConfiguration(id)
-				.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
-						.orElseGet(defaultConfig::getCircuitBreakerConfig));
+			.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
+				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
-				.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
-						.orElseGet(defaultConfig::getTimeLimiterConfig));
+			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
+				.orElseGet(defaultConfig::getTimeLimiterConfig));
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
-				.circuitBreakerConfig(circuitBreakerConfig).timeLimiterConfig(timeLimiterConfig).build();
+			.circuitBreakerConfig(circuitBreakerConfig)
+			.timeLimiterConfig(timeLimiterConfig)
+			.build();
 		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
 				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter());
 	}

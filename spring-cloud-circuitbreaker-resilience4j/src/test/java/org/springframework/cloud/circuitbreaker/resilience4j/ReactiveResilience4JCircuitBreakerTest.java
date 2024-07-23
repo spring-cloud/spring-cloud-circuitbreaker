@@ -42,32 +42,39 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runMono() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()).create("foo");
+				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties())
+			.create("foo");
 		assertThat(Mono.just("foobar").transform(cb::run).block()).isEqualTo("foobar");
 	}
 
 	@Test
 	public void runMonoWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()).create("foo");
-		assertThat(Mono.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Mono.just("fallback")))
-				.block()).isEqualTo("fallback");
+				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties())
+			.create("foo");
+		assertThat(Mono.error(new RuntimeException("boom"))
+			.transform(it -> cb.run(it, t -> Mono.just("fallback")))
+			.block()).isEqualTo("fallback");
 	}
 
 	@Test
 	public void runFlux() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()).create("foo");
+				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties())
+			.create("foo");
 		assertThat(Flux.just("foobar", "hello world").transform(cb::run).collectList().block())
-				.isEqualTo(Arrays.asList("foobar", "hello world"));
+			.isEqualTo(Arrays.asList("foobar", "hello world"));
 	}
 
 	@Test
 	public void runFluxWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()).create("foo");
-		assertThat(Flux.error(new RuntimeException("boom")).transform(it -> cb.run(it, t -> Flux.just("fallback")))
-				.collectList().block()).isEqualTo(Collections.singletonList("fallback"));
+				TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties())
+			.create("foo");
+		assertThat(Flux.error(new RuntimeException("boom"))
+			.transform(it -> cb.run(it, t -> Flux.just("fallback")))
+			.collectList()
+			.block()).isEqualTo(Collections.singletonList("fallback"));
 	}
 
 	/**
@@ -78,13 +85,14 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
+				timeLimiterRegistry, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
 			try {
 				/* sleep less than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
+				TimeUnit.MILLISECONDS
+					.sleep(Math.min(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis() / 2L, 0L));
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -102,13 +110,14 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, new Resilience4JConfigurationProperties()).create("foo");
+				timeLimiterRegistry, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		Mono.fromCallable(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS
+					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -132,13 +141,14 @@ public class ReactiveResilience4JCircuitBreakerTest {
 		final Resilience4JConfigurationProperties resilience4JConfigurationProperties = new Resilience4JConfigurationProperties();
 		resilience4JConfigurationProperties.setDisableTimeLimiter(true);
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-				timeLimiterRegistry, resilience4JConfigurationProperties).create("foo");
+				timeLimiterRegistry, resilience4JConfigurationProperties)
+			.create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
 			try {
 				/* sleep longer than timit limit allows us to */
-				TimeUnit.MILLISECONDS.sleep(
-						Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+				TimeUnit.MILLISECONDS
+					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

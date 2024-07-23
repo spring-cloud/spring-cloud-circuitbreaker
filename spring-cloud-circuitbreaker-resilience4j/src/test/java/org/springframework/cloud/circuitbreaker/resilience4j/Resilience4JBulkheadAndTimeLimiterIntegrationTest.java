@@ -115,10 +115,11 @@ public class Resilience4JBulkheadAndTimeLimiterIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowBulkheadCustomizer() {
-			TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(500))
-					.build();
+			TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.custom()
+				.timeoutDuration(Duration.ofMillis(500))
+				.build();
 			return circuitBreakerFactory -> circuitBreakerFactory
-					.configure(builder -> builder.timeLimiterConfig(timeLimiterConfig), SLOW_BULKHEAD);
+				.configure(builder -> builder.timeLimiterConfig(timeLimiterConfig), SLOW_BULKHEAD);
 		}
 
 		@Bean

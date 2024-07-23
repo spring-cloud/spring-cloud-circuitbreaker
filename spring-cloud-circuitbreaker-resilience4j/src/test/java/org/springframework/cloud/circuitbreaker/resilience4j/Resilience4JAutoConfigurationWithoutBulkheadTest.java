@@ -39,7 +39,8 @@ public class Resilience4JAutoConfigurationWithoutBulkheadTest {
 	@Test
 	public void testWithoutBulkhead() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.sources(TestApp.class).run()) {
+			.sources(TestApp.class)
+			.run()) {
 			assertThat(context.containsBean("bulkheadProvider")).isFalse();
 		}
 	}

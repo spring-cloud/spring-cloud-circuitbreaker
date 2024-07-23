@@ -51,8 +51,9 @@ public class Resilience4JAutoConfigurationMetricsConfigRun {
 	@Test
 	public void testWithMetricsConfigReactive() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.properties("resilience4j.circuitbreaker.metrics.legacy.enabled").sources(TestAppReactive.class)
-				.run()) {
+			.properties("resilience4j.circuitbreaker.metrics.legacy.enabled")
+			.sources(TestAppReactive.class)
+			.run()) {
 			verify(reactiveCircuitBreakerFactory, times(1)).getCircuitBreakerRegistry();
 		}
 	}
@@ -60,7 +61,9 @@ public class Resilience4JAutoConfigurationMetricsConfigRun {
 	@Test
 	public void testWithMetricsConfig() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.properties("resilience4j.circuitbreaker.metrics.legacy.enabled").sources(TestApp.class).run()) {
+			.properties("resilience4j.circuitbreaker.metrics.legacy.enabled")
+			.sources(TestApp.class)
+			.run()) {
 			verify(circuitBreakerFactory, times(1)).getCircuitBreakerRegistry();
 		}
 	}
