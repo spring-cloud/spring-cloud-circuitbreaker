@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -236,7 +238,36 @@ public class Resilience4JCircuitBreakerTest {
 			.create("foo");
 		assertThat(cb.run(() -> {
 			try {
-				/* sleep longer than limit limit allows us to */
+				/* sleep longer than limit allows us to */
+				TimeUnit.MILLISECONDS
+					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		})).isEqualTo("foobar");
+	}
+
+	/**
+	 * Run circuit breaker with default time limiter map of two circuit breaker instances
+	 * and exceed time limit. Due to the disabled time limiter execution, everything
+	 * should finish without errors for foo2.
+	 */
+	@Test
+	public void runWithDisabledTimeLimiterForASpecificInstance() {
+		Map<String, Boolean> disableTimeLimiterMap = new HashMap<>();
+		disableTimeLimiterMap.put("foo1", false);
+		disableTimeLimiterMap.put("foo2", true);
+		properties.setDisableTimeLimiter(true);
+		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
+		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				timeLimiterRegistry, null, properties)
+			.create("foo2");
+		assertThat(cb.run(() -> {
+			try {
+				/* sleep longer than limit allows us to */
 				TimeUnit.MILLISECONDS
 					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
 			}

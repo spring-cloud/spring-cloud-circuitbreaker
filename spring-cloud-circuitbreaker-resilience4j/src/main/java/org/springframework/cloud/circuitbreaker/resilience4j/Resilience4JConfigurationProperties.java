@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -33,6 +36,8 @@ public class Resilience4JConfigurationProperties {
 	private boolean disableThreadPool = false;
 
 	private boolean disableTimeLimiter = false;
+
+	private Map<String, Boolean> disableTimeLimiterMap = new HashMap<>();
 
 	public boolean isEnableGroupMeterFilter() {
 		return enableGroupMeterFilter;
@@ -72,6 +77,14 @@ public class Resilience4JConfigurationProperties {
 
 	public void setDisableTimeLimiter(boolean disableTimeLimiter) {
 		this.disableTimeLimiter = disableTimeLimiter;
+	}
+
+	public Map<String, Boolean> getDisableTimeLimiterMap() {
+		return disableTimeLimiterMap;
+	}
+
+	public void setDisableTimeLimiterMap(Map<String, Boolean> disableTimeLimiterMap) {
+		this.disableTimeLimiterMap = disableTimeLimiterMap;
 	}
 
 }

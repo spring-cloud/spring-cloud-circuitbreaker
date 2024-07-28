@@ -103,8 +103,10 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 			.circuitBreakerConfig(circuitBreakerConfig)
 			.timeLimiterConfig(timeLimiterConfig)
 			.build();
+		boolean isDisableTimeLimiter = ConfigurationPropertiesUtils
+			.isDisableTimeLimiter(this.resilience4JConfigurationProperties, id, groupName);
 		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
-				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter());
+				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter);
 	}
 
 	private boolean isDisableTimeLimiter() {
