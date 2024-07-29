@@ -49,6 +49,9 @@ public class Resilience4JAutoConfigurationPropertyTest {
 	@Autowired
 	Resilience4JCircuitBreakerFactory factory;
 
+	@Autowired
+	Resilience4JConfigurationProperties configurationProperties;
+
 	@Test
 	public void testCircuitBreakerPropertiesPopulated() {
 		CircuitBreakerRegistry circuitBreakerRegistry = factory.getCircuitBreakerRegistry();
@@ -175,6 +178,14 @@ public class Resilience4JAutoConfigurationPropertyTest {
 		Optional<TimeLimiter> timeLimiter = timeLimiterRegistry.find("test_group_instance");
 		assertThat(timeLimiter).isPresent();
 		assertThat(timeLimiter.get().getTimeLimiterConfig().getTimeoutDuration()).isEqualTo(Duration.ofMillis(600));
+	}
+
+	@Test
+	public void testDisableTimeLimiterMapPropertiesPopulated() {
+		assertThat(configurationProperties.getDisableTimeLimiterMap().get("group1")).isTrue();
+		assertThat(configurationProperties.getDisableTimeLimiterMap().get("instanceB")).isTrue();
+		assertThat(configurationProperties.getDisableTimeLimiterMap().get("instanceA")).isFalse();
+		assertThat(configurationProperties.isDisableTimeLimiter()).isFalse();
 	}
 
 }

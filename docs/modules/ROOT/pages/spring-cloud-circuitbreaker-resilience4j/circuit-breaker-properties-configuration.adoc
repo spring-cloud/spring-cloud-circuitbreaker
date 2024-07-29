@@ -99,6 +99,21 @@ spring:
 				disable-time-limiter: true
 ----
 
-This type of option is only provided on a global scope within the `spring-cloud-circuitbreaker` and applies to the
-basic and to the reactive circuitbreaker implementation.
+`TimeLimiter` can also be disabled for specific group or instances using `spring.cloud.circuitbreaker.resilience4j.disable-time-limiter-map` as below:
+
+[source,yaml]
+----
+spring:
+	cloud:
+		circuitbreaker:
+			resilience4j:
+				disable-time-limiter-map:
+					group1: true
+					instanceA: false
+					instanceB: true
+----
+These options for disabling `TimeLimit` are provided within `spring-cloud-circuitbreaker` and applies to both basic and reactive circuitbreaker implementation.
+
+Priority order of disabling is : `instance` > `group` > `global`. Based on above configuration, `instanceB` and `group1` have `TimeLimiter` disabled but `instanceA` has enabled. For all other instances and groups, it will fall back to globally set value of `spring.cloud.circuitbreaker.resilience4j.disable-time-limiter`
+If `spring.cloud.circuitbreaker.resilience4j.disable-time-limiter` is not set, by default,  `TimeLimit` is enabled for remaining circuitbreaker instances and groups.
 
