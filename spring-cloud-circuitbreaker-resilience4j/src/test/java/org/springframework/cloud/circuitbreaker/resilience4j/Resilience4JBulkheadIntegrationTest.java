@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -201,25 +201,25 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
-			doAnswer(invocation -> {
+			lenient().doAnswer(invocation -> {
 				CircuitBreakerOnErrorEvent event = invocation.getArgument(0, CircuitBreakerOnErrorEvent.class);
 				LOG.info(event.getCircuitBreakerName() + " error: " + event.getEventType() + " duration: "
 						+ event.getElapsedDuration().getSeconds());
 				return null;
 			}).when(slowErrorConsumer).consumeEvent(any(CircuitBreakerOnErrorEvent.class));
-			doAnswer(invocation -> {
+			lenient().doAnswer(invocation -> {
 				CircuitBreakerOnSuccessEvent event = invocation.getArgument(0, CircuitBreakerOnSuccessEvent.class);
 				LOG.info(event.getCircuitBreakerName() + " success: " + event.getEventType() + " duration: "
 						+ event.getElapsedDuration().getSeconds());
 				return null;
 			}).when(slowSuccessConsumer).consumeEvent(any(CircuitBreakerOnSuccessEvent.class));
-			doAnswer(invocation -> {
+			lenient().doAnswer(invocation -> {
 				CircuitBreakerOnErrorEvent event = invocation.getArgument(0, CircuitBreakerOnErrorEvent.class);
 				LOG.info(event.getCircuitBreakerName() + " error: " + event.getEventType() + " duration: "
 						+ event.getElapsedDuration().getSeconds());
 				return null;
 			}).when(normalErrorConsumer).consumeEvent(any(CircuitBreakerOnErrorEvent.class));
-			doAnswer(invocation -> {
+			lenient().doAnswer(invocation -> {
 				CircuitBreakerOnSuccessEvent event = invocation.getArgument(0, CircuitBreakerOnSuccessEvent.class);
 				LOG.info(event.getCircuitBreakerName() + " success: " + event.getEventType() + " duration: "
 						+ event.getElapsedDuration().getSeconds());
@@ -247,12 +247,12 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
-			doAnswer(invocationOnMock -> {
+			lenient().doAnswer(invocationOnMock -> {
 				BulkheadOnCallRejectedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallRejectedEvent.class);
 				LOG.info(event.getBulkheadName() + " rejected: " + event.getEventType());
 				return null;
 			}).when(slowRejectedConsumer).consumeEvent(any(BulkheadOnCallRejectedEvent.class));
-			doAnswer(invocationOnMock -> {
+			lenient().doAnswer(invocationOnMock -> {
 				BulkheadOnCallFinishedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallFinishedEvent.class);
 				LOG.info(event.getBulkheadName() + " finished: " + event.getEventType());
 				return null;
@@ -292,12 +292,12 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowThreadPoolBulkheadCustomizer() {
-			doAnswer(invocationOnMock -> {
+			lenient().doAnswer(invocationOnMock -> {
 				BulkheadOnCallRejectedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallRejectedEvent.class);
 				LOG.info(event.getBulkheadName() + " threadpool rejected: " + event.getEventType());
 				return null;
 			}).when(slowThreadPoolRejectedConsumer).consumeEvent(any(BulkheadOnCallRejectedEvent.class));
-			doAnswer(invocationOnMock -> {
+			lenient().doAnswer(invocationOnMock -> {
 				BulkheadOnCallFinishedEvent event = invocationOnMock.getArgument(0, BulkheadOnCallFinishedEvent.class);
 				LOG.info(event.getBulkheadName() + " threadpool finished: " + event.getEventType());
 				return null;
