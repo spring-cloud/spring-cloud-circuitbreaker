@@ -41,3 +41,8 @@ updates:
     directory: /docs
     schedule:
       interval: weekly
+  - package-ecosystem: npm
+    target-branch: 3.1.x
+    directory: /docs
+    schedule:
+      interval: weekly
