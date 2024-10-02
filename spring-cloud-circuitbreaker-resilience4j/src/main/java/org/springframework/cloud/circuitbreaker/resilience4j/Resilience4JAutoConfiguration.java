@@ -27,6 +27,7 @@ import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher;
 import io.github.resilience4j.micrometer.tagged.TaggedThreadPoolBulkheadMetrics;
+import io.github.resilience4j.springboot3.circuitbreaker.autoconfigure.CircuitBreakerMetricsAutoConfiguration;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -36,6 +37,7 @@ import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -55,6 +57,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(Resilience4JConfigurationProperties.class)
 @ConditionalOnProperty(name = { "spring.cloud.circuitbreaker.resilience4j.enabled",
 		"spring.cloud.circuitbreaker.resilience4j.blocking.enabled" }, matchIfMissing = true)
+@AutoConfigureAfter(CircuitBreakerMetricsAutoConfiguration.class)
 public class Resilience4JAutoConfiguration {
 
 	@Autowired(required = false)
