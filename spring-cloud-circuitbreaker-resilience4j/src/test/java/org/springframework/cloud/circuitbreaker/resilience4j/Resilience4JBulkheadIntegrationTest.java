@@ -34,9 +34,9 @@ import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +61,8 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -74,16 +76,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext
 public class Resilience4JBulkheadIntegrationTest {
 
-	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
 
-	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> slowSuccessConsumer;
 
-	@Mock
 	static EventConsumer<CircuitBreakerOnErrorEvent> normalErrorConsumer;
 
-	@Mock
 	static EventConsumer<CircuitBreakerOnSuccessEvent> normalSuccessConsumer;
 
 	@Autowired
@@ -91,6 +89,11 @@ public class Resilience4JBulkheadIntegrationTest {
 
 	@Autowired
 	private TestRestTemplate rest;
+
+	@After
+	public void reset() {
+		Mockito.clearInvocations(slowErrorConsumer, slowSuccessConsumer, normalErrorConsumer, normalSuccessConsumer);
+	}
 
 	@Test
 	public void testSlow() {
@@ -201,6 +204,10 @@ public class Resilience4JBulkheadIntegrationTest {
 
 		@Bean
 		public Customizer<Resilience4JCircuitBreakerFactory> slowCustomizer() {
+			slowErrorConsumer = mock(EventConsumer.class);
+			slowSuccessConsumer = mock(EventConsumer.class);
+			normalErrorConsumer = mock(EventConsumer.class);
+			normalSuccessConsumer = mock(EventConsumer.class);
 			lenient().doAnswer(invocation -> {
 				CircuitBreakerOnErrorEvent event = invocation.getArgument(0, CircuitBreakerOnErrorEvent.class);
 				LOG.info(event.getCircuitBreakerName() + " error: " + event.getEventType() + " duration: "
@@ -242,8 +249,8 @@ public class Resilience4JBulkheadIntegrationTest {
 			};
 		}
 
-		static EventConsumer<BulkheadOnCallRejectedEvent> slowRejectedConsumer = Mockito.mock(EventConsumer.class);
-		static EventConsumer<BulkheadOnCallFinishedEvent> slowFinishedConsumer = Mockito.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallRejectedEvent> slowRejectedConsumer = mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallFinishedEvent> slowFinishedConsumer = mock(EventConsumer.class);
 
 		@Bean
 		public Customizer<Resilience4jBulkheadProvider> slowBulkheadProviderCustomizer() {
@@ -267,10 +274,8 @@ public class Resilience4JBulkheadIntegrationTest {
 			};
 		}
 
-		static EventConsumer<BulkheadOnCallRejectedEvent> slowThreadPoolRejectedConsumer = Mockito
-			.mock(EventConsumer.class);
-		static EventConsumer<BulkheadOnCallFinishedEvent> slowThreadPoolFinishedConsumer = Mockito
-			.mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallRejectedEvent> slowThreadPoolRejectedConsumer = mock(EventConsumer.class);
+		static EventConsumer<BulkheadOnCallFinishedEvent> slowThreadPoolFinishedConsumer = mock(EventConsumer.class);
 
 		@Bean
 		Customizer<Resilience4jBulkheadProvider> slowBulkheadThreadPoolProviderCustomizer() {
