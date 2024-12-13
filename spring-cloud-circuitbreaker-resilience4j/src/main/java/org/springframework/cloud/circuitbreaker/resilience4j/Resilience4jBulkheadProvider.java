@@ -37,6 +37,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 
 /**
  * @author Andrii Bohutskyi
@@ -67,7 +69,8 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public void configureDefault(
-			Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+			@NonNull Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+		Assert.notNull(defaultConfiguration, "Default configuration must not be null");
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
@@ -143,11 +146,13 @@ public class Resilience4jBulkheadProvider {
 
 	private Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration getConfiguration(String id) {
 		Resilience4jBulkheadConfigurationBuilder builder = new Resilience4jBulkheadConfigurationBuilder();
+		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration defaultConfiguration = this.defaultConfiguration
+			.apply(id);
 		Optional<BulkheadConfig> bulkheadConfiguration = bulkheadRegistry.getConfiguration(id);
 		Optional<ThreadPoolBulkheadConfig> threadPoolBulkheadConfig = threadPoolBulkheadRegistry.getConfiguration(id);
-		builder.bulkheadConfig(bulkheadConfiguration.orElse(bulkheadRegistry.getDefaultConfig()));
-		builder
-			.threadPoolBulkheadConfig(threadPoolBulkheadConfig.orElse(threadPoolBulkheadRegistry.getDefaultConfig()));
+		builder.bulkheadConfig(bulkheadConfiguration.orElse(defaultConfiguration.getBulkheadConfig()));
+		builder.threadPoolBulkheadConfig(
+				threadPoolBulkheadConfig.orElse(defaultConfiguration.getThreadPoolBulkheadConfig()));
 		return builder.build();
 	}
 

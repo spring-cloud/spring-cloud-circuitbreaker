@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests that time limiter threads are interrupted correctly when used with a bulkhead
+ * Tests that time limiter threads are interrupted correctly when used with a bulkhead.
  *
  * @author Renette Ros
  */
@@ -51,8 +51,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext
 public class Resilience4JBulkheadAndTimeLimiterIntegrationTest {
 
+	/**
+	 * Slow bulkghead name.
+	 */
 	public static final String SLOW_BULKHEAD = "slowBulkhead";
 
+	/**
+	 * Slow thread pool bulkhead name.
+	 */
 	public static final String SLOW_THREAD_POOL_BULKHEAD = "slowThreadPoolBulkhead";
 
 	@Autowired

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
@@ -168,6 +169,63 @@ public class BulkheadConfigurationTests {
 				final var semaphoreBulkheadConfig = bulkheadRegistry.find(id);
 				assertThat(threadPoolBulkheadConfigOptional.isEmpty()).isTrue();
 				assertThat(semaphoreBulkheadConfig.isEmpty()).isFalse();
+			});
+
+	}
+
+	@Test
+	void configureDefaultOverridesPropertyDefaultForThreadpool() {
+		new WebApplicationContextRunner().withUserConfiguration(Application.class)
+			.withPropertyValues("resilience4j.bulkhead.config.default.max-concurrent-calls=30",
+					"resilience4j.threadpool.config.default.queueCapacity=30"/*
+																				 * ,
+																				 * "resilience4j.bulkhead.instances.testme.max-wait-duration=30s",
+																				 * "resilience4j.threadPoolBulkHead.instances.testme.core-threadpool-size=1"
+																				 */)
+			.run(context -> {
+				final String id = "testme";
+				Resilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
+					.getBean(Resilience4JCircuitBreakerFactory.class);
+				Resilience4jBulkheadProvider bulkheadProvider = context.getBean(Resilience4jBulkheadProvider.class);
+				bulkheadProvider.configureDefault(bulkheadId -> new Resilience4jBulkheadConfigurationBuilder()
+					.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(40).build())
+					.threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom().queueCapacity(40).build())
+					.build());
+				ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry = context
+					.getBean(ThreadPoolBulkheadRegistry.class);
+				final var circuitBreaker = resilience4JCircuitBreakerFactory.create(id);
+				circuitBreaker.run(() -> "run-to-populate-registry");
+				final var threadPoolBulkheadConfigOptional = threadPoolBulkheadRegistry.find(id);
+				assertThat(threadPoolBulkheadConfigOptional.isEmpty()).isFalse();
+				assertThat(threadPoolBulkheadConfigOptional.get().getBulkheadConfig().getQueueCapacity()).isEqualTo(40);
+			});
+
+	}
+
+	@Test
+	void configureDefaultOverridesPropertyDefaultForSemaphore() {
+		new WebApplicationContextRunner().withUserConfiguration(Application.class)
+			.withPropertyValues("resilience4j.bulkhead.config.default.max-concurrent-calls=30",
+					"spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=true"/*
+																									 * ,
+																									 * "resilience4j.bulkhead.instances.testme.max-wait-duration=30s",
+																									 * "resilience4j.threadPoolBulkHead.instances.testme.core-threadpool-size=1"
+																									 */)
+			.run(context -> {
+				final String id = "testme";
+				Resilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
+					.getBean(Resilience4JCircuitBreakerFactory.class);
+				Resilience4jBulkheadProvider bulkheadProvider = context.getBean(Resilience4jBulkheadProvider.class);
+				bulkheadProvider.configureDefault(bulkheadId -> new Resilience4jBulkheadConfigurationBuilder()
+					.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(40).build())
+					.threadPoolBulkheadConfig(ThreadPoolBulkheadConfig.custom().queueCapacity(40).build())
+					.build());
+				BulkheadRegistry bulkheadRegistry = context.getBean(BulkheadRegistry.class);
+				final var circuitBreaker = resilience4JCircuitBreakerFactory.create(id);
+				circuitBreaker.run(() -> "run-to-populate-registry");
+				final var semaphoreBulkheadConfig = bulkheadRegistry.find(id);
+				assertThat(semaphoreBulkheadConfig.isEmpty()).isFalse();
+				assertThat(semaphoreBulkheadConfig.get().getBulkheadConfig().getMaxConcurrentCalls()).isEqualTo(40);
 			});
 
 	}
