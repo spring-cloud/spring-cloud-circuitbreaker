@@ -18,5 +18,31 @@ resilience4j.bulkhead:
             maxConcurrentCalls: 10
 ----
 
-For more inforamtion on the Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
+You can also provide common configuration via `resilience4j.bulkhead.configs.*` and
+`resilience4j.thread-pool-bulkhead.configs.*` properties.  This allows you to specify configuration
+once and reuse it across multiple bulkheads.
+[source,yaml]
+----
+resilience4j.bulkhead:
+    configs:
+        default:
+            queueCapacity: 5
+        someShared:
+            queueCapacity: 10
+    instances:
+        backendA:
+            baseConfig: default
+            maxConcurrentCalls: 10
+        backendB:
+            baseConfig: someShared
+----
+
+If you configure your bulkhead this way it will take lowest
+priority.  The priority order is:
+
+1. `resilience4j.thread-pool-bulkhead.instances.*` or `resilience4j.bulkhead.instances.*`
+2. `Customizer` configuration using `Resilience4JBulkheadProvider`.
+3. `resilience4j.thread-pool-bulkhead.configs.*` or `resilience4j.bulkhead.configs.*`
+
+For more information on the Resilience4j property configuration, see https://resilience4j.readme.io/docs/getting-started-3#configuration[Resilience4J Spring Boot 2 Configuration].
 

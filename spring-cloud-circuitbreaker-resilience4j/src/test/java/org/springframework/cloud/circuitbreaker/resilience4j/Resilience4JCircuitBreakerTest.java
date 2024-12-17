@@ -314,7 +314,7 @@ public class Resilience4JCircuitBreakerTest {
 	static class ContextThreadPoolExecutor extends ThreadPoolExecutor {
 
 		/**
-		 * example ContextThreadPoolExecutor
+		 * example ContextThreadPoolExecutor.
 		 * @param threadPoolName fixed threadPoolName
 		 */
 		ContextThreadPoolExecutor(String threadPoolName) {

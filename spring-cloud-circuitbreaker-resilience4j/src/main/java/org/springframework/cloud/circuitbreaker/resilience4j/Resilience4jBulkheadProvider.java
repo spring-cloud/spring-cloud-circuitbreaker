@@ -17,6 +17,7 @@
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -27,13 +28,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkhead;
+import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
+import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 
 /**
  * @author Andrii Bohutskyi
@@ -64,7 +69,8 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public void configureDefault(
-			Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+			@NonNull Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+		Assert.notNull(defaultConfiguration, "Default configuration must not be null");
 		this.defaultConfiguration = defaultConfiguration;
 	}
 
@@ -119,8 +125,12 @@ public class Resilience4jBulkheadProvider {
 
 	private <T> Supplier<CompletionStage<T>> decorateBulkhead(final String id, final Map<String, String> tags,
 			final Supplier<T> supplier) {
+		// If the configuration was supplied via a customizer use that configuration, else
+		// check if the configuration is present
+		// in the registries, and if its not present in either place, use the default
+		// configuration
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-			.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, this::getConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
@@ -134,10 +144,22 @@ public class Resilience4jBulkheadProvider {
 		}
 	}
 
+	private Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration getConfiguration(String id) {
+		Resilience4jBulkheadConfigurationBuilder builder = new Resilience4jBulkheadConfigurationBuilder();
+		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration defaultConfiguration = this.defaultConfiguration
+			.apply(id);
+		Optional<BulkheadConfig> bulkheadConfiguration = bulkheadRegistry.getConfiguration(id);
+		Optional<ThreadPoolBulkheadConfig> threadPoolBulkheadConfig = threadPoolBulkheadRegistry.getConfiguration(id);
+		builder.bulkheadConfig(bulkheadConfiguration.orElse(defaultConfiguration.getBulkheadConfig()));
+		builder.threadPoolBulkheadConfig(
+				threadPoolBulkheadConfig.orElse(defaultConfiguration.getThreadPoolBulkheadConfig()));
+		return builder.build();
+	}
+
 	public <T> Callable<T> decorateCallable(final String id, final Map<String, String> tags,
 			final Callable<T> callable) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-			.computeIfAbsent(id, defaultConfiguration);
+			.computeIfAbsent(id, this::getConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
@@ -151,8 +173,25 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	private boolean useSemaphoreBulkhead(String id) {
-		return semaphoreDefaultBulkhead
-				|| (bulkheadRegistry.find(id).isPresent() && threadPoolBulkheadRegistry.find(id).isEmpty());
+		// If we find a configuration in the threadPoolBulkheadRegistry, we assume the
+		// user configured the bulkhead specifically to
+		// use a threadpool so regardless of what
+		// spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead is set
+		// to
+		// we will use a threadpool for the bulkhead
+		if (threadPoolBulkheadRegistry.find(id).isPresent()) {
+			return false;
+		}
+		// If we did not find a configuration in the threadPoolBulkheadRegistry, then use
+		// a semaphore bulkhead if
+		// spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead is set
+		// to true or if we find a configuration in the
+		// bulkheadRegistry. We will return false if
+		// spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead is
+		// false and we don't
+		// find a configuration in the bulkheadRegistry or the threadPoolBulkheadRegistry
+		// and this will result in the bulkhead using a threadpool
+		return semaphoreDefaultBulkhead || bulkheadRegistry.find(id).isPresent();
 	}
 
 	private static <T> Callable<T> decorateTimeLimiter(final Supplier<? extends CompletionStage<T>> supplier,
