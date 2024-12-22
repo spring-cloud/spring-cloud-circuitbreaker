@@ -19,14 +19,19 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedBulkheadMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
 import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -41,6 +46,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Ryan Baxter
  * @author Eric Bussieres
  * @author Thomas Vitale
+ * @author Yavor Chamov
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
@@ -57,23 +63,54 @@ public class ReactiveResilience4JAutoConfiguration {
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory(
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+			@Autowired(required = false) ReactiveResilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory(
-				circuitBreakerRegistry, timeLimiterRegistry, resilience4JConfigurationProperties);
+				circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, resilience4JConfigurationProperties);
 		customizers.forEach(customizer -> customizer.customize(factory));
 		return factory;
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(name = { "reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
+	@ConditionalOnClass(Bulkhead.class)
+	@ConditionalOnProperty(value = "spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled", matchIfMissing = true)
+	public static class Resilience4jBulkheadConfiguration {
+
+		@Autowired(required = false)
+		private List<Customizer<ReactiveResilience4jBulkheadProvider>> bulkheadCustomizers = new ArrayList<>();
+
+		@Value("${spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead:true}")
+		private boolean enableSemaphoreDefaultBulkhead;
+
+		@Bean
+		public ReactiveResilience4jBulkheadProvider reactiveBulkheadProvider(BulkheadRegistry bulkheadRegistry) {
+
+			if (!enableSemaphoreDefaultBulkhead) {
+				LoggerFactory.getLogger(Resilience4jBulkheadConfiguration.class)
+						.warn("Ignoring 'spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=false'. " +
+								"ReactiveResilience4jBulkheadProvider only supports SemaphoreBulkhead.");
+			}
+
+			ReactiveResilience4jBulkheadProvider reactiveResilience4JCircuitBreaker =
+					new ReactiveResilience4jBulkheadProvider(bulkheadRegistry);
+			bulkheadCustomizers.forEach(customizer -> customizer.customize(reactiveResilience4JCircuitBreaker));
+			return reactiveResilience4JCircuitBreaker;
+		}
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(name = {"reactor.core.publisher.Mono", "reactor.core.publisher.Flux",
 			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics",
-			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher" })
-	@ConditionalOnBean({ MeterRegistry.class })
-	@ConditionalOnMissingBean({ TaggedCircuitBreakerMetricsPublisher.class })
+			"io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPublisher"})
+	@ConditionalOnBean({MeterRegistry.class})
+	@ConditionalOnMissingBean({TaggedCircuitBreakerMetricsPublisher.class})
 	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
 		private ReactiveResilience4JCircuitBreakerFactory factory;
+
+		@Autowired(required = false)
+		private ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 		@Autowired(required = false)
 		private TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
@@ -89,6 +126,9 @@ public class ReactiveResilience4JAutoConfiguration {
 						.ofCircuitBreakerRegistry(factory.getCircuitBreakerRegistry());
 				}
 				taggedCircuitBreakerMetrics.bindTo(meterRegistry);
+			}
+			if (bulkheadProvider != null) {
+				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
 			}
 		}
 
