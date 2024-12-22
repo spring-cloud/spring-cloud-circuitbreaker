@@ -36,9 +36,12 @@ import org.springframework.util.Assert;
  * @author Ryan Baxter
  * @author Thomas Vitale
  * @author 荒
+ * @author Yavor Chamov
  */
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
+
+	private final ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration;
 
@@ -52,14 +55,15 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 
 	@Deprecated
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry) {
-		this(circuitBreakerRegistry, timeLimiterRegistry, null);
+			TimeLimiterRegistry timeLimiterRegistry, ReactiveResilience4jBulkheadProvider bulkheadProvider) {
+		this(circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, null);
 	}
 
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry,
+			TimeLimiterRegistry timeLimiterRegistry, ReactiveResilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		this.bulkheadProvider = bulkheadProvider;
 		this.timeLimiterRegistry = timeLimiterRegistry;
 		this.defaultConfiguration = id -> new Resilience4JConfigBuilder(id)
 			.circuitBreakerConfig(this.circuitBreakerRegistry.getDefaultConfig())
@@ -106,7 +110,8 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		boolean isDisableTimeLimiter = ConfigurationPropertiesUtils
 			.isDisableTimeLimiter(this.resilience4JConfigurationProperties, id, groupName);
 		return new ReactiveResilience4JCircuitBreaker(id, groupName, config, circuitBreakerRegistry,
-				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)), isDisableTimeLimiter);
+				timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
+				bulkheadProvider, isDisableTimeLimiter);
 	}
 
 	@Override
