@@ -30,8 +30,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author Ryan Baxter
- * @author Thomas Vitale
  * @author Yavor Chamov
  */
 @RunWith(ModifiedClassPathRunner.class)

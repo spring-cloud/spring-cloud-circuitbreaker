@@ -44,7 +44,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runMono() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+			new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Mono.just("foobar").transform(cb::run).block()).isEqualTo("foobar");
 	}
@@ -52,7 +53,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runMonoWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+			new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Mono.error(new RuntimeException("boom"))
 			.transform(it -> cb.run(it, t -> Mono.just("fallback")))
@@ -62,7 +64,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runFlux() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+			new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Flux.just("foobar", "hello world").transform(cb::run).collectList().block())
 			.isEqualTo(Arrays.asList("foobar", "hello world"));
@@ -71,7 +74,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runFluxWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+			new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Flux.error(new RuntimeException("boom"))
 			.transform(it -> cb.run(it, t -> Flux.just("fallback")))
@@ -87,7 +91,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+			timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+			new Resilience4JConfigurationProperties())
 			.create("foo");
 
 		assertThat(Mono.fromCallable(() -> {

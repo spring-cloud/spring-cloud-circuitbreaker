@@ -37,6 +37,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
+/**
+ * @author Yavor Chamov
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ReactiveResilience4JBulkheadAndTimeLimiterIntegrationTest.Application.class)
 @DirtiesContext

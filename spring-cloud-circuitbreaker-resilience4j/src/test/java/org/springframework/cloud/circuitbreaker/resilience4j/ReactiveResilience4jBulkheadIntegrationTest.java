@@ -54,6 +54,9 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+/**
+ * @author Yavor Chamov
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveResilience4jBulkheadIntegrationTest.Application.class,
 	properties = {"management.endpoints.web.exposure.include=*"})
