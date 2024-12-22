@@ -189,7 +189,6 @@ public class BulkheadConfigurationTests {
 
 				ReactiveResilience4jBulkheadProvider bulkheadProvider = context.getBean(ReactiveResilience4jBulkheadProvider.class);
 
-				// Configure a custom bulkhead configuration
 				bulkheadProvider.configure(builder -> {
 					BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
 						.maxConcurrentCalls(50)
