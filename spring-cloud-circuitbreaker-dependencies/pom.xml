@@ -18,7 +18,7 @@
 	<description>Spring Cloud Circuit Breaker Dependencies</description>
 
 	<properties>
-		<resilience4j.version>2.2.0</resilience4j.version>
+		<resilience4j.version>2.3.0</resilience4j.version>
 	</properties>
 
 	<dependencyManagement>
