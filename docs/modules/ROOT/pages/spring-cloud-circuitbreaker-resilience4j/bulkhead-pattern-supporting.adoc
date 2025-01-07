@@ -28,3 +28,41 @@ public Customizer<Resilience4jBulkheadProvider> defaultBulkheadCustomizer() {
 }
 ----
 
+== Reactive Bulkhead Pattern Supporting
+
+If you are using reactive programming with Spring Cloud CircuitBreaker, you can leverage the `ReactiveResilience4jBulkheadProvider` to support the Bulkhead pattern in reactive pipelines.
+This provider decorates `Mono` and `Flux` instances to ensure bulkhead constraints are applied during reactive operations.
+
+Spring Cloud CircuitBreaker Resilience4j reactive support only uses the `SemaphoreBulkhead`.
+If the property `spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead` is set to `false`, a warning will be logged, and the `ReactiveResilience4jBulkheadProvider` will still use the `SemaphoreBulkhead`.
+
+== Configuring Reactive Bulkhead
+
+The `ReactiveResilience4jBulkheadProvider` can be customized using a `Customizer` bean, as shown below:
+
+[source,java]
+----
+@Bean
+public Customizer<ReactiveResilience4jBulkheadProvider> reactiveBulkheadCustomizer() {
+    return provider -> provider.configureDefault(id -> new Resilience4jBulkheadConfigurationBuilder()
+        .bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(4).build())
+        .build());
+}
+----
+
+You can also add individual bulkhead configurations for specific use cases:
+
+[source,java]
+----
+@Bean
+public Customizer<ReactiveResilience4jBulkheadProvider> reactiveSpecificBulkheadCustomizer() {
+    return provider -> provider.configure(builder -> {
+        builder.bulkheadConfig(BulkheadConfig.custom()
+            .maxConcurrentCalls(2)
+            .build());
+    }, "serviceBulkhead");
+}
+----
+
+For more details, see the https://resilience4j.readme.io/docs/examples-1#decorate-mono-or-flux-with-a-bulkhead[Resilience4j Reactive Bulkhead Examples].
+

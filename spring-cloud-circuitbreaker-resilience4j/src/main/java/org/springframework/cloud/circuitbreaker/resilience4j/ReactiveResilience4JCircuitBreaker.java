@@ -73,6 +73,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, false);
 	}
 
+	@Deprecated
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,

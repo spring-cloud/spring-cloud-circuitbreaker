@@ -59,6 +59,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		this(circuitBreakerRegistry, timeLimiterRegistry, null, null);
 	}
 
+	@Deprecated
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
