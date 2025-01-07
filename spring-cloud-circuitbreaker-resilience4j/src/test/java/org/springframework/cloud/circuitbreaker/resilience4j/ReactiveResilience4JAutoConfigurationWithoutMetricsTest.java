@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.junit.Test;
@@ -47,8 +46,7 @@ public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
 		new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties()));
+			TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithoutMetrics() {

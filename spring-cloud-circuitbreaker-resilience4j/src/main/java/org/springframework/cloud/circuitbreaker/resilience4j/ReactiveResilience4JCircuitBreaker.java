@@ -69,10 +69,15 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer,
-			ReactiveResilience4jBulkheadProvider bulkheadProvider) {
-		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer,
-				bulkheadProvider, false);
+			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
+		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, false);
+	}
+
+	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
+			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer, boolean disableTimeLimiter) {
+		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, null, disableTimeLimiter);
 	}
 
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
