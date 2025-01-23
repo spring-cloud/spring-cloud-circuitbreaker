@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,56 +26,29 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
- * @author Ryan Baxter
- * @author Thomas Vitale
  * @author Yavor Chamov
  */
 @RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "micrometer-core-*.jar", "resilience4j-micrometer-*.jar" })
-public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
-
-	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
-		new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
+@ClassPathExclusions("resilience4j-bulkhead-*.jar")
+public class ReactiveResilience4JAutoConfigurationWithoutBulkheadTest {
 
 	@Test
-	public void testWithoutMetrics() {
+	public void testWithoutBulkhead() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 			.sources(TestApp.class)
-			.run()) {
-			verify(circuitBreakerFactory, times(0)).getCircuitBreakerRegistry();
-			assertThat(context.containsBean("circuitBreakerFactory")).isTrue();
-			assertThat(context.containsBean("reactiveBulkheadProvider")).isTrue();
-		}
-	}
-
-	@Test
-	public void testProviderCreatedWhenEnableSemaphoreDefaultBulkheadFalse() {
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.web(WebApplicationType.NONE)
-			.sources(TestApp.class)
-			.properties("spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=false")
-			.run()) {
-			assertThat(context.containsBean("reactiveBulkheadProvider")).isTrue();
+			.run()
+		) {
+			assertThat(context.containsBean("reactiveBulkheadProvider")).isFalse();
 		}
 	}
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
 	protected static class TestApp {
-
-		@Bean
-		ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory() {
-			return circuitBreakerFactory;
-		}
 
 	}
 

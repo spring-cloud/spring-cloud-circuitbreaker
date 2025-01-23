@@ -43,12 +43,15 @@ import static org.springframework.cloud.circuitbreaker.resilience4j.Resilience4J
  * @author Ryan Baxter
  * @author Thomas Vitale
  * @author 荒
+ * @author Yavor Chamov
  */
 public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreaker {
 
 	private final String id;
 
 	private final String groupName;
+
+	private final ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
@@ -70,10 +73,19 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, false);
 	}
 
+	@Deprecated
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
 			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer, boolean disableTimeLimiter) {
+		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, null, disableTimeLimiter);
+	}
+
+	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
+			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
+			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
+			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer,
+			ReactiveResilience4jBulkheadProvider bulkheadProvider, boolean disableTimeLimiter) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = config.getCircuitBreakerConfig();
@@ -81,13 +93,22 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 		this.circuitBreakerCustomizer = circuitBreakerCustomizer;
 		this.timeLimiterConfig = config.getTimeLimiterConfig();
 		this.timeLimiterRegistry = timeLimiterRegistry;
+		this.bulkheadProvider = bulkheadProvider;
 		this.disableTimeLimiter = disableTimeLimiter;
 	}
 
 	@Override
 	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
+		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
-		Mono<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()));
+		Mono<T> toReturn;
+		if (bulkheadProvider != null) {
+			toReturn = bulkheadProvider.decorateMono(groupName, tags, toRun);
+		}
+		else {
+			toReturn = toRun;
+		}
+		toReturn = toReturn.transform(CircuitBreakerOperator.of(tuple.getT1()));
 		if (tuple.getT2().isPresent()) {
 			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
 			toReturn = toReturn.timeout(timeoutDuration)
@@ -105,8 +126,16 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	@Override
 	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
-		Flux<T> toReturn = toRun.transform(CircuitBreakerOperator.of(tuple.getT1()));
+		Flux<T> toReturn;
+		if (bulkheadProvider != null) {
+			toReturn = bulkheadProvider.decorateFlux(groupName, tags, toRun);
+		}
+		else {
+			toReturn = toRun;
+		}
+		toReturn = toReturn.transform(CircuitBreakerOperator.of(tuple.getT1()));
 		if (tuple.getT2().isPresent()) {
 			final Duration timeoutDuration = tuple.getT2().get().getTimeLimiterConfig().getTimeoutDuration();
 			toReturn = toReturn.timeout(timeoutDuration)
