@@ -39,16 +39,15 @@ public class ReactiveResilience4jBulkheadProvider {
 
 	private final BulkheadRegistry bulkheadRegistry;
 
-	private final ConcurrentHashMap<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration>
-			configurations = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> configurations = new ConcurrentHashMap<>();
 
 	private Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration;
 
 	public ReactiveResilience4jBulkheadProvider(BulkheadRegistry bulkheadRegistry) {
 		this.bulkheadRegistry = bulkheadRegistry;
 		this.defaultConfiguration = id -> new Resilience4jBulkheadConfigurationBuilder()
-				.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
-				.build();
+			.bulkheadConfig(this.bulkheadRegistry.getDefaultConfig())
+			.build();
 	}
 
 	public void configureDefault(
@@ -69,7 +68,7 @@ public class ReactiveResilience4jBulkheadProvider {
 	public void addBulkheadCustomizer(Consumer<Bulkhead> customizer, String... ids) {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-					.computeIfAbsent(id, defaultConfiguration);
+				.computeIfAbsent(id, defaultConfiguration);
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
 			customizer.accept(bulkhead);
 		}
@@ -81,24 +80,25 @@ public class ReactiveResilience4jBulkheadProvider {
 
 	public <T> Mono<T> decorateMono(String id, Map<String, String> tags, Mono<T> mono) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-				.computeIfAbsent(id, this::getConfiguration);
+			.computeIfAbsent(id, this::getConfiguration);
 		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 		return mono.transformDeferred(BulkheadOperator.of(bulkhead));
 	}
 
 	public <T> Flux<T> decorateFlux(String id, Map<String, String> tags, Flux<T> flux) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
-				.computeIfAbsent(id, this::getConfiguration);
+			.computeIfAbsent(id, this::getConfiguration);
 		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 		return flux.transformDeferred(BulkheadOperator.of(bulkhead));
 	}
 
 	private Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration getConfiguration(String id) {
 		Resilience4jBulkheadConfigurationBuilder builder = new Resilience4jBulkheadConfigurationBuilder();
-		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration defaultConfiguration =
-				this.defaultConfiguration.apply(id);
+		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration defaultConfiguration = this.defaultConfiguration
+			.apply(id);
 		Optional<BulkheadConfig> bulkheadConfiguration = bulkheadRegistry.getConfiguration(id);
 		builder.bulkheadConfig(bulkheadConfiguration.orElse(defaultConfiguration.getBulkheadConfig()));
 		return builder.build();
 	}
+
 }

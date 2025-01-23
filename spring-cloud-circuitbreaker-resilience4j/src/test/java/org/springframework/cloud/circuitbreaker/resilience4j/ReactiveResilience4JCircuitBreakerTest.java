@@ -44,8 +44,9 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runMono() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties())
+				TimeLimiterRegistry.ofDefaults(),
+				new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Mono.just("foobar").transform(cb::run).block()).isEqualTo("foobar");
 	}
@@ -53,8 +54,9 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runMonoWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties())
+				TimeLimiterRegistry.ofDefaults(),
+				new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Mono.error(new RuntimeException("boom"))
 			.transform(it -> cb.run(it, t -> Mono.just("fallback")))
@@ -64,8 +66,9 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runFlux() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties())
+				TimeLimiterRegistry.ofDefaults(),
+				new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Flux.just("foobar", "hello world").transform(cb::run).collectList().block())
 			.isEqualTo(Arrays.asList("foobar", "hello world"));
@@ -74,8 +77,9 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	@Test
 	public void runFluxWithFallback() {
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties())
+				TimeLimiterRegistry.ofDefaults(),
+				new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 		assertThat(Flux.error(new RuntimeException("boom"))
 			.transform(it -> cb.run(it, t -> Flux.just("fallback")))
@@ -91,8 +95,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiter() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
-			new Resilience4JConfigurationProperties())
+				timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
@@ -117,7 +121,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), new Resilience4JConfigurationProperties())
+				timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				new Resilience4JConfigurationProperties())
 			.create("foo");
 
 		Mono.fromCallable(() -> {
@@ -148,7 +153,8 @@ public class ReactiveResilience4JCircuitBreakerTest {
 		final Resilience4JConfigurationProperties resilience4JConfigurationProperties = new Resilience4JConfigurationProperties();
 		resilience4JConfigurationProperties.setDisableTimeLimiter(true);
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()), resilience4JConfigurationProperties)
+				timeLimiterRegistry, new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults()),
+				resilience4JConfigurationProperties)
 			.create("foo");
 
 		assertThat(Mono.fromCallable(() -> {
@@ -167,129 +173,94 @@ public class ReactiveResilience4JCircuitBreakerTest {
 
 	@Test
 	public void runMonoWithBulkheadProvider() {
-		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults());
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			bulkheadProvider,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(
+				BulkheadRegistry.ofDefaults());
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), bulkheadProvider, new Resilience4JConfigurationProperties())
+			.create("foo");
 
-		assertThat(Mono.just("bulkheadMono")
-			.transform(cb::run)
-			.block())
-			.isEqualTo("bulkheadMono");
+		assertThat(Mono.just("bulkheadMono").transform(cb::run).block()).isEqualTo("bulkheadMono");
 	}
 
 	@Test
 	public void runMonoWithBulkheadProviderAndFallback() {
-		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults());
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			bulkheadProvider,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(
+				BulkheadRegistry.ofDefaults());
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), bulkheadProvider, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		assertThat(Mono.error(new RuntimeException("exception"))
 			.transform(it -> cb.run(it, t -> Mono.just("bulkheadFallback")))
-			.block())
-			.isEqualTo("bulkheadFallback");
+			.block()).isEqualTo("bulkheadFallback");
 	}
 
 	@Test
 	public void runFluxWithBulkheadProvider() {
-		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults());
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			bulkheadProvider,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(
+				BulkheadRegistry.ofDefaults());
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), bulkheadProvider, new Resilience4JConfigurationProperties())
+			.create("foo");
 
-		assertThat(Flux.just("bulkheadFlux1", "bulkheadFlux2")
-			.transform(cb::run)
-			.collectList()
-			.block())
+		assertThat(Flux.just("bulkheadFlux1", "bulkheadFlux2").transform(cb::run).collectList().block())
 			.isEqualTo(Arrays.asList("bulkheadFlux1", "bulkheadFlux2"));
 	}
 
 	@Test
 	public void runFluxWithBulkheadProviderAndFallback() {
-		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(BulkheadRegistry.ofDefaults());
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			bulkheadProvider,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveResilience4jBulkheadProvider bulkheadProvider = new ReactiveResilience4jBulkheadProvider(
+				BulkheadRegistry.ofDefaults());
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), bulkheadProvider, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		assertThat(Flux.error(new RuntimeException("exception"))
 			.transform(it -> cb.run(it, t -> Flux.just("bulkheadFallbackFlux")))
 			.collectList()
-			.block())
-			.isEqualTo(Collections.singletonList("bulkheadFallbackFlux"));
+			.block()).isEqualTo(Collections.singletonList("bulkheadFallbackFlux"));
 	}
 
 	@Test
 	public void runMonoWithoutBulkheadProvider() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			null,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null, new Resilience4JConfigurationProperties())
+			.create("foo");
 
-		assertThat(Mono.just("noBulkheadMono")
-			.transform(cb::run)
-			.block())
-			.isEqualTo("noBulkheadMono");
+		assertThat(Mono.just("noBulkheadMono").transform(cb::run).block()).isEqualTo("noBulkheadMono");
 	}
 
 	@Test
 	public void runMonoWithoutBulkheadProviderWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			null,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		assertThat(Mono.error(new RuntimeException("exception"))
 			.transform(it -> cb.run(it, t -> Mono.just("noBulkheadFallback")))
-			.block())
-			.isEqualTo("noBulkheadFallback");
+			.block()).isEqualTo("noBulkheadFallback");
 	}
 
 	@Test
 	public void runFluxWithoutBulkheadProvider() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			null,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null, new Resilience4JConfigurationProperties())
+			.create("foo");
 
-		assertThat(Flux.just("noBulkheadFlux1", "noBulkheadFlux2")
-			.transform(cb::run)
-			.collectList()
-			.block())
+		assertThat(Flux.just("noBulkheadFlux1", "noBulkheadFlux2").transform(cb::run).collectList().block())
 			.isEqualTo(Arrays.asList("noBulkheadFlux1", "noBulkheadFlux2"));
 	}
 
 	@Test
 	public void runFluxWithoutBulkheadProviderWithFallback() {
-		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(
-			CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(),
-			null,
-			new Resilience4JConfigurationProperties()
-		).create("foo");
+		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+				TimeLimiterRegistry.ofDefaults(), null, new Resilience4JConfigurationProperties())
+			.create("foo");
 
 		assertThat(Flux.error(new RuntimeException("boom"))
 			.transform(it -> cb.run(it, t -> Flux.just("noBulkheadFallbackFlux")))
 			.collectList()
-			.block())
-			.isEqualTo(Collections.singletonList("noBulkheadFallbackFlux"));
+			.block()).isEqualTo(Collections.singletonList("noBulkheadFallbackFlux"));
 	}
+
 }

@@ -83,11 +83,14 @@ public class ReactiveResilience4JBulkheadAndTimeLimiterIntegrationTest {
 
 		@Bean
 		public Customizer<ReactiveResilience4jBulkheadProvider> reactiveBulkheadProviderCustomizer() {
-			return provider -> provider.addBulkheadCustomizer(bulkhead -> { }, SLOW_BULKHEAD);
+			return provider -> provider.addBulkheadCustomizer(bulkhead -> {
+			}, SLOW_BULKHEAD);
 		}
 
 		enum CompletionStatus {
+
 			SUCCESS, INTERRUPTED
+
 		}
 
 		@Service
@@ -100,17 +103,17 @@ public class ReactiveResilience4JBulkheadAndTimeLimiterIntegrationTest {
 			}
 
 			public Mono<CompletionStatus> bulkheadWithDelay(long delay) {
-				return slowBulkheadCircuitBreaker.run(
-					Mono.just(CompletionStatus.SUCCESS)
-						.delayElement(Duration.ofMillis(delay)),
-					throwable -> {
+				return slowBulkheadCircuitBreaker
+					.run(Mono.just(CompletionStatus.SUCCESS).delayElement(Duration.ofMillis(delay)), throwable -> {
 						if (throwable instanceof TimeoutException || throwable instanceof BulkheadFullException) {
 							return Mono.just(CompletionStatus.INTERRUPTED);
 						}
 						return Mono.error(throwable);
-					}
-				);
+					});
 			}
+
 		}
+
 	}
+
 }

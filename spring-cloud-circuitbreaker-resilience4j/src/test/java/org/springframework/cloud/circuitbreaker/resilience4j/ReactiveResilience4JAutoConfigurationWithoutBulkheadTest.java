@@ -40,8 +40,7 @@ public class ReactiveResilience4JAutoConfigurationWithoutBulkheadTest {
 	public void testWithoutBulkhead() {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 			.sources(TestApp.class)
-			.run()
-		) {
+			.run()) {
 			assertThat(context.containsBean("reactiveBulkheadProvider")).isFalse();
 		}
 	}

@@ -59,7 +59,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveResilience4jBulkheadIntegrationTest.Application.class,
-	properties = {"management.endpoints.web.exposure.include=*"})
+		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
 public class ReactiveResilience4jBulkheadIntegrationTest {
 
@@ -71,56 +71,42 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 
 	@Test
 	public void testSlow() {
-		StepVerifier.create(service.slow())
-			.expectNext("fallback")
-			.verifyComplete();
+		StepVerifier.create(service.slow()).expectNext("fallback").verifyComplete();
 	}
 
 	@Test
 	public void testNormal() {
-		StepVerifier.create(service.normal())
-			.expectNext("normal")
-			.verifyComplete();
+		StepVerifier.create(service.normal()).expectNext("normal").verifyComplete();
 	}
 
 	@Test
 	public void testSlowResponsesDontFailSubsequentGoodRequests() {
-		StepVerifier.create(service.slowOnDemand(5000))
-			.expectNext("fallback")
-			.verifyComplete();
+		StepVerifier.create(service.slowOnDemand(5000)).expectNext("fallback").verifyComplete();
 
-		StepVerifier.create(service.slowOnDemand(0))
-			.expectNext("normal")
-			.verifyComplete();
+		StepVerifier.create(service.slowOnDemand(0)).expectNext("normal").verifyComplete();
 	}
 
 	@Test
 	public void testBulkheadConcurrentCallLimit() {
 		List<String> results = Collections.synchronizedList(new ArrayList<>());
 
-		Flux.merge(
-				Mono.defer(() -> service.slowBulkhead()
-					.doOnNext(results::add)),
-				Mono.defer(() -> service.slowBulkhead()
-					.doOnNext(results::add))
-			).blockLast();
+		Flux.merge(Mono.defer(() -> service.slowBulkhead().doOnNext(results::add)),
+				Mono.defer(() -> service.slowBulkhead().doOnNext(results::add)))
+			.blockLast();
 
 		assertThat(results).containsExactlyInAnyOrder("slowBulkhead", "rejected");
 	}
 
 	@Test
 	public void testResilience4JMetricsAvailable() {
-		StepVerifier.create(service.normal())
-			.expectNext("normal")
-			.verifyComplete();
+		StepVerifier.create(service.normal()).expectNext("normal").verifyComplete();
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> metrics = rest.getForObject("/actuator/metrics", Map.class);
 		List<String> metricNames = (List<String>) metrics.get("names");
 
 		assertThat(metricNames).contains("resilience4j.bulkhead.max.allowed.concurrent.calls");
-		assertThat(rest
-			.getForObject("/actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls", Map.class)
+		assertThat(rest.getForObject("/actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls", Map.class)
 			.get("availableTags")).isNotNull();
 	}
 
@@ -168,8 +154,8 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 		public Customizer<ReactiveResilience4JCircuitBreakerFactory> slowCustomizer() {
 			return factory -> {
 				factory.configure(builder -> builder.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
-						.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(3)).build()),
-					"slow");
+					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(3)).build()),
+						"slow");
 				factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
 					.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build())
 					.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
@@ -180,8 +166,9 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 		@Bean
 		public Customizer<ReactiveResilience4jBulkheadProvider> bulkheadCustomizer() {
 			return provider -> {
-				provider.configure(builder -> builder.bulkheadConfig(
-					BulkheadConfig.custom().maxConcurrentCalls(1).build()), "slowBulkhead");
+				provider.configure(
+						builder -> builder.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(1).build()),
+						"slowBulkhead");
 			};
 		}
 
@@ -198,11 +185,8 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 			}
 
 			public Mono<String> slow() {
-				return circuitBreakerSlow.run(
-					Mono.delay(Duration.ofSeconds(4))
-						.thenReturn("slow"),
-					t -> Mono.just("fallback")
-				);
+				return circuitBreakerSlow.run(Mono.delay(Duration.ofSeconds(4)).thenReturn("slow"),
+						t -> Mono.just("fallback"));
 			}
 
 			public Mono<String> normal() {
@@ -211,24 +195,22 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 
 			public Mono<String> slowOnDemand(int delayInMilliseconds) {
 				LOG.info("delay: " + delayInMilliseconds);
-				return circuitBreakerSlow.run(
-					Mono.delay(Duration.ofMillis(delayInMilliseconds)).thenReturn("normal"),
-					t -> Mono.just("fallback")
-				);
+				return circuitBreakerSlow.run(Mono.delay(Duration.ofMillis(delayInMilliseconds)).thenReturn("normal"),
+						t -> Mono.just("fallback"));
 			}
 
 			public Mono<String> slowBulkhead() {
 				return cbFactory.create("slowBulkhead")
-					.run(
-						Mono.delay(Duration.ofSeconds(2)).thenReturn("slowBulkhead"),
-						throwable -> {
-							if (throwable instanceof BulkheadFullException) {
-								return Mono.just("rejected");
-							}
-							return Mono.just("fallback");
+					.run(Mono.delay(Duration.ofSeconds(2)).thenReturn("slowBulkhead"), throwable -> {
+						if (throwable instanceof BulkheadFullException) {
+							return Mono.just("rejected");
 						}
-					);
+						return Mono.just("fallback");
+					});
 			}
+
 		}
+
 	}
+
 }

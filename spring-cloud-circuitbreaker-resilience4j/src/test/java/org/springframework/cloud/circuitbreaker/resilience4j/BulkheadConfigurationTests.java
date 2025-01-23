@@ -112,24 +112,20 @@ public class BulkheadConfigurationTests {
 
 	@Test
 	void testReactiveInstanceConfigurationOverridesConfigAndCustomizerProperties() {
-		new WebApplicationContextRunner()
-			.withUserConfiguration(Application.class)
-			.withPropertyValues(
-				"resilience4j.bulkhead.configs.testme.max-concurrent-calls=30",
-				"resilience4j.bulkhead.instances.testme.max-concurrent-calls=40"
-			)
+		new WebApplicationContextRunner().withUserConfiguration(Application.class)
+			.withPropertyValues("resilience4j.bulkhead.configs.testme.max-concurrent-calls=30",
+					"resilience4j.bulkhead.instances.testme.max-concurrent-calls=40")
 			.run(context -> {
 				final String id = "testme";
 
 				ReactiveResilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
 					.getBean(ReactiveResilience4JCircuitBreakerFactory.class);
 
-				ReactiveResilience4jBulkheadProvider bulkheadProvider = context.getBean(ReactiveResilience4jBulkheadProvider.class);
+				ReactiveResilience4jBulkheadProvider bulkheadProvider = context
+					.getBean(ReactiveResilience4jBulkheadProvider.class);
 
 				bulkheadProvider.configure(builder -> {
-					BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
-						.maxConcurrentCalls(50)
-						.build();
+					BulkheadConfig bulkheadConfig = BulkheadConfig.custom().maxConcurrentCalls(50).build();
 					builder.bulkheadConfig(bulkheadConfig);
 				}, id);
 
@@ -137,9 +133,7 @@ public class BulkheadConfigurationTests {
 
 				Mono<String> result = resilience4JCircuitBreakerFactory.create(id).run(Mono.just("test"));
 
-				StepVerifier.create(result)
-					.expectNext("test")
-					.verifyComplete();
+				StepVerifier.create(result).expectNext("test").verifyComplete();
 
 				Optional<Bulkhead> bulkheadOptional = bulkheadRegistry.find(id);
 				assertThat(bulkheadOptional).isPresent();
@@ -176,23 +170,19 @@ public class BulkheadConfigurationTests {
 
 	@Test
 	void testReactiveCustomizerConfigurationOverridesConfigProperties() {
-		new WebApplicationContextRunner()
-			.withUserConfiguration(Application.class)
-			.withPropertyValues(
-				"resilience4j.bulkhead.configs.testme.max-concurrent-calls=30"
-			)
+		new WebApplicationContextRunner().withUserConfiguration(Application.class)
+			.withPropertyValues("resilience4j.bulkhead.configs.testme.max-concurrent-calls=30")
 			.run(context -> {
 				final String id = "testme";
 
 				ReactiveResilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
 					.getBean(ReactiveResilience4JCircuitBreakerFactory.class);
 
-				ReactiveResilience4jBulkheadProvider bulkheadProvider = context.getBean(ReactiveResilience4jBulkheadProvider.class);
+				ReactiveResilience4jBulkheadProvider bulkheadProvider = context
+					.getBean(ReactiveResilience4jBulkheadProvider.class);
 
 				bulkheadProvider.configure(builder -> {
-					BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
-						.maxConcurrentCalls(50)
-						.build();
+					BulkheadConfig bulkheadConfig = BulkheadConfig.custom().maxConcurrentCalls(50).build();
 					builder.bulkheadConfig(bulkheadConfig);
 				}, id);
 
@@ -200,9 +190,7 @@ public class BulkheadConfigurationTests {
 
 				Mono<String> result = resilience4JCircuitBreakerFactory.create(id).run(Mono.just("test"));
 
-				StepVerifier.create(result)
-					.expectNext("test")
-					.verifyComplete();
+				StepVerifier.create(result).expectNext("test").verifyComplete();
 
 				Optional<Bulkhead> bulkheadOptional = bulkheadRegistry.find(id);
 				assertThat(bulkheadOptional).isPresent();
@@ -286,28 +274,31 @@ public class BulkheadConfigurationTests {
 	void configureDefaultOverridesPropertyDefaultForReactiveBulkhead() {
 		new WebApplicationContextRunner().withUserConfiguration(Application.class)
 			.withPropertyValues("resilience4j.bulkhead.config.default.max-concurrent-calls=30",
-				"resilience4j.threadpool.config.default.queueCapacity=30"/*
-				 * ,
-				 * "resilience4j.bulkhead.instances.testme.max-wait-duration=30s",
-				 * "resilience4j.threadPoolBulkHead.instances.testme.core-threadpool-size=1"
-				 */)
+					"resilience4j.threadpool.config.default.queueCapacity=30"/*
+																				 * ,
+																				 * "resilience4j.bulkhead.instances.testme.max-wait-duration=30s",
+																				 * "resilience4j.threadPoolBulkHead.instances.testme.core-threadpool-size=1"
+																				 */)
 			.run(context -> {
 				final String id = "testme";
 				ReactiveResilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
 					.getBean(ReactiveResilience4JCircuitBreakerFactory.class);
-				ReactiveResilience4jBulkheadProvider bulkheadProvider = context.getBean(ReactiveResilience4jBulkheadProvider.class);
+				ReactiveResilience4jBulkheadProvider bulkheadProvider = context
+					.getBean(ReactiveResilience4jBulkheadProvider.class);
 				bulkheadProvider.configureDefault(bulkheadId -> new Resilience4jBulkheadConfigurationBuilder()
-					.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(50).maxWaitDuration(Duration.ofSeconds(10)).build())
+					.bulkheadConfig(BulkheadConfig.custom()
+						.maxConcurrentCalls(50)
+						.maxWaitDuration(Duration.ofSeconds(10))
+						.build())
 					.build());
 				BulkheadRegistry bulkheadRegistry = context.getBean(BulkheadRegistry.class);
 				Mono<String> result = resilience4JCircuitBreakerFactory.create(id).run(Mono.just("test"));
-				StepVerifier.create(result)
-					.expectNext("test")
-					.verifyComplete();
+				StepVerifier.create(result).expectNext("test").verifyComplete();
 				Optional<Bulkhead> bulkheadOptional = bulkheadRegistry.find(id);
 				assertThat(bulkheadOptional).isPresent();
 				assertThat(bulkheadOptional.get().getBulkheadConfig().getMaxConcurrentCalls()).isEqualTo(50);
-				assertThat(bulkheadOptional.get().getBulkheadConfig().getMaxWaitDuration()).isEqualTo(Duration.ofSeconds(10));
+				assertThat(bulkheadOptional.get().getBulkheadConfig().getMaxWaitDuration())
+					.isEqualTo(Duration.ofSeconds(10));
 			});
 
 	}
@@ -342,18 +333,16 @@ public class BulkheadConfigurationTests {
 
 	@Test
 	void configureDefaultOverridesPropertyDefaultForReactiveSemaphore() {
-		new WebApplicationContextRunner()
-			.withUserConfiguration(Application.class)
-			.withPropertyValues(
-				"resilience4j.bulkhead.config.default.max-concurrent-calls=30",
-				"spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=true"
-			)
+		new WebApplicationContextRunner().withUserConfiguration(Application.class)
+			.withPropertyValues("resilience4j.bulkhead.config.default.max-concurrent-calls=30",
+					"spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=true")
 			.run(context -> {
 				final String id = "testme";
 
 				ReactiveResilience4JCircuitBreakerFactory resilience4JCircuitBreakerFactory = context
 					.getBean(ReactiveResilience4JCircuitBreakerFactory.class);
-				ReactiveResilience4jBulkheadProvider bulkheadProvider = context.getBean(ReactiveResilience4jBulkheadProvider.class);
+				ReactiveResilience4jBulkheadProvider bulkheadProvider = context
+					.getBean(ReactiveResilience4jBulkheadProvider.class);
 
 				bulkheadProvider.configureDefault(bulkheadId -> new Resilience4jBulkheadConfigurationBuilder()
 					.bulkheadConfig(BulkheadConfig.custom().maxConcurrentCalls(40).build())
@@ -363,9 +352,7 @@ public class BulkheadConfigurationTests {
 
 				Mono<String> result = resilience4JCircuitBreakerFactory.create(id).run(Mono.just("test"));
 
-				StepVerifier.create(result)
-					.expectNext("test")
-					.verifyComplete();
+				StepVerifier.create(result).expectNext("test").verifyComplete();
 
 				Optional<Bulkhead> semaphoreBulkhead = bulkheadRegistry.find(id);
 				assertThat(semaphoreBulkhead).isPresent();

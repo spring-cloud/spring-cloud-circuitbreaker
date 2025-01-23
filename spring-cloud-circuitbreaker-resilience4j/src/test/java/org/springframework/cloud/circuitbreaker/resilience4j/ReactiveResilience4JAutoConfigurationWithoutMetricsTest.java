@@ -45,8 +45,8 @@ import static org.mockito.Mockito.verify;
 public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
-		new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-			TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
+			new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
+					TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithoutMetrics() {
@@ -61,8 +61,7 @@ public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	@Test
 	public void testProviderCreatedWhenEnableSemaphoreDefaultBulkheadFalse() {
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.web(WebApplicationType.NONE)
+		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 			.sources(TestApp.class)
 			.properties("spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=false")
 			.run()) {
