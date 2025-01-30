@@ -6,12 +6,12 @@
 
 	<artifactId>spring-cloud-circuitbreaker</artifactId>
 	<packaging>pom</packaging>
-	<version>3.3.0-SNAPSHOT</version>
+	<version>3.3.0-M1</version>
 
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>4.3.0-SNAPSHOT</version>
+		<version>4.3.0-M1</version>
 		<relativePath/>
 	</parent>
 	<properties>
@@ -21,7 +21,7 @@
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.language>java</sonar.language>
-		<spring-cloud-commons.version>4.3.0-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-commons.version>4.3.0-M1</spring-cloud-commons.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
