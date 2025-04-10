@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests that time limiter threads are interrupted correctly when used with a bulkhead.
@@ -67,29 +67,29 @@ public class Resilience4JBulkheadAndTimeLimiterIntegrationTest {
 	@Test
 	public void testBulkheadThreadInterrupted() {
 		InterruptibleTask interruptibleTask = new InterruptibleTask();
-		NoFallbackAvailableException exception = Assertions.assertThrows(NoFallbackAvailableException.class,
-				() -> service.bulkheadTimeout(interruptibleTask));
-		assertThat(exception).hasCauseInstanceOf(TimeoutException.class);
-		Assertions.assertTrue(interruptibleTask.interrupted(), "Thread should be interrupted");
+		assertThatExceptionOfType(NoFallbackAvailableException.class)
+			.isThrownBy(() -> service.bulkheadTimeout(interruptibleTask));
+		assertThat(interruptibleTask.interrupted()).isTrue();
 	}
 
 	@Test
 	public void testThreadPoolBulkheadThreadInterrupted() {
 		InterruptibleTask interruptibleTask = new InterruptibleTask();
-		NoFallbackAvailableException exception = Assertions.assertThrows(NoFallbackAvailableException.class,
-				() -> service.threadPoolBulkheadTimeout(interruptibleTask));
-		assertThat(exception).hasRootCauseExactlyInstanceOf(TimeoutException.class);
-		Assertions.assertTrue(interruptibleTask.interrupted(), "Thread should be interrupted");
+		assertThatExceptionOfType(NoFallbackAvailableException.class)
+			.isThrownBy(() -> service.threadPoolBulkheadTimeout(interruptibleTask))
+			.havingCause()
+			.withCauseExactlyInstanceOf(TimeoutException.class);
+		assertThat(interruptibleTask.interrupted()).isTrue();
 	}
 
 	@Test
 	public void testBulkheadFastCallNotInterrupted() {
-		Assertions.assertEquals(Application.CompletionStatus.SUCCESS, service.bulkheadFast());
+		assertThat(service.bulkheadFast()).isEqualTo(Application.CompletionStatus.SUCCESS);
 	}
 
 	@Test
 	public void testThreadPoolFastCallNotInterrupted() {
-		Assertions.assertEquals(Application.CompletionStatus.SUCCESS, service.threadPoolBulkheadFast());
+		assertThat(service.threadPoolBulkheadFast()).isEqualTo(Application.CompletionStatus.SUCCESS);
 	}
 
 	static class InterruptibleTask {
