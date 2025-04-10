@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
-import org.junit.Assert;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,6 +32,7 @@ import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableExcept
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 /**
  * @author Ryan Baxter
@@ -140,7 +140,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 			throw new AssertionError("timeout did not occur");
 		}).block();
 
-		Assert.fail("execution did not cause exception");
+		fail("execution did not cause exception");
 	}
 
 	/**
