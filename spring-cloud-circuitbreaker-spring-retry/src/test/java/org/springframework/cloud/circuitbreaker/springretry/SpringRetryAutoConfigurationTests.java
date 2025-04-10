@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +33,8 @@ import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ResolvableType;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author wind57
@@ -52,11 +53,11 @@ class SpringRetryAutoConfigurationTests {
 			contextRunner.run(context -> {
 				String[] arr = context
 					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
-				Assertions.assertEquals(0, arr.length, "Default auto-configuration must not have any customizers");
+				assertThat(arr).withFailMessage("Default auto-configuration must not have any customizers").hasSize(0);
 
 				@SuppressWarnings("rawtypes")
 				Map<String, CircuitBreakerFactory> map = context.getBeansOfType(CircuitBreakerFactory.class);
-				Assertions.assertEquals(1, map.size(), "Spring Retry Circuit Breaker must be present");
+				assertThat(map.size()).withFailMessage("Spring Retry Circuit Breaker must be present").isEqualTo(1);
 			});
 
 		}
@@ -76,12 +77,12 @@ class SpringRetryAutoConfigurationTests {
 			contextRunner.run(context -> {
 				String[] arr = context
 					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
-				Assertions.assertEquals(1, arr.length);
-				Assertions.assertArrayEquals(arr, new String[] { "customizers" });
+				assertThat(arr.length).isEqualTo(1);
+				assertThat(arr).isEqualTo(new String[] { "customizers" });
 
 				@SuppressWarnings("rawtypes")
 				Map<String, CircuitBreakerFactory> map = context.getBeansOfType(CircuitBreakerFactory.class);
-				Assertions.assertEquals(1, map.size());
+				assertThat(map.size()).isEqualTo(1);
 			});
 
 		}
@@ -112,14 +113,14 @@ class SpringRetryAutoConfigurationTests {
 			contextRunner.run(context -> {
 				String[] arr = context
 					.getBeanNamesForType(ResolvableType.forClassWithGenerics(List.class, Customizer.class));
-				Assertions.assertEquals(1, arr.length);
-				Assertions.assertArrayEquals(arr, new String[] { "customizers" });
+				assertThat(arr.length).isEqualTo(1);
+				assertThat(arr).isEqualTo(new String[] { "customizers" });
 
 				@SuppressWarnings("rawtypes")
 				Map<String, CircuitBreakerFactory> map = context.getBeansOfType(CircuitBreakerFactory.class);
-				Assertions.assertEquals(1, map.size());
+				assertThat(map.size()).isEqualTo(1);
 			});
-			Assertions.assertTrue(output.getOut().contains("trying to customize"));
+			assertThat(output.getOut()).contains("trying to customize");
 
 		}
 
