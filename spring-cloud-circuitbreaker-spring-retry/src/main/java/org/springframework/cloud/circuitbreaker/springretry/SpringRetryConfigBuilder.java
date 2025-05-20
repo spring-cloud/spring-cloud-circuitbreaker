@@ -71,6 +71,16 @@ public class SpringRetryConfigBuilder implements ConfigBuilder<SpringRetryConfig
 	}
 
 	/**
+	 * Sets the {@link CircuitBreakerRetryPolicy} to use.
+	 * @param retryPolicy The {@code CircuitBreakerRetryPolicy} to use.
+	 * @return The builder.
+	 */
+	public SpringRetryConfigBuilder retryPolicy(CircuitBreakerRetryPolicy retryPolicy) {
+		this.retryPolicy = retryPolicy;
+		return this;
+	}
+
+	/**
 	 * Forces a refresh on the {@link DefaultRetryState} object.
 	 * @param refresh true to refresh, false otherwise.
 	 * @return The builder.
