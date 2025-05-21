@@ -90,30 +90,31 @@ class SpringRetryCircuitBreakerIntegrationTest {
 		@Bean
 		Customizer<SpringRetryCircuitBreakerFactory> factoryCustomizer() {
 			return factory -> {
-				CircuitBreakerRetryPolicy circuitBreakerRetryPolicy = new CircuitBreakerRetryPolicy(new SimpleRetryPolicy(2));
+				CircuitBreakerRetryPolicy circuitBreakerRetryPolicy = new CircuitBreakerRetryPolicy(
+						new SimpleRetryPolicy(2));
 				circuitBreakerRetryPolicy.setOpenTimeout(1000);
 				circuitBreakerRetryPolicy.setResetTimeout(1000);
 				factory.configureDefault(
-					id -> new SpringRetryConfigBuilder(id).retryPolicy(circuitBreakerRetryPolicy).build());
+						id -> new SpringRetryConfigBuilder(id).retryPolicy(circuitBreakerRetryPolicy).build());
 				factory.configure(builder -> builder.retryPolicy(new SimpleRetryPolicy(1)).build(), "slow");
 				factory
 					.addRetryTemplateCustomizers(retryTemplate -> retryTemplate.registerListener(new RetryListener() {
 
 						@Override
 						public <T, E extends Throwable> boolean open(RetryContext context,
-							RetryCallback<T, E> callback) {
+								RetryCallback<T, E> callback) {
 							return false;
 						}
 
 						@Override
 						public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
-							Throwable throwable) {
+								Throwable throwable) {
 
 						}
 
 						@Override
 						public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
-							Throwable throwable) {
+								Throwable throwable) {
 
 						}
 					}));
