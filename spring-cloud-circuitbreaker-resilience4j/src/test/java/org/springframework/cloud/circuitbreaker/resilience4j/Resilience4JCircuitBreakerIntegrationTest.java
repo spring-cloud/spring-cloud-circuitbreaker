@@ -182,7 +182,7 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 		@GetMapping("/slowOnDemand")
 		public String slowOnDemand(@RequestHeader HttpHeaders headers) {
-			if (headers.containsKey("delayInMilliseconds")) {
+			if (headers.containsHeader("delayInMilliseconds")) {
 				String delayString = headers.getFirst("delayInMilliseconds");
 				if (delayString != null) {
 					try {

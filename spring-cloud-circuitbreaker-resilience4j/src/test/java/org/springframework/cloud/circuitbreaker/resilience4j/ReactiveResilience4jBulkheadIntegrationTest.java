@@ -129,7 +129,7 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 
 		@GetMapping("/slowOnDemand")
 		public Mono<String> slowOnDemand(@RequestHeader HttpHeaders headers) {
-			if (headers.containsKey("delayInMilliseconds")) {
+			if (headers.containsHeader("delayInMilliseconds")) {
 				String delayString = headers.getFirst("delayInMilliseconds");
 				LOG.info("delay header: " + delayString);
 				if (delayString != null) {
