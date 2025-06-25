@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>4.1.6</version>
+		<version>4.1.7-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<properties>
@@ -22,7 +22,7 @@
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.language>java</sonar.language>
-		<spring-cloud-commons.version>4.1.6</spring-cloud-commons.version>
+		<spring-cloud-commons.version>4.1.7-SNAPSHOT</spring-cloud-commons.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
