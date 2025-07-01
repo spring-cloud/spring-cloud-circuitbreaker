@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,14 @@ import io.github.resilience4j.circuitbreaker.event.CircuitBreakerOnSuccessEvent;
 import io.github.resilience4j.core.EventConsumer;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.test.client.TestRestTemplate;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -43,6 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,6 +62,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		properties = { "management.endpoints.web.exposure.include=*",
 				"spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=true" })
 @DirtiesContext
+@ExtendWith(MockitoExtension.class)
 public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 
 	@Mock
@@ -77,10 +80,10 @@ public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 	@Autowired
 	private TestRestTemplate rest;
 
-	@SpyBean
+	@MockitoSpyBean
 	private ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry;
 
-	@SpyBean
+	@MockitoSpyBean
 	private BulkheadRegistry bulkheadRegistry;
 
 	@Test

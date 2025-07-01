@@ -1,2 +1,3 @@
 org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JAutoConfiguration
+org.springframework.cloud.circuitbreaker.resilience4j.Resilence4JMetricsOrderingAutoConfiguration
 org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JAutoConfiguration
