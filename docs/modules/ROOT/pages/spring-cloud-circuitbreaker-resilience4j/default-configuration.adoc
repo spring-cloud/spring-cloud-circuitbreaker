@@ -38,7 +38,7 @@ For example if you would like to use a context aware `ExecutorService` you could
 [source,java]
 ----
 @Bean
-public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
 	return factory -> {
 		ContextAwareScheduledThreadPoolExecutor executor = ContextAwareScheduledThreadPoolExecutor.newScheduledThreadPool().corePoolSize(5)
 			.build();
