@@ -166,6 +166,7 @@ public class Resilience4JAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean(ObservationRegistry.class)
+	@ConditionalOnProperty(value = "spring.cloud.circuitbreaker.resilience4j.micrometer.enabled", matchIfMissing = true)
 	public static class ObservationRegistryCustomizerResilience4jCustomizer {
 
 		@Autowired

@@ -7,3 +7,6 @@ dependencies are on the classpath.  To enable metric collection you must include
 get produced when these dependencies are present, see the https://resilience4j.readme.io/docs/micrometer[Resilience4j documentation].
 
 NOTE:  You don't have to include `micrometer-core` directly as it is brought in by `spring-boot-starter-actuator`
+
+If you have `org.springframework.boot:spring-boot-starter-actuator`, and `io.github.resilience4j:resilience4j-micrometer` but
+want to disable Resilience4J metrics you can set `spring.cloud.circuitbreaker.resilience4j.micrometer.enabled` to `false`.
