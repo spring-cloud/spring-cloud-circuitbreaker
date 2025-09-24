@@ -23,6 +23,11 @@
 	  "name": "spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled",
 	  "description": "Enables to use of the Bulkhead by Resilience4j.",
 	  "type": "java.lang.Boolean"
-	}
+	},
+	  {"defaultValue": "true",
+		  "name": "spring.cloud.circuitbreaker.resilience4j.micrometer.enabled",
+		  "description": "Disables micrometer metrics for Resilience4J.",
+		  "type": "java.lang.Boolean"
+	  }
   ]
 }
