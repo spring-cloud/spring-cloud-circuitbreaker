@@ -31,6 +31,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,7 +47,8 @@ public class ReactiveResilience4JAutoConfigurationWithoutMetricsTest {
 
 	static ReactiveResilience4JCircuitBreakerFactory circuitBreakerFactory = spy(
 			new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
-					TimeLimiterRegistry.ofDefaults(), new Resilience4JConfigurationProperties()));
+					TimeLimiterRegistry.ofDefaults(), mock(ReactiveResilience4jBulkheadProvider.class),
+					new Resilience4JConfigurationProperties()));
 
 	@Test
 	public void testWithoutMetrics() {

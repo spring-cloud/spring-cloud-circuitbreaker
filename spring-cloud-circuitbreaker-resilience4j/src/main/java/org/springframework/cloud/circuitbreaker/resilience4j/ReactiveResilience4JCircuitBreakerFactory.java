@@ -53,19 +53,6 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 
 	private final Resilience4JConfigurationProperties resilience4JConfigurationProperties;
 
-	@Deprecated
-	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry) {
-		this(circuitBreakerRegistry, timeLimiterRegistry, null, null);
-	}
-
-	@Deprecated
-	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry,
-			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
-		this(circuitBreakerRegistry, timeLimiterRegistry, null, resilience4JConfigurationProperties);
-	}
-
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry, ReactiveResilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {

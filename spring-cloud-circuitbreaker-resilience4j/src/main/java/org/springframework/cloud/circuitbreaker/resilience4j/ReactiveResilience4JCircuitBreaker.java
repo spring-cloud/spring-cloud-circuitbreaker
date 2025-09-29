@@ -65,23 +65,6 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private final boolean disableTimeLimiter;
 
-	@Deprecated
-	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
-			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
-			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer) {
-		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, false);
-	}
-
-	@Deprecated
-	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
-			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
-			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer, boolean disableTimeLimiter) {
-		this(id, groupName, config, circuitBreakerRegistry, timeLimiterRegistry, circuitBreakerCustomizer, null,
-				disableTimeLimiter);
-	}
-
 	public ReactiveResilience4JCircuitBreaker(String id, String groupName,
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,

@@ -64,17 +64,6 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final boolean disableTimeLimiter;
 
-	@Deprecated
-	public Resilience4JCircuitBreaker(String id, String groupName,
-			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
-			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
-			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-			Resilience4jBulkheadProvider bulkheadProvider) {
-		this(id, groupName, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry,
-				executorService, circuitBreakerCustomizer, bulkheadProvider, false);
-	}
-
 	public Resilience4JCircuitBreaker(String id, String groupName,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
@@ -101,7 +90,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
 			Resilience4jBulkheadProvider bulkheadProvider) {
 		this(id, groupName, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry, null,
-				circuitBreakerCustomizer, bulkheadProvider);
+				circuitBreakerCustomizer, bulkheadProvider, false);
 	}
 
 	@Override
