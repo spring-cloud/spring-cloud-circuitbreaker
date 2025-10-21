@@ -37,7 +37,7 @@ import reactor.test.StepVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.test.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
@@ -98,9 +98,6 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 	@Autowired
 	ReactiveResilience4JCircuitBreakerIntegrationTest.Application.DemoControllerService service;
 
-	@Autowired
-	private WebTestClient webClient;
-
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
@@ -126,6 +123,7 @@ public class ReactiveResilience4JCircuitBreakerIntegrationTest {
 		StepVerifier.create(service.slowFlux()).expectNext("fluxfallback").verifyComplete();
 		verify(slowFluxErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
+		WebTestClient webClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 		assertThat(((List) webClient.get()
 			.uri("/actuator/metrics")
 			.exchange()
