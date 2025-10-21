@@ -40,8 +40,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -74,6 +74,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 				"spring.cloud.circuitbreaker.bulkhead.resilience4j.enabled=false",
 				"resilience4j.timelimiter.metrics.legacy.enabled=true" })
 @DirtiesContext
+@AutoConfigureTestRestTemplate
 public class Resilience4JCircuitBreakerIntegrationTest {
 
 	@Mock
@@ -94,8 +95,8 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 	@Autowired
 	Application.MyObservationHandler myObservationHandler;
 
-	@LocalServerPort
-	private int port;
+	@Autowired
+	private TestRestTemplate rest;
 
 	@Before
 	public void setup() {
@@ -105,36 +106,34 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 	@Test
 	public void testSlow() {
-		assertThat(service.slow(port)).isEqualTo("fallback");
+		assertThat(service.slow()).isEqualTo("fallback");
 		verify(slowErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 	}
 
 	@Test
 	public void testNormal() {
-		assertThat(service.normal(port)).isEqualTo("normal");
+		assertThat(service.normal()).isEqualTo("normal");
 		verify(normalErrorConsumer, times(0)).consumeEvent(any());
 		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
 	}
 
 	@Test
 	public void testSlowResponsesDontFailSubsequentGoodRequests() {
-		assertThat(service.slowOnDemand(5000, port)).isEqualTo("fallback");
-		assertThat(service.slowOnDemand(0, port)).isEqualTo("normal");
+		assertThat(service.slowOnDemand(5000)).isEqualTo("fallback");
+		assertThat(service.slowOnDemand(0)).isEqualTo("normal");
 	}
 
 	@Test
 	public void testResilience4JMetricsAvailable() {
-		TestRestTemplate rest = new TestRestTemplate();
-		String host = "http://localhost:" + port;
-		assertThat(service.normal(port)).isEqualTo("normal");
-		assertThat(((List) rest.getForObject(host + "/actuator/metrics", Map.class).get("names"))
+		assertThat(service.normal()).isEqualTo("normal");
+		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
 			.contains("resilience4j.circuitbreaker.calls")).isTrue();
 
 		// CircuitBreaker and TimeLimiter should have 3 metrics: name, kind, group
-		assertThat(((List) rest.getForObject(host + "/actuator/metrics/resilience4j.circuitbreaker.calls", Map.class)
+		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.circuitbreaker.calls", Map.class)
 			.get("availableTags"))).hasSize(3);
-		assertThat(((List) rest.getForObject(host + "/actuator/metrics/resilience4j.timelimiter.calls", Map.class)
+		assertThat(((List) rest.getForObject("/actuator/metrics/resilience4j.timelimiter.calls", Map.class)
 			.get("availableTags"))).hasSize(3);
 	}
 
@@ -145,23 +144,23 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 		Thread.sleep(100);
 		myObservationHandler.contexts.clear();
 
-		assertThat(service.withObservationRegistry(port)).isEqualTo("fallback");
+		assertThat(service.withObservationRegistry()).isEqualTo("fallback");
 
 		// CircuitBreaker should have 3 observations: my.observation, for supplier and for
 		// function
 		// TODO: Convert to usage of test registry assert with the next micrometer release
 		List<Observation.Context> contexts = myObservationHandler.contexts;
-		assertThat(contexts).hasSize(4);
-		assertThat(contexts.get(1)).satisfies(context -> ObservationContextAssert.then(context)
+		assertThat(contexts).hasSize(3);
+		assertThat(contexts.get(0)).satisfies(context -> ObservationContextAssert.then(context)
 			.hasNameEqualTo("spring.cloud.circuitbreaker")
 			.hasContextualNameEqualTo("circuit-breaker")
 			.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "supplier"));
-		BDDAssertions.then(contexts.get(2))
+		BDDAssertions.then(contexts.get(1))
 			.satisfies(context -> ObservationContextAssert.then(context)
 				.hasNameEqualTo("spring.cloud.circuitbreaker")
 				.hasContextualNameEqualTo("circuit-breaker fallback")
 				.hasLowCardinalityKeyValue("spring.cloud.circuitbreaker.type", "function"));
-		BDDAssertions.then(contexts.get(3))
+		BDDAssertions.then(contexts.get(2))
 			.satisfies(context -> ObservationContextAssert.then(context).hasNameEqualTo("my.observation"));
 	}
 
@@ -250,36 +249,35 @@ public class Resilience4JCircuitBreakerIntegrationTest {
 
 			private final ObservationRegistry observationRegistry;
 
-			DemoControllerService(CircuitBreakerFactory cbFactory, ObservationRegistry observationRegistry) {
-				this.rest = new TestRestTemplate();
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory,
+					ObservationRegistry observationRegistry) {
+				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 				this.observationRegistry = observationRegistry;
 			}
 
-			public String slow(int port) {
-				return circuitBreakerSlow
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slow", String.class), t -> "fallback");
+			public String slow() {
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
-			public String normal(int port) {
+			public String normal() {
 				return cbFactory.create("normal")
-					.run(() -> rest.getForObject("http://localhost:" + port + "/normal", String.class),
-							t -> "fallback");
+					.run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 
-			public String withObservationRegistry(int port) {
+			public String withObservationRegistry() {
 				return Observation.createNotStarted("my.observation", observationRegistry)
 					.observe(() -> cbFactory.create("exception")
-						.run(() -> new RestTemplate().getForObject("http://localhost:" + port + "/exception",
-								String.class), t -> "fallback"));
+						.run(() -> new RestTemplate().getForObject("/exception", String.class), t -> "fallback"));
 			}
 
-			public String slowOnDemand(int delayInMilliseconds, int port) {
-				return circuitBreakerSlow.run(() -> rest
-					.exchange("http://localhost:" + port + "/slowOnDemand", HttpMethod.GET,
-							createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
-					.getBody(), t -> "fallback");
+			public String slowOnDemand(int delayInMilliseconds) {
+				return circuitBreakerSlow
+					.run(() -> rest
+						.exchange("/slowOnDemand", HttpMethod.GET,
+								createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
+						.getBody(), t -> "fallback");
 			}
 
 			private HttpEntity<String> createEntityWithOptionalDelayHeader(int delayInMilliseconds) {

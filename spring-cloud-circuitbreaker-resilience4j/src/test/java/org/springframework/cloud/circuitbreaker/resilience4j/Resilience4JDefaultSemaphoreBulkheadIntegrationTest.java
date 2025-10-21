@@ -36,8 +36,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -64,6 +64,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 				"spring.cloud.circuitbreaker.resilience4j.enableSemaphoreDefaultBulkhead=true" })
 @DirtiesContext
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureTestRestTemplate
 public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 
 	@Mock
@@ -78,8 +79,8 @@ public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 	@Autowired
 	Resilience4JConfigurationProperties configurationProperties;
 
-	@LocalServerPort
-	private static int port;
+	@Autowired
+	private TestRestTemplate rest;
 
 	@MockitoSpyBean
 	private ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry;
@@ -134,17 +135,16 @@ public class Resilience4JDefaultSemaphoreBulkheadIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			private final TestRestTemplate rest;
+			private TestRestTemplate rest;
 
-			DemoControllerService(CircuitBreakerFactory cbFactory) {
-				this.rest = new TestRestTemplate();
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
+				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
 			public String slow() {
-				return circuitBreakerSlow
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slow", String.class), t -> "fallback");
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
 		}

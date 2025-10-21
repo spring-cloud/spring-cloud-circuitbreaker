@@ -42,8 +42,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -74,6 +74,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = Resilience4JBulkheadIntegrationTest.Application.class,
 		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
+@AutoConfigureTestRestTemplate
 public class Resilience4JBulkheadIntegrationTest {
 
 	static EventConsumer<CircuitBreakerOnErrorEvent> slowErrorConsumer;
@@ -87,8 +88,8 @@ public class Resilience4JBulkheadIntegrationTest {
 	@Autowired
 	Application.DemoControllerService service;
 
-	@LocalServerPort
-	private int port;
+	@Autowired
+	private TestRestTemplate rest;
 
 	@After
 	public void reset() {
@@ -97,29 +98,29 @@ public class Resilience4JBulkheadIntegrationTest {
 
 	@Test
 	public void testSlow() {
-		assertThat(service.slow(port)).isEqualTo("fallback");
+		assertThat(service.slow()).isEqualTo("fallback");
 		verify(slowErrorConsumer, times(1)).consumeEvent(any());
 		verify(slowSuccessConsumer, times(0)).consumeEvent(any());
 	}
 
 	@Test
 	public void testNormal() {
-		assertThat(service.normal(port)).isEqualTo("normal");
+		assertThat(service.normal()).isEqualTo("normal");
 		verify(normalErrorConsumer, times(0)).consumeEvent(any());
 		verify(normalSuccessConsumer, times(1)).consumeEvent(any());
 	}
 
 	@Test
 	public void testSlowResponsesDontFailSubsequentGoodRequests() {
-		assertThat(service.slowOnDemand(5000, port)).isEqualTo("fallback");
-		assertThat(service.slowOnDemand(0, port)).isEqualTo("normal");
+		assertThat(service.slowOnDemand(5000)).isEqualTo("fallback");
+		assertThat(service.slowOnDemand(0)).isEqualTo("normal");
 	}
 
 	@Test
 	public void testBulkheadTwoParallelSlowOneNotPermitted() throws InterruptedException {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
-		executorService.submit(() -> service.slowBulkhead(port));
-		executorService.submit(() -> service.slowBulkhead(port));
+		executorService.submit(() -> service.slowBulkhead());
+		executorService.submit(() -> service.slowBulkhead());
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
 
@@ -130,9 +131,9 @@ public class Resilience4JBulkheadIntegrationTest {
 	@Test
 	public void testThreadPoolBulkheadThreeParallelSlowOneNotPermitted() throws InterruptedException {
 		ExecutorService executorService = Executors.newFixedThreadPool(3);
-		executorService.submit(() -> service.slowThreadPoolBulkhead(port));
-		executorService.submit(() -> service.slowThreadPoolBulkhead(port));
-		executorService.submit(() -> service.slowThreadPoolBulkhead(port));
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
+		executorService.submit(() -> service.slowThreadPoolBulkhead());
 		executorService.shutdown();
 		executorService.awaitTermination(10, TimeUnit.SECONDS);
 
@@ -142,19 +143,13 @@ public class Resilience4JBulkheadIntegrationTest {
 
 	@Test
 	public void testResilience4JMetricsAvailable() {
-		TestRestTemplate rest = new TestRestTemplate();
-		assertThat(service.normal(port)).isEqualTo("normal");
-		assertThat(((List) rest.getForObject("http://localhost:" + port + "/actuator/metrics", Map.class).get("names"))
+		assertThat(service.normal()).isEqualTo("normal");
+		assertThat(((List) rest.getForObject("/actuator/metrics", Map.class).get("names"))
 			.contains("resilience4j.bulkhead.max.thread.pool.size")).isTrue();
 
-		assertThat(
-				((List) rest
-					.getForObject(
-							"http://localhost:" + port
-									+ "/actuator/metrics/resilience4j.bulkhead.max.thread.pool.size?tag=group:none",
-							Map.class)
-					.get("availableTags")))
-			.hasSize(1);
+		assertThat(((List) rest
+			.getForObject("/actuator/metrics/resilience4j.bulkhead.max.thread.pool.size?tag=group:none", Map.class)
+			.get("availableTags"))).hasSize(1);
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -328,41 +323,38 @@ public class Resilience4JBulkheadIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(CircuitBreakerFactory cbFactory) {
-				this.rest = new TestRestTemplate();
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory cbFactory) {
+				this.rest = rest;
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
-			public String slow(int port) {
-				return circuitBreakerSlow
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slow", String.class), t -> "fallback");
+			public String slow() {
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
-			public String normal(int port) {
+			public String normal() {
 				return cbFactory.create("normal")
-					.run(() -> rest.getForObject("http://localhost:" + port + "/normal", String.class),
-							t -> "fallback");
+					.run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 
-			public String slowOnDemand(int delayInMilliseconds, int port) {
+			public String slowOnDemand(int delayInMilliseconds) {
 				LOG.info("delay: " + delayInMilliseconds);
-				return circuitBreakerSlow.run(() -> rest
-					.exchange("http://localhost:" + port + "/slowOnDemand", HttpMethod.GET,
-							createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
-					.getBody(), t -> "fallback");
+				return circuitBreakerSlow
+					.run(() -> rest
+						.exchange("/slowOnDemand", HttpMethod.GET,
+								createEntityWithOptionalDelayHeader(delayInMilliseconds), String.class)
+						.getBody(), t -> "fallback");
 			}
 
-			public String slowBulkhead(int port) {
+			public String slowBulkhead() {
 				return cbFactory.create("slowBulkhead")
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slowBulkhead", String.class),
-							t -> "fallback");
+					.run(() -> rest.getForObject("/slowBulkhead", String.class), t -> "fallback");
 			}
 
-			public String slowThreadPoolBulkhead(int port) {
+			public String slowThreadPoolBulkhead() {
 				return cbFactory.create("slowThreadPoolBulkhead")
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slowThreadPoolBulkhead", String.class),
-							t -> "fallback");
+					.run(() -> rest.getForObject("/slowThreadPoolBulkhead", String.class), t -> "fallback");
 			}
 
 			private HttpEntity<String> createEntityWithOptionalDelayHeader(int delayInMilliseconds) {

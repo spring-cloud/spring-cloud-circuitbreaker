@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -51,23 +51,24 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringRetryCircuitBreakerIntegrationTest.Application.class)
+@AutoConfigureTestRestTemplate
 class SpringRetryCircuitBreakerIntegrationTest {
 
 	@Autowired
 	private Application.DemoControllerService service;
 
-	@LocalServerPort
-	private int port;
+	@Autowired
+	private TestRestTemplate rest;
 
 	@Test
 	void testSlow() {
-		assertThat(service.slow(port)).isEqualTo("fallback");
-		service.verifyTimesSlowInvoked(port);
+		assertThat(service.slow()).isEqualTo("fallback");
+		service.verifyTimesSlowInvoked();
 	}
 
 	@Test
 	void testNormal() {
-		assertThat(service.normal(port)).isEqualTo("normal");
+		assertThat(service.normal()).isEqualTo("normal");
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -134,29 +135,26 @@ class SpringRetryCircuitBreakerIntegrationTest {
 
 			private final CircuitBreaker circuitBreakerSlow;
 
-			DemoControllerService(CircuitBreakerFactory<?, ?> cbFactory) {
-				this.rest = spy(new TestRestTemplate(new RestTemplateBuilder().readTimeout(Duration.ofSeconds(1))));
+			DemoControllerService(TestRestTemplate rest, CircuitBreakerFactory<?, ?> cbFactory) {
+				this.rest = spy(rest);
 				this.cbFactory = cbFactory;
 				this.circuitBreakerSlow = cbFactory.create("slow");
 			}
 
-			String slow(int port) {
+			String slow() {
 				for (int i = 0; i < 10; i++) {
-					circuitBreakerSlow.run(() -> rest.getForObject("http://localhost:" + port + "/slow", String.class),
-							t -> "fallback");
+					circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 				}
-				return circuitBreakerSlow
-					.run(() -> rest.getForObject("http://localhost:" + port + "/slow", String.class), t -> "fallback");
+				return circuitBreakerSlow.run(() -> rest.getForObject("/slow", String.class), t -> "fallback");
 			}
 
-			String normal(int port) {
+			String normal() {
 				return cbFactory.create("normal")
-					.run(() -> rest.getForObject("http://localhost:" + port + "/normal", String.class),
-							t -> "fallback");
+					.run(() -> rest.getForObject("/normal", String.class), t -> "fallback");
 			}
 
-			void verifyTimesSlowInvoked(int port) {
-				verify(rest, times(1)).getForObject(eq("http://localhost:" + port + "/slow"), eq(String.class));
+			void verifyTimesSlowInvoked() {
+				verify(rest, times(1)).getForObject(eq("/slow"), eq(String.class));
 			}
 
 		}

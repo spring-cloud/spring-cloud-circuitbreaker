@@ -37,8 +37,8 @@ import reactor.test.StepVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
@@ -62,13 +62,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = ReactiveResilience4jBulkheadIntegrationTest.Application.class,
 		properties = { "management.endpoints.web.exposure.include=*" })
 @DirtiesContext
+@AutoConfigureTestRestTemplate
 public class ReactiveResilience4jBulkheadIntegrationTest {
 
 	@Autowired
 	Application.DemoControllerService service;
 
-	@LocalServerPort
-	private int port;
+	@Autowired
+	private TestRestTemplate rest;
 
 	@Test
 	public void testSlow() {
@@ -101,17 +102,12 @@ public class ReactiveResilience4jBulkheadIntegrationTest {
 	@Test
 	public void testResilience4JMetricsAvailable() {
 		StepVerifier.create(service.normal()).expectNext("normal").verifyComplete();
-
-		TestRestTemplate rest = new TestRestTemplate();
 		@SuppressWarnings("unchecked")
-		Map<String, Object> metrics = rest.getForObject("http://localhost:" + port + "/actuator/metrics", Map.class);
+		Map<String, Object> metrics = rest.getForObject("/actuator/metrics", Map.class);
 		List<String> metricNames = (List<String>) metrics.get("names");
 
 		assertThat(metricNames).contains("resilience4j.bulkhead.max.allowed.concurrent.calls");
-		assertThat(rest
-			.getForObject(
-					"http://localhost:" + port + "/actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls",
-					Map.class)
+		assertThat(rest.getForObject("/actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls", Map.class)
 			.get("availableTags")).isNotNull();
 	}
 
