@@ -9,3 +9,4 @@
 ** xref:spring-cloud-circuitbreaker-resilience4j/bulkhead-properties-configuration.adoc[]
 ** xref:spring-cloud-circuitbreaker-resilience4j/collecting-metrics.adoc[]
 * xref:spring-cloud-circuitbreaker-spring-retry.adoc[]
+* xref:spring-cloud-circuitbreaker-framework-retry.adoc[]

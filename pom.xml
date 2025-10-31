@@ -122,8 +122,10 @@
 		<module>spring-cloud-circuitbreaker-dependencies</module>
 		<module>spring-cloud-circuitbreaker-resilience4j</module>
 		<module>spring-cloud-starter-circuitbreaker</module>
-		<module>docs</module>
 		<module>spring-cloud-circuitbreaker-spring-retry</module>
+		<module>spring-cloud-circuitbreaker-framework-retry</module>
+		<module>docs</module>
+
 	</modules>
 	<build>
 		<plugins>

@@ -1,0 +1,188 @@
+[[configuring-framework-retry-circuit-breakers]]
+= Configuring Framework Retry Circuit Breakers
+
+Spring Framework 7 introduced native retry support as part of the framework's resilience features.
+Spring Cloud CircuitBreaker provides a circuit breaker implementation that uses Spring Framework's
+`RetryTemplate` and `RetryPolicy` APIs.
+
+Unlike Spring Framework's retry support which is stateless, this implementation adds stateful
+circuit breaker functionality by tracking failures and implementing the circuit breaker pattern
+(closed, open, and half-open states). The implementation is modeled after Spring Retry's
+`CircuitBreakerRetryPolicy`, where the circuit opens after a single failed execution (all retries
+exhausted) rather than counting individual retry attempts.
+
+[[starters]]
+== Starters
+
+To use the Framework Retry circuit breaker implementation, add the following starter to your project:
+
+.Maven
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-circuitbreaker-framework-retry</artifactId>
+</dependency>
+----
+
+.Gradle
+[source,groovy]
+----
+implementation 'spring-cloud-starter-circuitbreaker-framework-retry'
+----
+
+[[default-configuration]]
+== Default Configuration
+
+To provide a default configuration for all of your circuit breakers, create a `Customizer` bean that is passed a
+`FrameworkRetryCircuitBreakerFactory`. The `configureDefault` method can be used to provide a default configuration.
+
+[source,java]
+----
+@Bean
+public Customizer<FrameworkRetryCircuitBreakerFactory> defaultCustomizer() {
+	return factory -> factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
+		.retryPolicy(RetryPolicy.withMaxAttempts(3))
+		.openTimeout(Duration.ofSeconds(20))
+		.resetTimeout(Duration.ofSeconds(5))
+		.build());
+}
+----
+
+[[configuration-options]]
+=== Configuration Options
+
+The `FrameworkRetryConfigBuilder` provides the following configuration options:
+
+* `retryPolicy(RetryPolicy)` - The Spring Framework `RetryPolicy` to use for retries. This determines how many times and under what conditions retries should occur.
+* `openTimeout(Duration)` - The time the circuit stays open before transitioning to half-open state. Default is 20 seconds.
+* `resetTimeout(Duration)` - The time to wait after a failure before resetting the circuit breaker state. If no failures occur within this timeout, the circuit breaker automatically resets to closed state. Default is 5 seconds.
+
+[[specific-circuit-breaker-configuration]]
+== Specific Circuit Breaker Configuration
+
+Similarly to providing a default configuration, you can create a `Customizer` bean that is passed a
+`FrameworkRetryCircuitBreakerFactory` to configure specific circuit breakers.
+
+[source,java]
+----
+@Bean
+public Customizer<FrameworkRetryCircuitBreakerFactory> slowCustomizer() {
+	return factory -> factory.configure(builder -> builder
+		.retryPolicy(RetryPolicy.withMaxAttempts(1))
+		.openTimeout(Duration.ofSeconds(30))
+		.resetTimeout(Duration.ofSeconds(10))
+		.build(), "slow");
+}
+----
+
+[[retry-policies]]
+== Retry Policies
+
+Spring Framework 7 provides several built-in retry policies that can be used with the Framework Retry circuit breaker:
+
+* `RetryPolicy.withMaxAttempts(int)` - Retries a fixed number of times
+* `RetryPolicy.withMaxDuration(Duration)` - Retries until a maximum duration is reached
+* `RetryPolicy.withBackoff(Duration, double)` - Retries with exponential backoff
+* `RetryPolicy.forExceptions(Class<?>...)` - Retries only for specific exception types
+
+You can also combine policies using `and()` and `or()` operators:
+
+[source,java]
+----
+@Bean
+public Customizer<FrameworkRetryCircuitBreakerFactory> customRetryPolicy() {
+	return factory -> factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
+		.retryPolicy(RetryPolicy.withMaxAttempts(3)
+			.and(RetryPolicy.withMaxDuration(Duration.ofSeconds(5)))
+			.forExceptions(IOException.class, TimeoutException.class))
+		.build());
+}
+----
+
+[[circuit-breaker-behavior]]
+== Circuit Breaker Behavior
+
+The Framework Retry circuit breaker implementation follows the Spring Retry circuit breaker pattern:
+
+* **Closed State**: Requests are allowed through and retried according to the configured `RetryPolicy`. When a complete invocation fails (all retries exhausted), the circuit opens immediately.
+* **Open State**: Requests fail immediately with a fallback response without attempting retries. After the `openTimeout` period, the circuit transitions to half-open.
+* **Half-Open State**: A single request is allowed through to test if the service has recovered. If successful, the circuit closes. If it fails, the circuit reopens.
+* **Reset Timeout**: If no failures occur within the `resetTimeout` period, the circuit breaker automatically resets to closed state, even if it was previously open.
+
+[[example-usage]]
+== Example Usage
+
+Here's a complete example of using the Framework Retry circuit breaker:
+
+[source,java]
+----
+@Service
+public class BookService {
+
+	private final CircuitBreakerFactory circuitBreakerFactory;
+	private final RestTemplate restTemplate;
+
+	public BookService(CircuitBreakerFactory circuitBreakerFactory, RestTemplate restTemplate) {
+		this.circuitBreakerFactory = circuitBreakerFactory;
+		this.restTemplate = restTemplate;
+	}
+
+	public String getBookTitle(Long bookId) {
+		CircuitBreaker circuitBreaker = circuitBreakerFactory.create("bookService");
+		return circuitBreaker.run(
+			() -> restTemplate.getForObject("/books/" + bookId, String.class),
+			throwable -> "Fallback Book"
+		);
+	}
+}
+----
+
+[[configuration-example]]
+== Configuration Example
+
+[source,java]
+----
+@Configuration
+public class CircuitBreakerConfiguration {
+
+	@Bean
+	public Customizer<FrameworkRetryCircuitBreakerFactory> defaultCustomizer() {
+		return factory -> {
+			// Default configuration for all circuit breakers
+			factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
+				.retryPolicy(RetryPolicy.withMaxAttempts(3)
+					.withBackoff(Duration.ofMillis(100), 2.0))
+				.openTimeout(Duration.ofSeconds(20))
+				.resetTimeout(Duration.ofSeconds(5))
+				.build());
+		};
+	}
+
+	@Bean
+	public Customizer<FrameworkRetryCircuitBreakerFactory> specificCustomizer() {
+		return factory -> {
+			// Specific configuration for "slow" circuit breaker
+			factory.configure(builder -> builder
+				.retryPolicy(RetryPolicy.withMaxAttempts(1))
+				.openTimeout(Duration.ofSeconds(30))
+				.resetTimeout(Duration.ofSeconds(10))
+				.build(), "slow");
+
+			// Specific configuration for "critical" circuit breaker
+			factory.configure(builder -> builder
+				.retryPolicy(RetryPolicy.withMaxAttempts(5))
+				.openTimeout(Duration.ofMinutes(2))
+				.resetTimeout(Duration.ofSeconds(15))
+				.build(), "critical");
+		};
+	}
+}
+----
+
+[[reactive-support]]
+== Reactive Support
+
+The Framework Retry circuit breaker implementation does not support reactive applications.
+If you need reactive support, use the Resilience4J implementation instead.
+

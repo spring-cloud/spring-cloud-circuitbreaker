@@ -6,9 +6,15 @@
 
 ## Usage Documentation
 
-The Spring Cloud CircuitBreaker project contains implementations for Resilience4J and Spring Retry.
+The Spring Cloud CircuitBreaker project contains implementations for Resilience4J, Spring Retry, and Spring Framework Retry.
 The APIs implemented in Spring Cloud CircuitBreaker live in Spring Cloud Commons.  The usage documentation
 for these APIs are located in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-circuit-breaker[Spring Cloud Commons documentation].
+
+## Implementations
+
+* **Resilience4J** - A comprehensive fault tolerance library with support for circuit breakers, rate limiters, bulkheads, and more. Supports both blocking and reactive applications.
+* **Spring Retry** - Declarative retry support with circuit breaker functionality. A mature project with extensive configuration options.
+* **Framework Retry** - Built on Spring Framework 7's native retry support. Provides a lightweight circuit breaker implementation without additional dependencies. Does not support reactive applications.
 
 
 
