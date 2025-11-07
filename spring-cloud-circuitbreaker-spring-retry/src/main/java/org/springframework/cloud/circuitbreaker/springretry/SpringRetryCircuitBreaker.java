@@ -26,7 +26,10 @@ import org.springframework.retry.support.RetryTemplate;
 
 /**
  * @author Ryan Baxter
+ * @deprecated in favor of the {@link CircuitBreaker} implementation in
+ * spring-cloud-circuitbreaker-framework-retry
  */
+@Deprecated
 public class SpringRetryCircuitBreaker implements CircuitBreaker {
 
 	private final String id;

@@ -28,7 +28,10 @@ import org.springframework.util.Assert;
 
 /**
  * @author Ryan Baxter
+ * @deprecated in favor of the {@link CircuitBreakerFactory} implementation in
+ * spring-cloud-circuitbreaker-framework-retry
  */
+@Deprecated
 public class SpringRetryCircuitBreakerFactory
 		extends CircuitBreakerFactory<SpringRetryConfig, SpringRetryConfigBuilder> {
 
