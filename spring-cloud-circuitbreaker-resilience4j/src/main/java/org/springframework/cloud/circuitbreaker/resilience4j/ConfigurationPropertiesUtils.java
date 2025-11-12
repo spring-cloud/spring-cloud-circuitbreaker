@@ -18,6 +18,8 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  *
  * A util class related to configuration properties class.
@@ -38,8 +40,9 @@ public final class ConfigurationPropertiesUtils {
 	 * @return value set for id, groupName or default value of disable-time-limit and
 	 * {@code false} otherwise
 	 */
-	static boolean isDisableTimeLimiter(Resilience4JConfigurationProperties resilience4JConfigurationProperties,
-			String id, String groupName) {
+	static boolean isDisableTimeLimiter(
+			@Nullable Resilience4JConfigurationProperties resilience4JConfigurationProperties, String id,
+			String groupName) {
 
 		if (resilience4JConfigurationProperties == null) {
 			return false;

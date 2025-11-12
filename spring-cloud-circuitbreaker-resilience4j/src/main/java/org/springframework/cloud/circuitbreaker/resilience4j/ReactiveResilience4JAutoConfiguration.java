@@ -28,6 +28,7 @@ import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetricsPubli
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class ReactiveResilience4JAutoConfiguration {
 	@ConditionalOnMissingBean(ReactiveCircuitBreakerFactory.class)
 	public ReactiveResilience4JCircuitBreakerFactory reactiveResilience4JCircuitBreakerFactory(
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			@Autowired(required = false) ReactiveResilience4jBulkheadProvider bulkheadProvider,
+			@Autowired(required = false) @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		ReactiveResilience4JCircuitBreakerFactory factory = new ReactiveResilience4JCircuitBreakerFactory(
 				circuitBreakerRegistry, timeLimiterRegistry, bulkheadProvider, resilience4JConfigurationProperties);
@@ -108,13 +109,13 @@ public class ReactiveResilience4JAutoConfiguration {
 	public static class MicrometerReactiveResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private ReactiveResilience4JCircuitBreakerFactory factory;
+		private @Nullable ReactiveResilience4JCircuitBreakerFactory factory;
 
 		@Autowired(required = false)
-		private ReactiveResilience4jBulkheadProvider bulkheadProvider;
+		private @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 		@Autowired(required = false)
-		private TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
+		private @Nullable TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
 
 		@Autowired
 		private MeterRegistry meterRegistry;

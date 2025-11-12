@@ -28,6 +28,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -48,7 +49,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final Map<String, String> tags;
 
-	private Resilience4jBulkheadProvider bulkheadProvider;
+	private @Nullable Resilience4jBulkheadProvider bulkheadProvider;
 
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
@@ -58,7 +59,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 
 	private final TimeLimiterConfig timeLimiterConfig;
 
-	private final ExecutorService executorService;
+	private final @Nullable ExecutorService executorService;
 
 	private final Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer;
 
@@ -67,9 +68,9 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	public Resilience4JCircuitBreaker(String id, String groupName,
 			io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig,
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, ExecutorService executorService,
+			TimeLimiterRegistry timeLimiterRegistry, @Nullable ExecutorService executorService,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-			Resilience4jBulkheadProvider bulkheadProvider, boolean disableTimeLimiter) {
+			@Nullable Resilience4jBulkheadProvider bulkheadProvider, boolean disableTimeLimiter) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = circuitBreakerConfig;
@@ -88,7 +89,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 			TimeLimiterConfig timeLimiterConfig, CircuitBreakerRegistry circuitBreakerRegistry,
 			TimeLimiterRegistry timeLimiterRegistry,
 			Optional<Customizer<io.github.resilience4j.circuitbreaker.CircuitBreaker>> circuitBreakerCustomizer,
-			Resilience4jBulkheadProvider bulkheadProvider) {
+			@Nullable Resilience4jBulkheadProvider bulkheadProvider) {
 		this(id, groupName, circuitBreakerConfig, timeLimiterConfig, circuitBreakerRegistry, timeLimiterRegistry, null,
 				circuitBreakerCustomizer, bulkheadProvider, false);
 	}
