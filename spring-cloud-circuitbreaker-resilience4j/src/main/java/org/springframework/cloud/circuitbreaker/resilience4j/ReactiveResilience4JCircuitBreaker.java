@@ -29,6 +29,7 @@ import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOper
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -51,7 +52,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private final String groupName;
 
-	private final ReactiveResilience4jBulkheadProvider bulkheadProvider;
+	private final @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
 
@@ -69,7 +70,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 			Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config,
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
 			Optional<Customizer<CircuitBreaker>> circuitBreakerCustomizer,
-			ReactiveResilience4jBulkheadProvider bulkheadProvider, boolean disableTimeLimiter) {
+			@Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider, boolean disableTimeLimiter) {
 		this.id = id;
 		this.groupName = groupName;
 		this.circuitBreakerConfig = config.getCircuitBreakerConfig();
@@ -82,7 +83,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	}
 
 	@Override
-	public <T> Mono<T> run(Mono<T> toRun, Function<Throwable, Mono<T>> fallback) {
+	public <T> Mono<T> run(Mono<T> toRun, @Nullable Function<Throwable, Mono<T>> fallback) {
 		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
 		Mono<T> toReturn;
@@ -109,7 +110,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	}
 
 	@Override
-	public <T> Flux<T> run(Flux<T> toRun, Function<Throwable, Flux<T>> fallback) {
+	public <T> Flux<T> run(Flux<T> toRun, @Nullable Function<Throwable, Flux<T>> fallback) {
 		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		Tuple2<CircuitBreaker, Optional<TimeLimiter>> tuple = buildCircuitBreakerAndTimeLimiter();
 		Flux<T> toReturn;

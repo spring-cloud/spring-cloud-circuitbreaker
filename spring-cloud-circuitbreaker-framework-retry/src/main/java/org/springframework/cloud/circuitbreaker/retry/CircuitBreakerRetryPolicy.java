@@ -20,6 +20,8 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.retry.RetryPolicy;
 
 /**
@@ -202,7 +204,7 @@ public class CircuitBreakerRetryPolicy {
 	 * Get the last exception that occurred.
 	 * @return the last exception, or null if no exception has occurred
 	 */
-	public Throwable getLastException() {
+	public @Nullable Throwable getLastException() {
 		return this.lastException.get();
 	}
 

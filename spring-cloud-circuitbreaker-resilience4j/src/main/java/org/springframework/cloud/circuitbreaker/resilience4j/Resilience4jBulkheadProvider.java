@@ -35,9 +35,9 @@ import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.timelimiter.TimeLimiter;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -69,7 +69,7 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public void configureDefault(
-			@NonNull Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+			Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
 		Assert.notNull(defaultConfiguration, "Default configuration must not be null");
 		this.defaultConfiguration = defaultConfiguration;
 	}
@@ -111,7 +111,7 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	public <T> T run(String id, Supplier<T> toRun, Function<Throwable, T> fallback, CircuitBreaker circuitBreaker,
-			TimeLimiter timeLimiter, Map<String, String> tags) {
+			@Nullable TimeLimiter timeLimiter, Map<String, String> tags) {
 		Supplier<CompletionStage<T>> bulkheadCall = decorateBulkhead(id, tags, toRun);
 		final Callable<T> timeLimiterCall = decorateTimeLimiter(bulkheadCall, timeLimiter);
 		final Callable<T> circuitBreakerCall = circuitBreaker.decorateCallable(timeLimiterCall);
@@ -195,7 +195,7 @@ public class Resilience4jBulkheadProvider {
 	}
 
 	private static <T> Callable<T> decorateTimeLimiter(final Supplier<? extends CompletionStage<T>> supplier,
-			TimeLimiter timeLimiter) {
+			@Nullable TimeLimiter timeLimiter) {
 		final Supplier<Future<T>> futureSupplier = () -> supplier.get().toCompletableFuture();
 		if (timeLimiter == null) {
 			/* execute without time-limiter */

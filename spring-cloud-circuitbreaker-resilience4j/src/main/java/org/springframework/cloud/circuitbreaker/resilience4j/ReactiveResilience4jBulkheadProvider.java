@@ -29,7 +29,6 @@ import io.github.resilience4j.reactor.bulkhead.operator.BulkheadOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -51,7 +50,7 @@ public class ReactiveResilience4jBulkheadProvider {
 	}
 
 	public void configureDefault(
-			@NonNull Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
+			Function<String, Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration> defaultConfiguration) {
 		Assert.notNull(defaultConfiguration, "Default configuration must not be null");
 		this.defaultConfiguration = defaultConfiguration;
 	}

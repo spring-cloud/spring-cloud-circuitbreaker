@@ -35,6 +35,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -67,7 +68,7 @@ public class Resilience4JAutoConfiguration {
 	@ConditionalOnMissingBean(CircuitBreakerFactory.class)
 	public Resilience4JCircuitBreakerFactory resilience4jCircuitBreakerFactory(
 			CircuitBreakerRegistry circuitBreakerRegistry, TimeLimiterRegistry timeLimiterRegistry,
-			@Autowired(required = false) Resilience4jBulkheadProvider bulkheadProvider,
+			@Autowired(required = false) @Nullable Resilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(circuitBreakerRegistry,
 				timeLimiterRegistry, bulkheadProvider, resilience4JConfigurationProperties);
@@ -128,13 +129,13 @@ public class Resilience4JAutoConfiguration {
 	public static class MicrometerResilience4JCustomizerConfiguration {
 
 		@Autowired(required = false)
-		private Resilience4JCircuitBreakerFactory factory;
+		private @Nullable Resilience4JCircuitBreakerFactory factory;
 
 		@Autowired(required = false)
-		private Resilience4jBulkheadProvider bulkheadProvider;
+		private @Nullable Resilience4jBulkheadProvider bulkheadProvider;
 
 		@Autowired(required = false)
-		private TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
+		private @Nullable TaggedCircuitBreakerMetrics taggedCircuitBreakerMetrics;
 
 		@Autowired
 		private MeterRegistry meterRegistry;
@@ -173,7 +174,7 @@ public class Resilience4JAutoConfiguration {
 		ObservationRegistry observationRegistry;
 
 		@Autowired(required = false)
-		private Resilience4JCircuitBreakerFactory factory;
+		private @Nullable Resilience4JCircuitBreakerFactory factory;
 
 		@PostConstruct
 		public void init() {
