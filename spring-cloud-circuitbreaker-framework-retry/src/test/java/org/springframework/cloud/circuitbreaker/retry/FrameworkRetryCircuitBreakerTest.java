@@ -56,9 +56,14 @@ class FrameworkRetryCircuitBreakerTest {
 	void testRunWithRetry() {
 		// Test that retries are attempted successfully
 		AtomicInteger attempts = new AtomicInteger(0);
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(2)) // 1 initial + 2 retries = 3
-															// attempts
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(2)) // 1
+																															// initial
+																															// +
+																															// 2
+																															// retries
+																															// =
+																															// 3
+																															// attempts
 			.build();
 		FrameworkRetryCircuitBreaker circuitBreaker = new FrameworkRetryCircuitBreaker("test", config);
 
@@ -81,8 +86,7 @@ class FrameworkRetryCircuitBreakerTest {
 	@Test
 	void testCircuitOpensAfterSingleFailedExecution() {
 		// Use no retries so a single failure causes the circuit to open
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(0))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(0))
 			.openTimeout(Duration.ofSeconds(20))
 			.resetTimeout(Duration.ofSeconds(5))
 			.build();
@@ -98,8 +102,7 @@ class FrameworkRetryCircuitBreakerTest {
 
 	@Test
 	void testCircuitBreakerOpenReturnsFallback() {
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(0))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(0))
 			.openTimeout(Duration.ofSeconds(20))
 			.resetTimeout(Duration.ofSeconds(5))
 			.build();
@@ -125,8 +128,7 @@ class FrameworkRetryCircuitBreakerTest {
 
 	@Test
 	void testCircuitHalfOpenAfterTimeout() throws InterruptedException {
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(0))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(0))
 			.openTimeout(Duration.ofMillis(100))
 			.resetTimeout(Duration.ofSeconds(5))
 			.build();
@@ -151,8 +153,7 @@ class FrameworkRetryCircuitBreakerTest {
 
 	@Test
 	void testCircuitReopensOnFailureInHalfOpen() throws InterruptedException {
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(0))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(0))
 			.openTimeout(Duration.ofMillis(100))
 			.resetTimeout(Duration.ofSeconds(5))
 			.build();
@@ -190,8 +191,7 @@ class FrameworkRetryCircuitBreakerTest {
 	@Test
 	void testCircuitOpensAfterAllRetriesExhausted() {
 		// With retries enabled, circuit opens after all retries are exhausted
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(2))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(2))
 			.openTimeout(Duration.ofSeconds(20))
 			.resetTimeout(Duration.ofSeconds(5))
 			.build();
@@ -208,8 +208,7 @@ class FrameworkRetryCircuitBreakerTest {
 
 	@Test
 	void testResetTimeoutClosesCircuit() throws InterruptedException {
-		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test")
-			.retryPolicy(RetryPolicy.withMaxRetries(0))
+		FrameworkRetryConfig config = new FrameworkRetryConfigBuilder("test").retryPolicy(RetryPolicy.withMaxRetries(0))
 			.openTimeout(Duration.ofSeconds(20))
 			.resetTimeout(Duration.ofMillis(100))
 			.build();
