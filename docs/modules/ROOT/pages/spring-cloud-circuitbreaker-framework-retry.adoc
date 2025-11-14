@@ -42,7 +42,7 @@ To provide a default configuration for all of your circuit breakers, create a `C
 @Bean
 public Customizer<FrameworkRetryCircuitBreakerFactory> defaultCustomizer() {
 	return factory -> factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
-		.retryPolicy(RetryPolicy.withMaxAttempts(3))
+		.retryPolicy(RetryPolicy.withMaxRetries(3))
 		.openTimeout(Duration.ofSeconds(20))
 		.resetTimeout(Duration.ofSeconds(5))
 		.build());
@@ -69,7 +69,7 @@ Similarly to providing a default configuration, you can create a `Customizer` be
 @Bean
 public Customizer<FrameworkRetryCircuitBreakerFactory> slowCustomizer() {
 	return factory -> factory.configure(builder -> builder
-		.retryPolicy(RetryPolicy.withMaxAttempts(1))
+		.retryPolicy(RetryPolicy.withMaxRetries(1))
 		.openTimeout(Duration.ofSeconds(30))
 		.resetTimeout(Duration.ofSeconds(10))
 		.build(), "slow");
@@ -81,7 +81,7 @@ public Customizer<FrameworkRetryCircuitBreakerFactory> slowCustomizer() {
 
 Spring Framework 7 provides several built-in retry policies that can be used with the Framework Retry circuit breaker:
 
-* `RetryPolicy.withMaxAttempts(int)` - Retries a fixed number of times
+* `RetryPolicy.withMaxRetries(int)` - Retries a fixed number of times
 * `RetryPolicy.withMaxDuration(Duration)` - Retries until a maximum duration is reached
 * `RetryPolicy.withBackoff(Duration, double)` - Retries with exponential backoff
 * `RetryPolicy.forExceptions(Class<?>...)` - Retries only for specific exception types
@@ -93,7 +93,7 @@ You can also combine policies using `and()` and `or()` operators:
 @Bean
 public Customizer<FrameworkRetryCircuitBreakerFactory> customRetryPolicy() {
 	return factory -> factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
-		.retryPolicy(RetryPolicy.withMaxAttempts(3)
+		.retryPolicy(RetryPolicy.withMaxRetries(3)
 			.and(RetryPolicy.withMaxDuration(Duration.ofSeconds(5)))
 			.forExceptions(IOException.class, TimeoutException.class))
 		.build());
@@ -151,7 +151,7 @@ public class CircuitBreakerConfiguration {
 		return factory -> {
 			// Default configuration for all circuit breakers
 			factory.configureDefault(id -> new FrameworkRetryConfigBuilder(id)
-				.retryPolicy(RetryPolicy.withMaxAttempts(3)
+				.retryPolicy(RetryPolicy.withMaxRetries(3)
 					.withBackoff(Duration.ofMillis(100), 2.0))
 				.openTimeout(Duration.ofSeconds(20))
 				.resetTimeout(Duration.ofSeconds(5))
@@ -164,14 +164,14 @@ public class CircuitBreakerConfiguration {
 		return factory -> {
 			// Specific configuration for "slow" circuit breaker
 			factory.configure(builder -> builder
-				.retryPolicy(RetryPolicy.withMaxAttempts(1))
+				.retryPolicy(RetryPolicy.withMaxRetries(1))
 				.openTimeout(Duration.ofSeconds(30))
 				.resetTimeout(Duration.ofSeconds(10))
 				.build(), "slow");
 
 			// Specific configuration for "critical" circuit breaker
 			factory.configure(builder -> builder
-				.retryPolicy(RetryPolicy.withMaxAttempts(5))
+				.retryPolicy(RetryPolicy.withMaxRetries(5))
 				.openTimeout(Duration.ofMinutes(2))
 				.resetTimeout(Duration.ofSeconds(15))
 				.build(), "critical");

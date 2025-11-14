@@ -111,7 +111,7 @@ class FrameworkRetryCircuitBreakerIntegrationTest {
 		public Customizer<FrameworkRetryCircuitBreakerFactory> customizer() {
 			return factory -> {
 				factory.configureDefault(
-						id -> new FrameworkRetryConfigBuilder(id).retryPolicy(RetryPolicy.withMaxAttempts(2))
+						id -> new FrameworkRetryConfigBuilder(id).retryPolicy(RetryPolicy.withMaxRetries(2))
 							.openTimeout(Duration.ofMillis(100))
 							.resetTimeout(Duration.ofSeconds(5))
 							.build());

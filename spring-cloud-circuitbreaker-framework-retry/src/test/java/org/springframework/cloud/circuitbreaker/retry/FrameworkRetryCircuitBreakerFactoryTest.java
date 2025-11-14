@@ -91,7 +91,7 @@ class FrameworkRetryCircuitBreakerFactoryTest {
 
 		assertThat(builder).isNotNull();
 
-		FrameworkRetryConfig config = builder.retryPolicy(RetryPolicy.withMaxAttempts(5))
+		FrameworkRetryConfig config = builder.retryPolicy(RetryPolicy.withMaxRetries(5))
 			.openTimeout(Duration.ofSeconds(15))
 			.resetTimeout(Duration.ofSeconds(3))
 			.build();
