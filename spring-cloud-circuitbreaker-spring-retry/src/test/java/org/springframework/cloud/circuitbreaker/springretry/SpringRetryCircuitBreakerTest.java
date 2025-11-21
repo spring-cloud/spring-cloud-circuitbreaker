@@ -71,7 +71,7 @@ class SpringRetryCircuitBreakerTest {
 		assertThat(listener.toCheck[0]).isEqualTo("check-me-please");
 	}
 
-	private static class CustomListener implements RetryListener {
+	private static final class CustomListener implements RetryListener {
 
 		private final String[] toCheck = new String[1];
 
