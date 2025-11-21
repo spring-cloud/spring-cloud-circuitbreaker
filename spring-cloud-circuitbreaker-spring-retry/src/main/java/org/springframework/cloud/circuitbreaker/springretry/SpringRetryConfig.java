@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.circuitbreaker.springretry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -25,15 +27,15 @@ import org.springframework.retry.backoff.BackOffPolicy;
  */
 public class SpringRetryConfig {
 
-	private String id;
+	private @Nullable String id;
 
-	private BackOffPolicy backOffPolicy;
+	private @Nullable BackOffPolicy backOffPolicy;
 
-	private RetryPolicy retryPolicy;
+	private @Nullable RetryPolicy retryPolicy;
 
 	private boolean forceRefreshState;
 
-	private Classifier<Throwable, Boolean> stateClassifier;
+	private @Nullable Classifier<Throwable, Boolean> stateClassifier;
 
 	boolean isForceRefreshState() {
 		return forceRefreshState;
@@ -44,7 +46,7 @@ public class SpringRetryConfig {
 		return this;
 	}
 
-	Classifier<Throwable, Boolean> getStateClassifier() {
+	public @Nullable Classifier<Throwable, Boolean> getStateClassifier() {
 		return stateClassifier;
 	}
 
@@ -53,7 +55,7 @@ public class SpringRetryConfig {
 		return this;
 	}
 
-	RetryPolicy getRetryPolicy() {
+	public @Nullable RetryPolicy getRetryPolicy() {
 		return retryPolicy;
 	}
 
@@ -62,7 +64,7 @@ public class SpringRetryConfig {
 		return this;
 	}
 
-	String getId() {
+	public @Nullable String getId() {
 		return id;
 	}
 
@@ -71,7 +73,7 @@ public class SpringRetryConfig {
 		return this;
 	}
 
-	BackOffPolicy getBackOffPolicy() {
+	public @Nullable BackOffPolicy getBackOffPolicy() {
 		return backOffPolicy;
 	}
 

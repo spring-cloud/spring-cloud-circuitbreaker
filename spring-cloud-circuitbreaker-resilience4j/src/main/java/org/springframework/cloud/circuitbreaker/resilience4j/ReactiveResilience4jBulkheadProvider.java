@@ -68,6 +68,7 @@ public class ReactiveResilience4jBulkheadProvider {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
+			Assert.notNull(configuration.getBulkheadConfig(), "Bulkhead configuration must not be null");
 			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
 			customizer.accept(bulkhead);
 		}
@@ -80,6 +81,7 @@ public class ReactiveResilience4jBulkheadProvider {
 	public <T> Mono<T> decorateMono(String id, Map<String, String> tags, Mono<T> mono) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 			.computeIfAbsent(id, this::getConfiguration);
+		Assert.notNull(configuration.getBulkheadConfig(), "Bulkhead configuration must not be null");
 		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 		return mono.transformDeferred(BulkheadOperator.of(bulkhead));
 	}
@@ -87,6 +89,7 @@ public class ReactiveResilience4jBulkheadProvider {
 	public <T> Flux<T> decorateFlux(String id, Map<String, String> tags, Flux<T> flux) {
 		Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 			.computeIfAbsent(id, this::getConfiguration);
+		Assert.notNull(configuration.getBulkheadConfig(), "Bulkhead configuration must not be null");
 		Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
 		return flux.transformDeferred(BulkheadOperator.of(bulkhead));
 	}

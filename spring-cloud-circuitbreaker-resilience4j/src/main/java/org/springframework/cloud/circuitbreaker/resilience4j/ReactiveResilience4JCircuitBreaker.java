@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.github.resilience4j.timelimiter.TimeLimiter;
@@ -37,6 +38,7 @@ import reactor.util.function.Tuples;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
+import org.springframework.util.Assert;
 
 import static org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreaker.CIRCUIT_BREAKER_GROUP_TAG;
 
@@ -54,11 +56,11 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 
 	private final @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
-	private final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig circuitBreakerConfig;
+	private final @Nullable CircuitBreakerConfig circuitBreakerConfig;
 
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
 
-	private final TimeLimiterConfig timeLimiterConfig;
+	private final @Nullable TimeLimiterConfig timeLimiterConfig;
 
 	private final TimeLimiterRegistry timeLimiterRegistry;
 
@@ -137,6 +139,7 @@ public class ReactiveResilience4JCircuitBreaker implements ReactiveCircuitBreake
 	}
 
 	private Tuple2<CircuitBreaker, Optional<TimeLimiter>> buildCircuitBreakerAndTimeLimiter() {
+		Assert.notNull(circuitBreakerConfig, "CircuitBreakerConfig must not be null");
 		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(id, circuitBreakerConfig, tags);
 		circuitBreakerCustomizer.ifPresent(customizer -> customizer.customize(circuitBreaker));

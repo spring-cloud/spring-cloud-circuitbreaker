@@ -51,7 +51,7 @@ public class SpringRetryCircuitBreaker implements CircuitBreaker {
 	}
 
 	@Override
-	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
+	public <T> T run(Supplier<T> toRun, Function<@Nullable Throwable, T> fallback) {
 
 		retryTemplate.setBackOffPolicy(config.getBackOffPolicy());
 		retryTemplate.setRetryPolicy(config.getRetryPolicy());

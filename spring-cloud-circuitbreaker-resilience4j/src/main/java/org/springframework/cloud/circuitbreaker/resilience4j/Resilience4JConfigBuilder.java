@@ -18,6 +18,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
 
@@ -58,13 +59,13 @@ public class Resilience4JConfigBuilder
 
 	public static class Resilience4JCircuitBreakerConfiguration {
 
-		private String id;
+		private @Nullable String id;
 
-		private TimeLimiterConfig timeLimiterConfig;
+		private @Nullable TimeLimiterConfig timeLimiterConfig;
 
-		private CircuitBreakerConfig circuitBreakerConfig;
+		private @Nullable CircuitBreakerConfig circuitBreakerConfig;
 
-		public String getId() {
+		public @Nullable String getId() {
 			return id;
 		}
 
@@ -72,7 +73,7 @@ public class Resilience4JConfigBuilder
 			this.id = id;
 		}
 
-		public TimeLimiterConfig getTimeLimiterConfig() {
+		public @Nullable TimeLimiterConfig getTimeLimiterConfig() {
 			return timeLimiterConfig;
 		}
 
@@ -80,7 +81,7 @@ public class Resilience4JConfigBuilder
 			this.timeLimiterConfig = timeLimiterConfig;
 		}
 
-		public CircuitBreakerConfig getCircuitBreakerConfig() {
+		public @Nullable CircuitBreakerConfig getCircuitBreakerConfig() {
 			return circuitBreakerConfig;
 		}
 
