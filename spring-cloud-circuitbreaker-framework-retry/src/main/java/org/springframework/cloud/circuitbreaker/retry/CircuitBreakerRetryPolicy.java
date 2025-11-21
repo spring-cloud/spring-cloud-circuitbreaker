@@ -76,7 +76,7 @@ public class CircuitBreakerRetryPolicy {
 
 	private final AtomicLong lastFailureTime = new AtomicLong(0);
 
-	private final AtomicReference<Throwable> lastException = new AtomicReference<>();
+	private final AtomicReference<@Nullable Throwable> lastException = new AtomicReference<>();
 
 	private final Duration openTimeout;
 

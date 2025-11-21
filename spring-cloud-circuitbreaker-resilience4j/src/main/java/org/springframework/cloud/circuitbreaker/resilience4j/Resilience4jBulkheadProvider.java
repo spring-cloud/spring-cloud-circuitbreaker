@@ -87,7 +87,9 @@ public class Resilience4jBulkheadProvider {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig());
+			BulkheadConfig bulkheadConfig = configuration.getBulkheadConfig();
+			Assert.notNull(bulkheadConfig, "Bulkhead configuration must not be null");
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, bulkheadConfig);
 			customizer.customize(bulkhead);
 		}
 	}
@@ -96,8 +98,9 @@ public class Resilience4jBulkheadProvider {
 		for (String id : ids) {
 			Resilience4jBulkheadConfigurationBuilder.BulkheadConfiguration configuration = configurations
 				.computeIfAbsent(id, defaultConfiguration);
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig());
+			ThreadPoolBulkheadConfig threadPoolBulkheadConfig = configuration.getThreadPoolBulkheadConfig();
+			Assert.notNull(threadPoolBulkheadConfig, "ThreadPoolBulkhead configuration must not be null");
+			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id, threadPoolBulkheadConfig);
 			customizer.customize(threadPoolBulkhead);
 		}
 	}
@@ -133,13 +136,17 @@ public class Resilience4jBulkheadProvider {
 			.computeIfAbsent(id, this::getConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
+			BulkheadConfig bulkheadConfig = configuration.getBulkheadConfig();
+			Assert.notNull(bulkheadConfig, "Bulkhead configuration must not be null");
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, bulkheadConfig, tags);
 			Supplier<CompletionStage<T>> completionStageSupplier = () -> CompletableFuture.supplyAsync(supplier);
 			return Bulkhead.decorateCompletionStage(bulkhead, completionStageSupplier);
 		}
 		else {
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig(), tags);
+			ThreadPoolBulkheadConfig threadPoolBulkheadConfig = configuration.getThreadPoolBulkheadConfig();
+			Assert.notNull(threadPoolBulkheadConfig, "ThreadPoolBulkhead configuration must not be null");
+			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id, threadPoolBulkheadConfig,
+					tags);
 			return threadPoolBulkhead.decorateSupplier(supplier);
 		}
 	}
@@ -162,12 +169,16 @@ public class Resilience4jBulkheadProvider {
 			.computeIfAbsent(id, this::getConfiguration);
 
 		if (useSemaphoreBulkhead(id)) {
-			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, configuration.getBulkheadConfig(), tags);
+			BulkheadConfig bulkheadConfig = configuration.getBulkheadConfig();
+			Assert.notNull(bulkheadConfig, "Bulkhead configuration must not be null");
+			Bulkhead bulkhead = bulkheadRegistry.bulkhead(id, bulkheadConfig, tags);
 			return Bulkhead.decorateCallable(bulkhead, callable);
 		}
 		else {
-			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id,
-					configuration.getThreadPoolBulkheadConfig(), tags);
+			ThreadPoolBulkheadConfig threadPoolBulkheadConfig = configuration.getThreadPoolBulkheadConfig();
+			Assert.notNull(threadPoolBulkheadConfig, "ThreadPoolBulkhead configuration must not be null");
+			ThreadPoolBulkhead threadPoolBulkhead = threadPoolBulkheadRegistry.bulkhead(id, threadPoolBulkheadConfig,
+					tags);
 			return () -> threadPoolBulkhead.decorateCallable(callable).get().toCompletableFuture().get();
 		}
 	}

@@ -19,8 +19,11 @@ package org.springframework.cloud.circuitbreaker.retry;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.core.retry.RetryTemplate;
+import org.springframework.util.Assert;
 
 /**
  * Circuit breaker implementation using Spring Framework 7's retry support.
@@ -33,7 +36,7 @@ public class FrameworkRetryCircuitBreaker implements CircuitBreaker {
 
 	private final FrameworkRetryConfig config;
 
-	private final CircuitBreakerRetryPolicy circuitBreakerPolicy;
+	private final @Nullable CircuitBreakerRetryPolicy circuitBreakerPolicy;
 
 	/**
 	 * Create a new circuit breaker.
@@ -47,9 +50,10 @@ public class FrameworkRetryCircuitBreaker implements CircuitBreaker {
 	}
 
 	@Override
-	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
+	public <T> T run(Supplier<T> toRun, Function<@Nullable Throwable, T> fallback) {
 		// Check if circuit breaker allows execution (handles open -> half-open
 		// transition)
+		Assert.notNull(this.circuitBreakerPolicy, "Circuit breaker policy is required");
 		if (!this.circuitBreakerPolicy.canRetry()) {
 			// Circuit is open and timeout hasn't elapsed
 			Throwable lastException = this.circuitBreakerPolicy.getLastException();
@@ -99,7 +103,7 @@ public class FrameworkRetryCircuitBreaker implements CircuitBreaker {
 	 * Get the circuit breaker retry policy.
 	 * @return the circuit breaker retry policy
 	 */
-	public CircuitBreakerRetryPolicy getCircuitBreakerPolicy() {
+	public @Nullable CircuitBreakerRetryPolicy getCircuitBreakerPolicy() {
 		return this.circuitBreakerPolicy;
 	}
 

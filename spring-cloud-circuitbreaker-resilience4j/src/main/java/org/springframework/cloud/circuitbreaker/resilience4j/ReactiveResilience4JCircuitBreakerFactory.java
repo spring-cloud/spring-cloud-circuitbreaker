@@ -26,6 +26,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
@@ -41,7 +42,7 @@ import org.springframework.util.Assert;
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
-	private final ReactiveResilience4jBulkheadProvider bulkheadProvider;
+	private final @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration;
 
@@ -54,7 +55,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 	private final Resilience4JConfigurationProperties resilience4JConfigurationProperties;
 
 	public ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry circuitBreakerRegistry,
-			TimeLimiterRegistry timeLimiterRegistry, ReactiveResilience4jBulkheadProvider bulkheadProvider,
+			TimeLimiterRegistry timeLimiterRegistry, @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider,
 			Resilience4JConfigurationProperties resilience4JConfigurationProperties) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
 		this.bulkheadProvider = bulkheadProvider;

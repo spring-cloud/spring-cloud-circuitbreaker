@@ -18,6 +18,7 @@ package org.springframework.cloud.circuitbreaker.resilience4j;
 
 import io.github.resilience4j.bulkhead.BulkheadConfig;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadConfig;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author Andrii Bohutskyi
@@ -28,14 +29,18 @@ public class Resilience4jBulkheadConfigurationBuilder {
 
 	private ThreadPoolBulkheadConfig threadPoolBulkheadConfig = ThreadPoolBulkheadConfig.ofDefaults();
 
-	public Resilience4jBulkheadConfigurationBuilder bulkheadConfig(BulkheadConfig bulkheadConfig) {
-		this.bulkheadConfig = bulkheadConfig;
+	public Resilience4jBulkheadConfigurationBuilder bulkheadConfig(@Nullable BulkheadConfig bulkheadConfig) {
+		if (bulkheadConfig != null) {
+			this.bulkheadConfig = bulkheadConfig;
+		}
 		return this;
 	}
 
 	public Resilience4jBulkheadConfigurationBuilder threadPoolBulkheadConfig(
-			ThreadPoolBulkheadConfig threadPoolBulkheadConfig) {
-		this.threadPoolBulkheadConfig = threadPoolBulkheadConfig;
+			@Nullable ThreadPoolBulkheadConfig threadPoolBulkheadConfig) {
+		if (threadPoolBulkheadConfig != null) {
+			this.threadPoolBulkheadConfig = threadPoolBulkheadConfig;
+		}
 		return this;
 	}
 
@@ -48,15 +53,15 @@ public class Resilience4jBulkheadConfigurationBuilder {
 
 	public static class BulkheadConfiguration {
 
-		private BulkheadConfig bulkheadConfig;
+		private @Nullable BulkheadConfig bulkheadConfig;
 
-		private ThreadPoolBulkheadConfig threadPoolBulkheadConfig;
+		private @Nullable ThreadPoolBulkheadConfig threadPoolBulkheadConfig;
 
 		public void setBulkheadConfig(BulkheadConfig bulkheadConfig) {
 			this.bulkheadConfig = bulkheadConfig;
 		}
 
-		public ThreadPoolBulkheadConfig getThreadPoolBulkheadConfig() {
+		public @Nullable ThreadPoolBulkheadConfig getThreadPoolBulkheadConfig() {
 			return threadPoolBulkheadConfig;
 		}
 
@@ -64,7 +69,7 @@ public class Resilience4jBulkheadConfigurationBuilder {
 			this.threadPoolBulkheadConfig = threadPoolBulkheadConfig;
 		}
 
-		public BulkheadConfig getBulkheadConfig() {
+		public @Nullable BulkheadConfig getBulkheadConfig() {
 			return bulkheadConfig;
 		}
 

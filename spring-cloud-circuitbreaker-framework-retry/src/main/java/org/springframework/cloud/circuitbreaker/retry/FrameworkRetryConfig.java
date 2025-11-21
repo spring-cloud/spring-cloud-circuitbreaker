@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.circuitbreaker.retry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.retry.RetryPolicy;
 
 /**
@@ -25,17 +27,17 @@ import org.springframework.core.retry.RetryPolicy;
  */
 public class FrameworkRetryConfig {
 
-	private String id;
+	private @Nullable String id;
 
-	private CircuitBreakerRetryPolicy circuitBreakerRetryPolicy;
+	private @Nullable CircuitBreakerRetryPolicy circuitBreakerRetryPolicy;
 
-	private RetryPolicy retryPolicy;
+	private @Nullable RetryPolicy retryPolicy;
 
 	/**
 	 * Get the circuit breaker identifier.
 	 * @return the identifier
 	 */
-	String getId() {
+	public @Nullable String getId() {
 		return this.id;
 	}
 
@@ -53,7 +55,7 @@ public class FrameworkRetryConfig {
 	 * Get the circuit breaker retry policy.
 	 * @return the circuit breaker retry policy
 	 */
-	public CircuitBreakerRetryPolicy getCircuitBreakerRetryPolicy() {
+	public @Nullable CircuitBreakerRetryPolicy getCircuitBreakerRetryPolicy() {
 		return this.circuitBreakerRetryPolicy;
 	}
 
@@ -71,7 +73,7 @@ public class FrameworkRetryConfig {
 	 * Get the underlying retry policy.
 	 * @return the retry policy
 	 */
-	public RetryPolicy getRetryPolicy() {
+	public @Nullable RetryPolicy getRetryPolicy() {
 		return this.retryPolicy;
 	}
 

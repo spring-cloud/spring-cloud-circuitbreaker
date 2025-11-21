@@ -95,7 +95,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 	}
 
 	@Override
-	public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
+	public <T> T run(Supplier<T> toRun, Function<@Nullable Throwable, T> fallback) {
 		final Map<String, String> tags = Map.of(CIRCUIT_BREAKER_GROUP_TAG, this.groupName);
 		Optional<TimeLimiter> timeLimiter = loadTimeLimiter();
 		io.github.resilience4j.circuitbreaker.CircuitBreaker defaultCircuitBreaker = registry.circuitBreaker(this.id,
@@ -140,7 +140,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		}
 	}
 
-	private static <T> T getAndApplyFallback(Supplier<T> supplier, Function<Throwable, T> fallback) {
+	private static <T> T getAndApplyFallback(Supplier<T> supplier, Function<@Nullable Throwable, T> fallback) {
 		try {
 			return supplier.get();
 		}
@@ -149,7 +149,7 @@ public class Resilience4JCircuitBreaker implements CircuitBreaker {
 		}
 	}
 
-	private static <T> T getAndApplyFallback(Callable<T> callable, Function<Throwable, T> fallback) {
+	private static <T> T getAndApplyFallback(Callable<T> callable, Function<@Nullable Throwable, T> fallback) {
 		try {
 			return callable.call();
 		}
