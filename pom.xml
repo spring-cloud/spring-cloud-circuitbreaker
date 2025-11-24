@@ -9,7 +9,7 @@
 	<description>Spring Cloud Circuitbreaker</description>
 	<url>https://github.com/spring-cloud/spring-cloud-circuitbreaker</url>
 	<packaging>pom</packaging>
-	<version>5.0.0-SNAPSHOT</version>
+	<version>5.0.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
