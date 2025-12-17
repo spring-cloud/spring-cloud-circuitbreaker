@@ -9,12 +9,12 @@
 	<description>Spring Cloud Circuitbreaker</description>
 	<url>https://github.com/spring-cloud/spring-cloud-circuitbreaker</url>
 	<packaging>pom</packaging>
-	<version>3.3.1-SNAPSHOT</version>
+	<version>3.3.2-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>4.3.2-SNAPSHOT</version>
+		<version>4.3.3-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<scm>
@@ -92,7 +92,7 @@
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.language>java</sonar.language>
-		<spring-cloud-commons.version>4.3.1-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-commons.version>4.3.2-SNAPSHOT</spring-cloud-commons.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
