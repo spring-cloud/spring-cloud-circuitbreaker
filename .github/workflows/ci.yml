@@ -1,4 +1,4 @@
-name: Spring Cloud CI Job
+name: Spring Cloud CircuitBreaker CI Job
 
 on:
   push:
