@@ -27,6 +27,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.jspecify.annotations.Nullable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
@@ -42,7 +44,11 @@ import org.springframework.util.Assert;
 public class ReactiveResilience4JCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
 
+	private static final Log LOG = LogFactory.getLog(ReactiveResilience4JCircuitBreakerFactory.class);
+
 	private final @Nullable ReactiveResilience4jBulkheadProvider bulkheadProvider;
+
+	private final ReactiveResilience4jBulkheadProvider bulkheadProvider;
 
 	private Function<String, Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration> defaultConfiguration;
 
@@ -96,8 +102,12 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 			.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
 				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
-			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
-				.orElseGet(defaultConfig::getTimeLimiterConfig));
+			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName).orElseGet(() -> {
+				TimeLimiterConfig defaultTimeLimiterConfig = defaultConfig.getTimeLimiterConfig();
+				LOG.warn("No timeLimiterConfig found for " + id + " in time limiter registry, using "
+						+ defaultTimeLimiterConfig);
+				return defaultTimeLimiterConfig;
+			}));
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
 			.circuitBreakerConfig(circuitBreakerConfig)
 			.timeLimiterConfig(timeLimiterConfig)
