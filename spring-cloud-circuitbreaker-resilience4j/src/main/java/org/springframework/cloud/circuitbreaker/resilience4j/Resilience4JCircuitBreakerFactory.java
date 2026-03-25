@@ -30,6 +30,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.observation.ObservationRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -43,6 +45,8 @@ import org.springframework.util.Assert;
  */
 public class Resilience4JCircuitBreakerFactory extends
 		CircuitBreakerFactory<Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration, Resilience4JConfigBuilder> {
+
+	private static final Log LOG = LogFactory.getLog(Resilience4JCircuitBreakerFactory.class);
 
 	private Resilience4jBulkheadProvider bulkheadProvider;
 
@@ -173,8 +177,12 @@ public class Resilience4JCircuitBreakerFactory extends
 			.orElseGet(() -> this.circuitBreakerRegistry.getConfiguration(groupName)
 				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
-			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName)
-				.orElseGet(defaultConfig::getTimeLimiterConfig));
+			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName).orElseGet(() -> {
+				TimeLimiterConfig defaultTimeLimiterConfig = this.timeLimiterRegistry.getDefaultConfig();
+				LOG.warn("No timeLimiterConfig found for " + id + " in time limiter registry, using "
+						+ defaultTimeLimiterConfig);
+				return defaultTimeLimiterConfig;
+			}));
 		if (resilience4JConfigurationProperties.isDisableThreadPool()) {
 			return new Resilience4JCircuitBreaker(id, groupName, circuitBreakerConfig, timeLimiterConfig,
 					circuitBreakerRegistry, timeLimiterRegistry, Optional.ofNullable(circuitBreakerCustomizers.get(id)),
