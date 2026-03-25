@@ -4,10 +4,8 @@
 name: Build
 
 on:
-  push:
-    branches: [ main, 3.2.x, 3.1.x, 3.0.x, 2.1.x ]
   pull_request:
-    branches: [ main, 3.2.x, 3.1.x, 3.0.x, 2.1.x ]
+    branches: [ main, 3.3.x ]
 
 jobs:
   build:
