@@ -113,7 +113,7 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
 			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName).orElseGet(() -> {
-				TimeLimiterConfig defaultTimeLimiterConfig = this.timeLimiterRegistry.getDefaultConfig();
+				TimeLimiterConfig defaultTimeLimiterConfig = defaultConfig.getTimeLimiterConfig();
 				LOG.warn("No timeLimiterConfig found for " + id + " in time limiter registry, using "
 						+ defaultTimeLimiterConfig);
 				return defaultTimeLimiterConfig;
