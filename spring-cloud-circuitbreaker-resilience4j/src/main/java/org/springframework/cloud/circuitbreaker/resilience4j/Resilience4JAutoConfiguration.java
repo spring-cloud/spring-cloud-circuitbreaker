@@ -155,12 +155,6 @@ public class Resilience4JAutoConfiguration {
 					.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
 					.bindTo(meterRegistry);
 			}
-			if (bulkheadProvider != null) {
-				TaggedBulkheadMetrics.ofBulkheadRegistry(bulkheadProvider.getBulkheadRegistry()).bindTo(meterRegistry);
-				TaggedThreadPoolBulkheadMetrics
-					.ofThreadPoolBulkheadRegistry(bulkheadProvider.getThreadPoolBulkheadRegistry())
-					.bindTo(meterRegistry);
-			}
 		}
 
 	}
