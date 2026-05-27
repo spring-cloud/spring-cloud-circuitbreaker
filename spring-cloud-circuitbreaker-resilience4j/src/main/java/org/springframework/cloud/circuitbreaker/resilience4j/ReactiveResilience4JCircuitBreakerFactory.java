@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -54,6 +57,8 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 	private TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 
 	private final Map<String, Customizer<CircuitBreaker>> circuitBreakerCustomizers = new HashMap<>();
+
+	private final Set<String> loggedTimeLimiterIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	private final Resilience4JConfigurationProperties resilience4JConfigurationProperties;
 
@@ -114,8 +119,17 @@ public class ReactiveResilience4JCircuitBreakerFactory extends
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
 			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName).orElseGet(() -> {
 				TimeLimiterConfig defaultTimeLimiterConfig = defaultConfig.getTimeLimiterConfig();
-				LOG.warn("No timeLimiterConfig found for " + id + " in time limiter registry, using "
-						+ defaultTimeLimiterConfig);
+				if (loggedTimeLimiterIds.add(id)) {
+					boolean hasUserDefault = this.timeLimiterRegistry.getConfiguration("default").isPresent();
+					if (hasUserDefault) {
+						LOG.debug("No specific timeLimiterConfig found for '" + id
+								+ "' in time limiter registry, using default config: " + defaultTimeLimiterConfig);
+					}
+					else {
+						LOG.warn("No timeLimiterConfig found for '" + id + "' in time limiter registry, using "
+								+ defaultTimeLimiterConfig);
+					}
+				}
 				return defaultTimeLimiterConfig;
 			}));
 		Resilience4JConfigBuilder.Resilience4JCircuitBreakerConfiguration config = new Resilience4JConfigBuilder(id)
