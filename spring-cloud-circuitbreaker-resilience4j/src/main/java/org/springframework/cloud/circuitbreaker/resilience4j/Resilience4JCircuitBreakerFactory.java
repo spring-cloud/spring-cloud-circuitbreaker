@@ -182,7 +182,7 @@ public class Resilience4JCircuitBreakerFactory extends
 				.orElseGet(defaultConfig::getCircuitBreakerConfig));
 		TimeLimiterConfig timeLimiterConfig = this.timeLimiterRegistry.getConfiguration(id)
 			.orElseGet(() -> this.timeLimiterRegistry.getConfiguration(groupName).orElseGet(() -> {
-				TimeLimiterConfig defaultTimeLimiterConfig = this.timeLimiterRegistry.getDefaultConfig();
+				TimeLimiterConfig defaultTimeLimiterConfig = defaultConfig.getTimeLimiterConfig();
 				if (loggedTimeLimiterIds.add(id)) {
 					boolean hasUserDefault = this.timeLimiterRegistry.getConfiguration("default").isPresent();
 					if (hasUserDefault) {
