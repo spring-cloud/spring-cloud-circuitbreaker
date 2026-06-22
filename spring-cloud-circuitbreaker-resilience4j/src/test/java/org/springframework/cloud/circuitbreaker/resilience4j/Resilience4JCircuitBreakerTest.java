@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.circuitbreaker.resilience4j;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -24,7 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import io.github.resilience4j.bulkhead.ThreadPoolBulkheadRegistry;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.util.NamedThreadFactory;
 import org.assertj.core.api.Assertions;
@@ -270,6 +273,37 @@ public class Resilience4JCircuitBreakerTest {
 				/* sleep longer than limit allows us to */
 				TimeUnit.MILLISECONDS
 					.sleep(Math.max(timeLimiterRegistry.getDefaultConfig().getTimeoutDuration().toMillis(), 100L) * 2);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("thread got interrupted", e);
+			}
+			return "foobar";
+		})).isEqualTo("foobar");
+	}
+
+	/**
+	 * The default {@link io.github.resilience4j.timelimiter.TimeLimiterConfig} configured
+	 * via {@link Resilience4JCircuitBreakerFactory#configureDefault} must be honored when
+	 * no specific config exists in the registry for the circuit breaker id. The task
+	 * sleeps longer than Resilience4j's built-in 1 second default but within the
+	 * configured 5 second default, so it only succeeds if the configured default is used.
+	 */
+	@Test
+	public void runWithConfiguredDefaultTimeLimiter() {
+		Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory(
+				CircuitBreakerRegistry.ofDefaults(), TimeLimiterRegistry.ofDefaults(), null, properties);
+		factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+			.timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(5)).build())
+			.circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+			.build());
+		CircuitBreaker cb = factory.create("foo");
+		assertThat(cb.run(() -> {
+			try {
+				/*
+				 * sleep longer than Resilience4j's 1 second default, within configured 5s
+				 */
+				TimeUnit.MILLISECONDS.sleep(1500L);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
