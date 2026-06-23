@@ -8,6 +8,6 @@
     "@springio/antora-extensions": "^1.6.0",
     "@springio/asciidoctor-extensions": "^1.0.0-alpha.9",
     "asciidoctor-kroki": "^0.18.1",
-    "antora": "3.2.0-alpha.12"
+    "antora": "3.2.0-rc.2"
   }
 }
