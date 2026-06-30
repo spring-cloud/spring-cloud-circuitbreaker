@@ -120,20 +120,34 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.springframework.boot</groupId>
-							<artifactId>spring-boot-configuration-processor</artifactId>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<profiles>
+		<!-- When using JDK 25 and because we have nullability added annotation processing when using JDK
+		     25 or greater is handled by a profile in spring-cloud-build so we do not want to override the
+		     configuration from that profile.  We therefore only active this profile for annotation processing
+		     when the JDK is less than 25 -->
+		<profile>
+			<id>annotation-processor-not-jdk-25</id>
+			<activation>
+				<jdk>(,25)</jdk>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.springframework.boot</groupId>
+									<artifactId>spring-boot-configuration-processor</artifactId>
+									<version>${spring-boot.version}</version>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 
 </project>
