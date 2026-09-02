@@ -18,7 +18,7 @@
 	<description>Spring Cloud Circuit Breaker Dependencies</description>
 
 	<properties>
-		<resilience4j.version>2.3.0</resilience4j.version>
+		<resilience4j.version>2.4.0</resilience4j.version>
 	</properties>
 
 	<dependencyManagement>
@@ -29,6 +29,12 @@
 				<version>${resilience4j.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!-- this should be part of the above BOM but is not, see https://github.com/resilience4j/resilience4j/issues/2427 -->
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot4</artifactId>
+				<version>${resilience4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
