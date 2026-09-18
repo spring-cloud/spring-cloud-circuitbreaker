@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-circuitbreaker</artifactId>
-		<version>5.1.0-INTERNAL-SNAPSHOT</version>
+		<version>5.1.0-M1</version>
 	</parent>
 	<artifactId>spring-cloud-circuitbreaker-framework-retry</artifactId>
 	<name>Spring Cloud Circuitbreaker Retry</name>
