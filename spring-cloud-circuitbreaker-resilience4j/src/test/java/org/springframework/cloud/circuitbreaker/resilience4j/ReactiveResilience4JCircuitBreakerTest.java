@@ -32,7 +32,7 @@ import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableExcept
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Ryan Baxter
@@ -125,7 +125,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 				new Resilience4JConfigurationProperties())
 			.create("foo");
 
-		Mono.fromCallable(() -> {
+		assertThatThrownBy(() -> Mono.fromCallable(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
 				TimeUnit.MILLISECONDS
@@ -138,9 +138,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 			return "foobar";
 		}).subscribeOn(Schedulers.single()).transform(cb::run).doOnSuccess(s -> {
 			throw new AssertionError("timeout did not occur");
-		}).block();
-
-		fail("execution did not cause exception");
+		}).block()).isNotNull();
 	}
 
 	/**
