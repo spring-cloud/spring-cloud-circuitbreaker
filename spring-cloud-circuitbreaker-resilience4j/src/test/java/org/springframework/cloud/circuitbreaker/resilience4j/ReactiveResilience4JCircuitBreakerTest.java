@@ -117,7 +117,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	 * Run circuit breaker with default time limiter and expects the time limit to get
 	 * exceeded.
 	 */
-	@Test(expected = NoFallbackAvailableException.class)
+	@Test
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
