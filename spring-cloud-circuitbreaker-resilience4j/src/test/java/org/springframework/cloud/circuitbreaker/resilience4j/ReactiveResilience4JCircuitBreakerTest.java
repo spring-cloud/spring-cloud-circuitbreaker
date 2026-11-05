@@ -28,11 +28,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Ryan Baxter
@@ -117,7 +116,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 	 * Run circuit breaker with default time limiter and expects the time limit to get
 	 * exceeded.
 	 */
-	@Test(expected = NoFallbackAvailableException.class)
+	@Test
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		ReactiveCircuitBreaker cb = new ReactiveResilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
@@ -125,7 +124,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 				new Resilience4JConfigurationProperties())
 			.create("foo");
 
-		Mono.fromCallable(() -> {
+		assertThatThrownBy(() -> Mono.fromCallable(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
 				TimeUnit.MILLISECONDS
@@ -138,9 +137,7 @@ public class ReactiveResilience4JCircuitBreakerTest {
 			return "foobar";
 		}).subscribeOn(Schedulers.single()).transform(cb::run).doOnSuccess(s -> {
 			throw new AssertionError("timeout did not occur");
-		}).block();
-
-		fail("execution did not cause exception");
+		}).block()).isNotNull();
 	}
 
 	/**

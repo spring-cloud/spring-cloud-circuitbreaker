@@ -30,14 +30,13 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import io.micrometer.core.instrument.util.NamedThreadFactory;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Ryan Baxter
@@ -207,13 +206,13 @@ public class Resilience4JCircuitBreakerTest {
 	 * Run circuit breaker with default time limiter and expects the time limit to get
 	 * exceeded.
 	 */
-	@Test(expected = NoFallbackAvailableException.class)
+	@Test
 	public void runWithDefaultTimeLimiterTooSlow() {
 		final TimeLimiterRegistry timeLimiterRegistry = TimeLimiterRegistry.ofDefaults();
 		CircuitBreaker cb = new Resilience4JCircuitBreakerFactory(CircuitBreakerRegistry.ofDefaults(),
 				timeLimiterRegistry, null, properties)
 			.create("foo");
-		cb.run(() -> {
+		assertThatThrownBy(() -> cb.run(() -> {
 			try {
 				/* sleep longer than time limit allows us to */
 				TimeUnit.MILLISECONDS
@@ -224,8 +223,7 @@ public class Resilience4JCircuitBreakerTest {
 				throw new AssertionError("thread got interrupted -> sleep failed", e);
 			}
 			return null;
-		});
-		Assertions.fail("timeout did not happen as expected");
+		})).isNotNull();
 	}
 
 	/**
